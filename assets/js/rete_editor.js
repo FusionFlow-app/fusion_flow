@@ -1,0 +1,297 @@
+import { NodeEditor, ClassicPreset } from "rete";
+import { AreaPlugin, AreaExtensions } from "rete-area-plugin";
+import { ConnectionPlugin, Presets as ConnectionPresets } from "rete-connection-plugin";
+import { LitPlugin, Presets } from "@retejs/lit-plugin";
+import { html } from "lit";
+
+import { CustomNodeElement } from "./custom-node.js";
+import { CustomConnectionElement } from "./custom-connection.js";
+import { CustomSocketElement } from "./custom-socket.js";
+import { addCustomBackground } from "./custom-background.js";
+
+import { CustomControlElement } from "./custom-control.js";
+
+if (!customElements.get("custom-node")) {
+    customElements.define("custom-node", CustomNodeElement);
+}
+if (!customElements.get("custom-connection")) {
+    customElements.define("custom-connection", CustomConnectionElement);
+}
+if (!customElements.get("custom-socket")) {
+    customElements.define("custom-socket", CustomSocketElement);
+}
+if (!customElements.get("custom-control")) {
+    customElements.define("custom-control", CustomControlElement);
+}
+
+export async function createEditor(container) {
+    const socket = new ClassicPreset.Socket("socket");
+
+    const editor = new NodeEditor();
+    const area = new AreaPlugin(container);
+    const connection = new ConnectionPlugin();
+    const render = new LitPlugin();
+
+    AreaExtensions.selectableNodes(area, AreaExtensions.selector(), {
+        accumulating: AreaExtensions.accumulateOnCtrl(),
+    });
+
+    render.addPreset(
+        Presets.classic.setup({
+            customize: {
+                node(data) {
+                    return ({ emit }) =>
+                        html`<custom-node 
+                .data=${data.payload} 
+                .emit=${emit} 
+                class="${data.payload.selected ? 'selected' : ''}"
+                .onDelete=${async () => {
+                                const nodeId = data.payload.id;
+                                const connections = editor.getConnections();
+                                for (const conn of connections) {
+                                    if (conn.source === nodeId || conn.target === nodeId) {
+                                        await editor.removeConnection(conn.id);
+                                    }
+                                }
+                                await editor.removeNode(nodeId);
+                            }}
+                .onConfig=${() => {
+                                if (editor.triggerNodeConfig) {
+                                    const node = data.payload;
+                                    const cleanData = {
+                                        id: node.id,
+                                        label: node.label,
+                                        controls: {}
+                                    };
+
+                                    if (node.controls) {
+                                        Object.entries(node.controls).forEach(([key, control]) => {
+                                            cleanData.controls[key] = {
+                                                value: control.value,
+                                                label: control.label || key,
+                                                type: control.type || 'text',
+                                                options: control.options || []
+                                            };
+                                        });
+                                    }
+
+                                    editor.triggerNodeConfig(node.id, cleanData);
+                                }
+                            }}
+            ></custom-node>`;
+                },
+                connection() {
+                    return (props) =>
+                        html`<custom-connection .path=${props.path}></custom-connection>`;
+                },
+                socket(data) {
+                    return () => html`<custom-socket .data=${data} slot="${data.side}-${data.key}"></custom-socket>`;
+                },
+            },
+        })
+    );
+
+    connection.addPreset(ConnectionPresets.classic.setup());
+
+    addCustomBackground(area);
+
+    editor.use(area);
+    area.use(connection);
+    area.use(render);
+
+    AreaExtensions.simpleNodesOrder(area);
+
+    const processChange = () => {
+        if (editor.triggerChange) editor.triggerChange();
+    };
+
+    editor.addPipe(context => {
+        if (
+            context.type === 'nodecreated' ||
+            context.type === 'noderemoved' ||
+            context.type === 'connectioncreated' ||
+            context.type === 'connectionremoved' ||
+            context.type === 'translated'
+        ) {
+            processChange();
+        }
+        return context;
+    });
+
+    const processAddNode = async (name, definition, data = null) => {
+        if (!definition) {
+            console.error("Node definition not provided for", name);
+            return;
+        }
+
+        const node = new ClassicPreset.Node(definition.name);
+        if (data && data.id) {
+            node.id = data.id;
+        }
+        console.log("Adding node:", name, definition);
+
+        if (definition.inputs) {
+            definition.inputs.forEach(inputName => {
+                node.addInput(inputName, new ClassicPreset.Input(socket));
+            });
+        }
+
+        if (definition.outputs) {
+            definition.outputs.forEach(outputName => {
+                node.addOutput(outputName, new ClassicPreset.Output(socket));
+            });
+        }
+
+        const uiFields = definition.ui_fields || [];
+
+        uiFields.forEach(field => {
+            const initialValue = (data && data.controls && data.controls[field.name]) || field.default || "";
+            const control = new ClassicPreset.InputControl("text", { initial: initialValue });
+            control.value = initialValue;
+
+            if (field.type === 'code') {
+                const renderMode = field.render || 'icon';
+
+                if (renderMode === 'button') {
+                    control.type = 'code-button';
+                } else {
+                    control.type = 'code-icon';
+                }
+                control.label = field.label || 'Edit Code';
+
+                control.language = field.language || 'elixir';
+
+                control.onClick = () => {
+                    if (editor.triggerCodeEdit) {
+                        editor.triggerCodeEdit(node.id, node.controls[field.name].value, field.name, control.language);
+                    }
+                };
+            } else {
+                control.type = field.type === 'select' ? 'select' : 'text';
+                control.label = field.label;
+                if (field.options) control.options = field.options;
+            }
+
+            node.addControl(field.name, control);
+        });
+
+        await editor.addNode(node);
+
+        if (data && data.position) {
+            await area.translate(node.id, data.position);
+        }
+
+        return node;
+    };
+
+    return {
+        destroy: () => area.destroy(),
+        addNode: async (name, definition, data = null) => {
+            return await processAddNode(name, definition, data);
+        },
+        importData: async ({ nodes, connections, definitions }) => {
+            console.log("ReteEditor: Importing data...", { nodes, connections });
+            await editor.clear();
+
+            for (const nodeData of nodes) {
+                const definition = definitions[nodeData.label];
+                if (!definition) {
+                    console.warn(`Definition not found for node type: ${nodeData.label}`);
+                    continue;
+                }
+                console.log(`ReteEditor: Restoring node ${nodeData.label} (${nodeData.id})`);
+                await processAddNode(nodeData.label, definition, nodeData);
+            }
+
+            for (const connData of connections) {
+                const sourceNode = editor.getNode(connData.source);
+                const targetNode = editor.getNode(connData.target);
+
+                if (sourceNode && targetNode) {
+                    try {
+                        await editor.addConnection(
+                            new ClassicPreset.Connection(
+                                sourceNode,
+                                connData.sourceOutput,
+                                targetNode,
+                                connData.targetInput
+                            )
+                        );
+                    } catch (e) {
+                        console.error("Failed to restore connection:", connData, e);
+                    }
+                } else {
+                    console.warn("Source or Target node not found for connection:", connData);
+                }
+            }
+
+            if (nodes.length > 0) {
+                AreaExtensions.zoomAt(area, editor.getNodes());
+            }
+        },
+
+        onChange: (cb) => {
+            editor.triggerChange = cb;
+        },
+        onCodeEdit: (cb) => {
+            editor.triggerCodeEdit = cb;
+        },
+        onNodeConfig: (cb) => {
+            editor.triggerNodeConfig = cb;
+        },
+        updateNodeCode: async (nodeId, code, fieldName) => {
+            const node = editor.getNode(nodeId);
+            if (!node) return;
+
+            if (node.controls[fieldName]) {
+                node.controls[fieldName].value = code;
+            }
+
+            await area.update('node', nodeId);
+            processChange();
+        },
+        updateNodeData: async (nodeId, data) => {
+            const node = editor.getNode(nodeId);
+            if (!node) return;
+
+            Object.entries(data).forEach(([key, value]) => {
+                if (node.controls[key]) {
+                    node.controls[key].value = value;
+                }
+            });
+
+            await area.update('node', nodeId);
+            processChange();
+        },
+        exportData: async () => {
+            const nodes = [];
+            const connections = [];
+
+            for (const node of editor.getNodes()) {
+                const controls = {};
+
+                Object.keys(node.controls).forEach(key => {
+                    controls[key] = node.controls[key].value;
+                });
+
+                nodes.push({
+                    id: node.id,
+                    label: node.label,
+                    controls,
+                    position: area.nodeViews.get(node.id)?.position || { x: 0, y: 0 }
+                });
+            }
+
+            for (const conn of editor.getConnections()) {
+                connections.push({
+                    source: conn.source,
+                    sourceOutput: conn.sourceOutput,
+                    target: conn.target,
+                    targetInput: conn.targetInput
+                });
+            }
+
+            return { nodes, connections };
+        }
+    };
+}
