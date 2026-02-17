@@ -455,15 +455,57 @@ defmodule FusionFlowWeb.FlowLive do
   def render(assigns) do
     ~H"""
     <div class="w-full h-[100vh] flex flex-col bg-white dark:bg-slate-900 overflow-hidden relative">
-      <header class="flex items-center justify-between px-6 py-3 border-b border-gray-200 dark:border-slate-700 bg-white dark:bg-slate-800 z-10">
-        <div class="flex items-center gap-2">
-          <h1 class="text-lg font-bold text-gray-900 dark:text-slate-100">Flow Editor</h1>
+      <header class="flex items-center justify-between px-6 py-3 border-b border-gray-200 dark:border-slate-800 bg-white dark:bg-slate-900 z-10 h-16 shadow-sm">
+        <div class="flex items-center gap-3">
+          <div class="p-2 bg-gradient-to-br from-indigo-500 to-purple-600 rounded-lg shadow-sm">
+            <svg class="w-5 h-5 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path
+                stroke-linecap="round"
+                stroke-linejoin="round"
+                stroke-width="2"
+                d="M13 10V3L4 14h7v7l9-11h-7z"
+              />
+            </svg>
+          </div>
+          
+          <div>
+            <h1 class="text-base font-bold text-gray-900 dark:text-white leading-tight">
+              Flow Editor
+            </h1>
+            
+            <div class="flex items-center gap-1.5">
+              <span class="w-2 h-2 rounded-full bg-green-500 animate-pulse"></span>
+              <p class="text-xs text-gray-500 dark:text-gray-400 font-medium">Active Session</p>
+            </div>
+          </div>
         </div>
-
-        <div class="flex items-center gap-4">
+        
+        <div class="flex items-center gap-3">
+          <!-- Back to Home -->
+          <a
+            href="/"
+            class="group h-9 px-3 flex items-center gap-2 text-sm font-medium text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white hover:bg-gray-100 dark:hover:bg-slate-800 rounded-md transition-all"
+            title="Go to Dashboard"
+          >
+            <svg
+              class="w-4 h-4 text-gray-400 group-hover:text-gray-600 dark:group-hover:text-gray-300 transition-colors"
+              fill="none"
+              stroke="currentColor"
+              viewBox="0 0 24 24"
+            >
+              <path
+                stroke-linecap="round"
+                stroke-linejoin="round"
+                stroke-width="2"
+                d="M10 19l-7-7m0 0l7-7m-7 7h18"
+              />
+            </svg> <span class="hidden sm:inline">Back</span>
+          </a>
+          <div class="h-5 w-px bg-gray-200 dark:bg-slate-700 mx-1"></div>
+          
           <button
             phx-click="open_dependencies_modal"
-            class="px-3 py-1.5 text-sm font-medium text-gray-700 dark:text-slate-200 bg-white dark:bg-slate-800 border border-gray-300 dark:border-slate-600 rounded-lg hover:bg-gray-50 dark:hover:bg-slate-700 transition-all flex items-center gap-2"
+            class="h-9 px-3 flex items-center gap-2 text-sm font-medium text-gray-700 dark:text-gray-300 bg-white dark:bg-slate-800 border border-gray-200 dark:border-slate-700 rounded-md hover:border-indigo-500 dark:hover:border-indigo-500 hover:text-indigo-600 dark:hover:text-indigo-400 transition-colors"
           >
             <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path
@@ -473,36 +515,64 @@ defmodule FusionFlowWeb.FlowLive do
                 d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10"
               >
               </path>
-            </svg>
-            Dependencies
+            </svg> <span class="hidden sm:inline">Dependencies</span>
           </button>
+          <!-- Dark Mode -->
           <div phx-update="ignore" id="dark-mode-toggle-wrapper">
             <button
               id="dark-mode-btn"
-              onclick="console.log('Button clicked!'); var html = document.documentElement; var isDark = html.classList.toggle('dark'); html.setAttribute('data-theme', isDark ? 'dark' : 'light'); localStorage.setItem('theme', isDark ? 'dark' : 'light'); console.log('Dark mode is now:', isDark);"
-              class="p-2 rounded-lg bg-gray-100 dark:bg-slate-800 text-gray-600 dark:text-slate-300 hover:bg-gray-200 dark:hover:bg-slate-700 transition-colors"
-              title="Toggle Dark Mode"
+              onclick="var html = document.documentElement; var isDark = html.classList.toggle('dark'); html.setAttribute('data-theme', isDark ? 'dark' : 'light'); localStorage.setItem('theme', isDark ? 'dark' : 'light');"
+              class="h-9 w-9 flex items-center justify-center rounded-md text-gray-500 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-slate-800 transition-colors"
+              title="Toggle Theme"
             >
-              <span class="dark:hidden">🌙</span> <span class="hidden dark:inline">☀️</span>
+              <span class="dark:hidden">
+                <svg
+                  class="w-5 h-5 text-orange-500"
+                  fill="none"
+                  viewBox="0 0 24 24"
+                  stroke="currentColor"
+                >
+                  <path
+                    stroke-linecap="round"
+                    stroke-linejoin="round"
+                    stroke-width="2"
+                    d="M12 3v1m0 16v1m9-9h-1M4 12H3m15.364 6.364l-.707-.707M6.343 6.343l-.707-.707m12.728 0l-.707.707M6.343 17.657l-.707.707M16 12a4 4 0 11-8 0 4 4 0 018 0z"
+                  />
+                </svg>
+              </span>
+              <span class="hidden dark:inline">
+                <svg
+                  class="w-5 h-5 text-indigo-400"
+                  fill="none"
+                  viewBox="0 0 24 24"
+                  stroke="currentColor"
+                >
+                  <path
+                    stroke-linecap="round"
+                    stroke-linejoin="round"
+                    stroke-width="2"
+                    d="M20.354 15.354A9 9 0 018.646 3.646 9.003 9.003 0 0012 21a9.003 9.003 0 008.354-5.646z"
+                  />
+                </svg>
+              </span>
             </button>
           </div>
-
-          <a
-            href="/"
-            class="text-sm text-gray-600 dark:text-slate-400 hover:text-gray-900 dark:hover:text-slate-100"
-          >
-            Back to Home
-          </a>
-
+          
           <button
             phx-click="run_flow"
-            class="px-4 py-1.5 text-sm font-bold text-white bg-green-600 hover:bg-green-700 rounded-lg shadow-sm transition-all flex items-center gap-2"
+            class="h-9 px-4 flex items-center gap-2 text-sm font-semibold text-white bg-green-600 hover:bg-green-700 rounded-md transition-colors shadow-none hover:shadow-none"
           >
-            <span>▶</span> Run Flow
+            <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
+              <path
+                fill-rule="evenodd"
+                d="M10 18a8 8 0 100-16 8 8 0 000 16zM9.555 7.168A1 1 0 008 8v4a1 1 0 001.555.832l3-2a1 1 0 000-1.664l-3-2z"
+                clip-rule="evenodd"
+              />
+            </svg> <span>Run Flow</span>
           </button>
         </div>
       </header>
-
+      
       <div class="flex-1 flex overflow-hidden">
         <aside class="w-64 bg-gray-50 dark:bg-slate-800 border-r border-gray-200 dark:border-slate-700 flex flex-col z-10">
           <div class="p-4 border-b border-gray-200 dark:border-slate-700">
@@ -510,7 +580,7 @@ defmodule FusionFlowWeb.FlowLive do
               Nodes
             </h2>
           </div>
-
+          
           <div class="flex-1 overflow-y-auto p-4 space-y-5">
             <%= for {category, nodes} <- @nodes_by_category do %>
               <% {label, color_class} = category_meta(category) %>
@@ -518,7 +588,7 @@ defmodule FusionFlowWeb.FlowLive do
                 <h3 class="text-xs font-semibold text-gray-400 dark:text-slate-500 uppercase tracking-wider mb-2 px-1">
                   {label}
                 </h3>
-
+                
                 <div class="space-y-1.5">
                   <%= for node <- nodes do %>
                     <button
@@ -528,8 +598,7 @@ defmodule FusionFlowWeb.FlowLive do
                     >
                       <span class={"w-5 h-5 rounded flex items-center justify-center text-xs #{color_class}"}>
                         {node.icon}
-                      </span>
-                      {node.name}
+                      </span> {node.name}
                     </button>
                   <% end %>
                 </div>
@@ -537,6 +606,7 @@ defmodule FusionFlowWeb.FlowLive do
             <% end %>
           </div>
         </aside>
+        
         <div
           class="flex-1 relative bg-gray-100 dark:bg-slate-900"
           id="rete-container"
@@ -550,6 +620,7 @@ defmodule FusionFlowWeb.FlowLive do
           </div>
         </div>
       </div>
+      
       <%= if @has_changes do %>
         <div class="absolute bottom-6 left-1/2 transform -translate-x-1/2 bg-white px-6 py-3 rounded-full shadow-lg border border-gray-200 z-50 flex items-center gap-4 animate-bounce-in">
           <span class="text-sm font-medium text-gray-700">You have unsaved changes</span>
@@ -561,7 +632,7 @@ defmodule FusionFlowWeb.FlowLive do
           </button>
         </div>
       <% end %>
-
+      
       <%= if @modal_open do %>
         <div class="fixed inset-0 z-[110] flex items-center justify-center bg-black/60 backdrop-blur-sm">
           <div class="bg-white dark:bg-slate-800 rounded-lg shadow-2xl w-full max-w-4xl flex flex-col h-[80vh] border border-gray-200 dark:border-slate-700 animate-in fade-in zoom-in duration-200">
@@ -579,7 +650,7 @@ defmodule FusionFlowWeb.FlowLive do
                 </span>
                 Edit Code
               </h3>
-
+              
               <button
                 phx-click="close_modal"
                 class="text-gray-400 hover:text-gray-500 transition-colors"
@@ -594,7 +665,7 @@ defmodule FusionFlowWeb.FlowLive do
                 </svg>
               </button>
             </div>
-
+            
             <div class="flex border-b border-gray-200 dark:border-slate-700 px-6 bg-gray-50 dark:bg-slate-800/50">
               <% {label, icon} = language_config(@current_language) %>
               <button
@@ -606,7 +677,7 @@ defmodule FusionFlowWeb.FlowLive do
                 </span>
               </button>
             </div>
-
+            
             <form phx-submit="save_code" class="flex-1 flex flex-col overflow-hidden">
               <div
                 class="flex-1 p-0 overflow-hidden relative bg-[#1e1e1e]"
@@ -621,7 +692,7 @@ defmodule FusionFlowWeb.FlowLive do
                   class="w-full h-full hidden"
                 ><%= @current_code %></textarea>
               </div>
-
+              
               <div class="px-6 py-4 bg-white dark:bg-slate-800 border-t border-gray-200 dark:border-slate-700 flex justify-end gap-3 rounded-b-lg">
                 <button
                   type="button"
@@ -649,7 +720,7 @@ defmodule FusionFlowWeb.FlowLive do
           </div>
         </div>
       <% end %>
-
+      
       <%= if @config_modal_open do %>
         <div class="fixed inset-0 z-[100] flex items-center justify-center bg-black/60 backdrop-blur-sm">
           <div class="bg-white dark:bg-slate-800 rounded-lg shadow-2xl w-full max-w-lg flex flex-col max-h-[90vh] border border-gray-200 dark:border-slate-700 animate-in fade-in zoom-in duration-200">
@@ -667,7 +738,7 @@ defmodule FusionFlowWeb.FlowLive do
                 </span>
                 Configure {@editing_node_data["label"]}
               </h3>
-
+              
               <button
                 phx-click="close_config_modal"
                 class="text-gray-400 hover:text-gray-500 transition-colors"
@@ -682,7 +753,7 @@ defmodule FusionFlowWeb.FlowLive do
                 </svg>
               </button>
             </div>
-
+            
             <form phx-submit="save_node_config" class="flex-1 flex flex-col overflow-hidden">
               <div class="flex-1 p-6 overflow-y-auto space-y-6">
                 <div class="space-y-2">
@@ -696,13 +767,13 @@ defmodule FusionFlowWeb.FlowLive do
                     class="w-full px-3 py-2 border border-gray-300 dark:border-slate-600 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-primary-500 dark:bg-slate-900 dark:text-white transition-all h-10"
                   />
                 </div>
+                
                 <%= if @editing_node_data["controls"] do %>
                   <%= for {key, control} <- @editing_node_data["controls"] do %>
                     <div class="space-y-2">
                       <label class="block text-sm font-semibold text-gray-700 dark:text-slate-300 capitalize">
                         {control["label"] || String.replace(key, "_", " ")}
                       </label>
-
                       <%= case control["type"] do %>
                         <% "select" -> %>
                           <select
@@ -732,7 +803,6 @@ defmodule FusionFlowWeb.FlowLive do
                               readonly
                               class="w-full px-3 py-2 font-mono text-sm text-gray-500 border border-gray-300 dark:border-slate-600 rounded-lg bg-gray-50 dark:bg-slate-900 dark:text-gray-400 cursor-not-allowed resize-none"
                             >{control["value"]}</textarea>
-
                             <button
                               type="button"
                               phx-click="open_code_editor_from_config"
@@ -764,6 +834,7 @@ defmodule FusionFlowWeb.FlowLive do
                                 {String.slice(control["value"] || "", 0, 50)}...
                               </div>
                             </div>
+                            
                             <button
                               type="button"
                               phx-click="open_code_editor_from_config"
@@ -786,8 +857,7 @@ defmodule FusionFlowWeb.FlowLive do
                                 />
                               </svg>
                               Edit Code
-                            </button>
-                            <input type="hidden" name={key} value={control["value"]} />
+                            </button> <input type="hidden" name={key} value={control["value"]} />
                           </div>
                         <% _ -> %>
                           <%= if String.length(to_string(control["value"])) > 50 do %>
@@ -813,7 +883,7 @@ defmodule FusionFlowWeb.FlowLive do
                   </p>
                 <% end %>
               </div>
-
+              
               <div class="px-6 py-5 bg-white dark:bg-slate-800 border-t border-gray-200 dark:border-slate-700 flex justify-end gap-3 rounded-b-lg">
                 <button
                   type="button"
@@ -833,7 +903,7 @@ defmodule FusionFlowWeb.FlowLive do
           </div>
         </div>
       <% end %>
-
+      
       <%= if @error_modal_open do %>
         <div class="fixed inset-0 z-[120] flex items-center justify-center bg-black/60 backdrop-blur-sm">
           <div class="bg-white dark:bg-slate-800 rounded-lg shadow-2xl w-full max-w-2xl flex flex-col max-h-[80vh] border border-red-200 dark:border-red-900 animate-in fade-in zoom-in duration-200">
@@ -849,7 +919,7 @@ defmodule FusionFlowWeb.FlowLive do
                 </svg>
                 Node Execution Error
               </h3>
-
+              
               <button
                 phx-click="close_error_modal"
                 class="text-red-400 hover:text-red-600 dark:hover:text-red-300 transition-colors"
@@ -864,25 +934,27 @@ defmodule FusionFlowWeb.FlowLive do
                 </svg>
               </button>
             </div>
-
+            
             <div class="p-6 overflow-y-auto">
               <div class="mb-4">
                 <p class="text-sm font-medium text-gray-500 dark:text-gray-400 mb-1">Node ID:</p>
+                
                 <code class="px-2 py-1 bg-gray-100 dark:bg-slate-900 rounded text-sm text-gray-700 dark:text-gray-300 font-mono">
                   {@current_error_node_id}
                 </code>
               </div>
-
+              
               <div>
                 <p class="text-sm font-medium text-gray-500 dark:text-gray-400 mb-1">
                   Error Message:
                 </p>
+                
                 <div class="p-4 bg-gray-50 dark:bg-slate-900/50 rounded-lg border border-gray-200 dark:border-slate-700 overflow-x-auto">
                   <pre class="text-sm text-red-600 dark:text-red-400 font-mono whitespace-pre-wrap">{@current_error_message}</pre>
                 </div>
               </div>
             </div>
-
+            
             <div class="px-6 py-4 border-t border-gray-200 dark:border-slate-700 flex justify-end">
               <button
                 phx-click="close_error_modal"
@@ -894,7 +966,7 @@ defmodule FusionFlowWeb.FlowLive do
           </div>
         </div>
       <% end %>
-
+      
       <%= if @dependencies_modal_open do %>
         <div class="fixed inset-0 z-[100] flex items-center justify-center bg-black/50 backdrop-blur-sm">
           <div class="bg-white dark:bg-gray-800 rounded-lg shadow-xl w-full max-w-4xl flex flex-col max-h-[90vh]">
@@ -902,7 +974,7 @@ defmodule FusionFlowWeb.FlowLive do
               <h3 class="text-lg font-semibold text-gray-900 dark:text-gray-100">
                 Project Dependencies
               </h3>
-
+              
               <button phx-click="close_dependencies_modal" class="text-gray-400 hover:text-gray-500">
                 <svg class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                   <path
@@ -914,6 +986,7 @@ defmodule FusionFlowWeb.FlowLive do
                 </svg>
               </button>
             </div>
+            
             <div class="flex border-b border-gray-200 dark:border-gray-700 px-6 pt-2">
               <button
                 phx-click="switch_dependencies_tab"
@@ -937,7 +1010,7 @@ defmodule FusionFlowWeb.FlowLive do
                 JavaScript (NPM)
               </button>
             </div>
-
+            
             <div class="p-6 flex-1 overflow-y-auto">
               <%= if @dependencies_tab == "elixir" do %>
                 <div class="space-y-6">
@@ -953,7 +1026,7 @@ defmodule FusionFlowWeb.FlowLive do
                             />
                           </svg>
                         </div>
-
+                        
                         <div class="ml-3">
                           <p class="text-sm text-yellow-700 dark:text-yellow-200">
                             The following dependencies require a server restart: <span class="font-bold"><%= Enum.join(@pending_restart_deps, ", ") %></span>.
@@ -963,6 +1036,7 @@ defmodule FusionFlowWeb.FlowLive do
                       </div>
                     </div>
                   <% end %>
+                  
                   <div class="relative">
                     <form phx-submit="search_dependency" phx-change="search_dependency">
                       <input
@@ -989,12 +1063,13 @@ defmodule FusionFlowWeb.FlowLive do
                       </svg>
                     </form>
                   </div>
+                  
                   <%= if @search_results != [] do %>
                     <div>
                       <h4 class="text-xs font-semibold text-gray-500 uppercase tracking-wider mb-3">
                         Search Results
                       </h4>
-
+                      
                       <div class="grid grid-cols-1 gap-3">
                         <%= for pkg <- @search_results do %>
                           <div class="flex items-center justify-between p-3 border border-gray-200 dark:border-gray-700 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-700/50">
@@ -1007,10 +1082,10 @@ defmodule FusionFlowWeb.FlowLive do
                                   {pkg.latest_version}
                                 </span>
                               </div>
-
+                              
                               <p class="text-sm text-gray-500 mt-1 line-clamp-1">{pkg.description}</p>
                             </div>
-
+                            
                             <%= if pkg.name in @pending_restart_deps do %>
                               <button
                                 disabled
@@ -1033,11 +1108,12 @@ defmodule FusionFlowWeb.FlowLive do
                       </div>
                     </div>
                   <% end %>
+                  
                   <div>
                     <h4 class="text-xs font-semibold text-gray-500 uppercase tracking-wider mb-3">
                       Installed in mix.exs
                     </h4>
-
+                    
                     <div class="border rounded-lg overflow-hidden border-gray-200 dark:border-gray-700">
                       <table class="min-w-full divide-y divide-gray-200 dark:divide-gray-700">
                         <thead class="bg-gray-50 dark:bg-gray-800">
@@ -1045,28 +1121,28 @@ defmodule FusionFlowWeb.FlowLive do
                             <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                               Name
                             </th>
-
+                            
                             <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                               Version
                             </th>
-
+                            
                             <th class="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">
                               Action
                             </th>
                           </tr>
                         </thead>
-
+                        
                         <tbody class="bg-white dark:bg-gray-900 divide-y divide-gray-200 dark:divide-gray-700">
                           <%= for dep <- @installed_deps do %>
                             <tr>
                               <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900 dark:text-white">
                                 {dep.name}
                               </td>
-
+                              
                               <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
                                 {dep.version}
                               </td>
-
+                              
                               <td class="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
                                 <%= if dep.name in @pending_restart_deps do %>
                                   <span class="text-yellow-600 font-bold flex justify-end gap-1 items-center">
@@ -1125,6 +1201,7 @@ defmodule FusionFlowWeb.FlowLive do
           <div class="bg-white dark:bg-slate-800 rounded-lg shadow-xl w-3/4 max-w-2xl max-h-[80vh] flex flex-col border border-gray-200 dark:border-slate-700 animate-in fade-in zoom-in duration-200">
             <div class="flex items-center justify-between p-4 border-b border-gray-200 dark:border-slate-700">
               <h3 class="text-lg font-semibold text-gray-900 dark:text-white">Execution Result</h3>
+              
               <button
                 phx-click="close_result_modal"
                 class="text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-200"
@@ -1140,6 +1217,7 @@ defmodule FusionFlowWeb.FlowLive do
                 </svg>
               </button>
             </div>
+            
             <div class="p-6 overflow-y-auto max-h-[60vh] bg-white dark:bg-slate-900">
               <%= if @execution_result && map_size(@execution_result) > 0 do %>
                 <div class="space-y-4">
@@ -1151,6 +1229,7 @@ defmodule FusionFlowWeb.FlowLive do
                             {key}
                           </span>
                         </div>
+                        
                         <div class="flex-1 min-w-0">
                           <div class="text-sm text-gray-900 dark:text-slate-100 font-mono bg-white dark:bg-slate-950 rounded px-2 py-1 border border-gray-200 dark:border-slate-700 overflow-x-auto">
                             <%= if is_binary(value) do %>
@@ -1181,15 +1260,18 @@ defmodule FusionFlowWeb.FlowLive do
                       />
                     </svg>
                   </div>
+                  
                   <h3 class="text-base font-medium text-gray-900 dark:text-slate-200">
                     No output data
                   </h3>
+                  
                   <p class="mt-1 text-sm text-gray-500 dark:text-slate-400">
                     The flow finished without producing any visible output.
                   </p>
                 </div>
               <% end %>
             </div>
+            
             <div class="p-4 border-t border-gray-200 dark:border-slate-700 flex justify-end">
               <button
                 phx-click="close_result_modal"
