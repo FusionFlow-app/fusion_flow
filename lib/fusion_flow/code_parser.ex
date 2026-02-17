@@ -69,6 +69,26 @@ defmodule FusionFlow.CodeParser do
     }
   end
 
+  defp parse_ui_expression({:input, _, [name | opts]}) do
+    label = extract_option(opts, :label)
+
+    %{
+      type: "input",
+      name: Atom.to_string(name),
+      label: label || name |> Atom.to_string() |> String.capitalize()
+    }
+  end
+
+  defp parse_ui_expression({:output, _, [name | opts]}) do
+    label = extract_option(opts, :label)
+
+    %{
+      type: "output",
+      name: Atom.to_string(name),
+      label: label || name |> Atom.to_string() |> String.capitalize()
+    }
+  end
+
   defp parse_ui_expression(_), do: nil
 
   defp extract_list_values({:__block__, _, values}) do

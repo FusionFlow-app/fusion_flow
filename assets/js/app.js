@@ -28,6 +28,13 @@ const hooks = {
         }
       });
 
+      this.handleEvent("request_save_and_run", async () => {
+        if (editor.exportData) {
+          const data = await editor.exportData();
+          this.pushEvent("save_and_run", { data });
+        }
+      });
+
       this.handleEvent("load_graph_data", async ({ nodes, connections, definitions }) => {
         console.log("LiveView: Received load_graph_data", { nodes, connections, definitions });
         if (editor.importData) {
@@ -49,6 +56,18 @@ const hooks = {
         }
       });
 
+      this.handleEvent("update_node_label", ({ nodeId, label }) => {
+        if (editor.updateNodeLabel) {
+          editor.updateNodeLabel(nodeId, label);
+        }
+      });
+
+      this.handleEvent("update_node_sockets", ({ nodeId, inputs, outputs }) => {
+        if (editor.updateNodeSockets) {
+          editor.updateNodeSockets(nodeId, { inputs, outputs });
+        }
+      });
+
       if (editor.onChange) {
         editor.onChange(() => {
           this.pushEvent("graph_changed", {});
@@ -56,8 +75,14 @@ const hooks = {
       }
 
       if (editor.onCodeEdit) {
-        editor.onCodeEdit((nodeId, code, fieldName, language) => {
-          this.pushEvent("open_code_editor", { nodeId, code, fieldName, language });
+        editor.onCodeEdit((nodeId, code, fieldName, language, variables) => {
+          this.pushEvent("open_code_editor", { nodeId, code, fieldName, language, variables });
+        });
+      }
+
+      if (editor.onErrorDetails) {
+        editor.onErrorDetails((nodeId, message) => {
+          this.pushEvent("show_error_details", { nodeId, message });
         });
       }
 
@@ -66,6 +91,21 @@ const hooks = {
           this.pushEvent("open_node_config", { nodeId, nodeData });
         });
       }
+
+      this.handleEvent("highlight_node_error", ({ nodeId, message }) => {
+        console.log("LiveView: highlight_node_error received", { nodeId, message });
+        if (editor.addNodeError) {
+          editor.addNodeError(nodeId, message);
+        } else {
+          console.error("Editor addNodeError method missing!");
+        }
+      });
+
+      this.handleEvent("clear_node_errors", () => {
+        if (editor.clearNodeErrors) {
+          editor.clearNodeErrors();
+        }
+      });
 
       this.destroyed = () => {
         if (editor.destroy) editor.destroy();

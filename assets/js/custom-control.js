@@ -125,9 +125,12 @@ export class CustomControlElement extends LitElement {
           @pointerdown=${(e) => e.stopPropagation()}
           @change=${(e) => this.onChange && this.onChange(e.target.value)}
           .value=${this.value || ''}
-          style="width: 100%; border-radius: 4px; background-color: white; padding: 4px 8px; border: 1px solid #999; font-size: 14px; color: #333; box-sizing: border-box;"
         >
-          ${options.map(opt => html`<option value=${opt.value} ?selected=${this.value === opt.value}>${opt.label}</option>`)}
+          ${options.map(opt => {
+        const value = typeof opt === 'object' ? opt.value : opt;
+        const label = typeof opt === 'object' ? opt.label : opt;
+        return html`<option value=${value} ?selected=${this.value === value}>${label}</option>`
+      })}
         </select>
       `;
     }

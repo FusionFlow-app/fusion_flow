@@ -111,4 +111,15 @@ defmodule FusionFlow.Flows do
       flow -> {:ok, flow}
     end
   end
+
+  alias FusionFlow.Flows.ExecutionLog
+
+  @doc """
+  Creates a flow execution log.
+  """
+  def create_execution_log(attrs \\ %{}) do
+    %ExecutionLog{}
+    |> ExecutionLog.changeset(attrs)
+    |> Repo.insert()
+  end
 end

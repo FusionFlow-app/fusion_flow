@@ -49,6 +49,16 @@ export class CustomNodeElement extends LitElement {
         box-shadow: 0 0 0 4px rgba(99, 102, 241, 0.3), 0 20px 25px -5px rgba(0, 0, 0, 0.5);
       }
 
+      :host(.error) {
+        border-color: #ef4444 !important;
+        box-shadow: 0 0 0 4px rgba(239, 68, 68, 0.2), 0 20px 25px -5px rgba(0, 0, 0, 0.1);
+      }
+
+      :host-context(.dark):host(.error) {
+        border-color: #ef4444 !important;
+        box-shadow: 0 0 0 4px rgba(239, 68, 68, 0.3), 0 20px 25px -5px rgba(0, 0, 0, 0.5);
+      }
+
       .title {
         font-size: 15px;
         font-weight: 700;
@@ -180,6 +190,37 @@ export class CustomNodeElement extends LitElement {
           transform: scale(1.1) rotate(45deg);
           box-shadow: 0 6px 8px rgba(0,0,0,0.15);
       }
+      
+      .error-btn {
+          position: absolute;
+          top: -10px;
+          right: 50px;
+          background: #ef4444;
+          color: white;
+          border: 2px solid var(--node-bg, white);
+          border-radius: 50%;
+          width: 28px;
+          height: 28px;
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          cursor: pointer;
+          box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+          z-index: 15;
+          animation: pulse 2s infinite;
+          transition: transform 0.2s;
+      }
+      
+      .error-btn:hover {
+          transform: scale(1.1);
+          background: #dc2626;
+      }
+      
+      @keyframes pulse {
+        0% { box-shadow: 0 0 0 0 rgba(239, 68, 68, 0.7); }
+        70% { box-shadow: 0 0 0 6px rgba(239, 68, 68, 0); }
+        100% { box-shadow: 0 0 0 0 rgba(239, 68, 68, 0); }
+      }
 
       .output-socket {
         position: absolute;
@@ -211,13 +252,17 @@ export class CustomNodeElement extends LitElement {
       data: { type: Object },
       emit: { attribute: false },
       selected: { type: Boolean, reflect: true },
-      onConfig: { attribute: false }
+      onConfig: { attribute: false },
+      error: { type: String, reflect: true },
+      onErrorDetails: { attribute: false },
+      onControlChange: { attribute: false }
     };
   }
 
   render() {
     const inputs = Object.entries(this.data.inputs);
     const outputs = Object.entries(this.data.outputs);
+    const controls = Object.entries(this.data.controls);
 
     return html`
         <div 
@@ -243,13 +288,46 @@ export class CustomNodeElement extends LitElement {
               <path fill-rule="evenodd" d="M11.078 2.25c-.917 0-1.699.663-1.85 1.567L9.05 4.889c-.02.12-.115.26-.297.348a7.493 7.493 0 00-.986.57c-.166.115-.334.126-.45.083L6.3 5.508a1.875 1.875 0 00-2.282.819l-.922 1.597a1.875 1.875 0 00.432 2.385l.84.692c.095.078.17.229.154.43a7.598 7.598 0 000 1.139c.015.2-.059.352-.153.43l-.841.692a1.875 1.875 0 00-.432 2.385l.922 1.597a1.875 1.875 0 002.282.818l1.019-.382c.115-.043.283-.031.45.082.312.214.641.405.985.57.182.088.277.228.297.35l.178 1.071c.151.904.933 1.567 1.85 1.567h1.844c.916 0 1.699-.663 1.85-1.567l.178-1.072c.02-.12.114-.26.297-.349.344-.165.673-.356.985-.57.167-.114.335-.125.45-.082l1.02.382a1.875 1.875 0 002.28-.819l.922-1.597a1.875 1.875 0 00-.432-2.385l-.84-.692c-.095-.078-.17-.229-.154-.43a7.614 7.614 0 000-1.139c-.016-.2.059-.352.153-.43l.84-.692c.708-.582.891-1.59.433-2.385l-.922-1.597a1.875 1.875 0 00-2.282-.818l-1.02.382c-.114.043-.282.031-.449-.083a7.49 7.49 0 00-.985-.57c-.183-.087-.277-.227-.297-.348l-.179-1.072a1.875 1.875 0 00-1.85-1.567h-1.843zM12 15.75a3.75 3.75 0 100-7.5 3.75 3.75 0 000 7.5z" clip-rule="evenodd" />
             </svg>
         </div>
+
+        ${this.error ? html`
+        <div 
+            class="error-btn"
+            @pointerdown=${(e) => e.stopPropagation()}
+            @click=${(e) => {
+          e.stopPropagation();
+          if (this.onErrorDetails) this.onErrorDetails();
+        }}
+            title="Show Error Details"
+        >
+            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" class="w-4 h-4">
+              <path fill-rule="evenodd" d="M9.401 3.003c1.155-2 4.043-2 5.197 0l7.355 12.748c1.154 2-.29 4.5-2.599 4.5H4.645c-2.309 0-3.752-2.5-2.598-4.5L9.4 3.003zM12 8.25a.75.75 0 01.75.75v3.75a.75.75 0 01-1.5 0V9a.75.75 0 01.75-.75zm0 8.25a.75.75 0 100-1.5.75.75 0 000 1.5z" clip-rule="evenodd" />
+            </svg>
+        </div>
+        ` : ''}
         
         <div class="title" data-testid="title">${this.data.label}</div>
         
         <div class="content">
+          ${controls.map(([key, control]) => html`
+            <div class="control" data-testid="control-${key}">
+              <custom-control
+                .type=${control.type}
+                .value=${control.value}
+                .label=${control.label}
+                .options=${control.options}
+                .readonly=${control.readonly}
+                .onChange=${(val) => {
+            this.onControlChange && this.onControlChange(key, val);
+            this.requestUpdate();
+          }}
+                .onClick=${() => control.onClick && control.onClick()}
+              ></custom-control>
+            </div>
+          `)}
+
           ${outputs.map(([key, output]) => {
-        const outputLabel = output.label || key;
-        return html`
+            const outputLabel = output.label || key;
+            return html`
               <div class="output" data-testid="output-${key}">
                 ${outputLabel !== 'exec' ? html`<span class="output-title">${outputLabel}</span>` : ''}
                 <custom-socket 
@@ -261,8 +339,8 @@ export class CustomNodeElement extends LitElement {
           `})}
 
           ${inputs.map(([key, input]) => {
-          const inputLabel = input.label || key;
-          return html`
+              const inputLabel = input.label || key;
+              return html`
               <div class="input" data-testid="input-${key}">
                 <custom-socket 
                     .data=${{ payload: input }} 

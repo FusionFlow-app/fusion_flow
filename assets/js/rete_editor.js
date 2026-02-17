@@ -78,6 +78,30 @@ export async function createEditor(container) {
                                     editor.triggerNodeConfig(node.id, cleanData);
                                 }
                             }}
+                .onErrorDetails=${() => {
+                                if (editor.triggerErrorDetails) {
+                                    const node = data.payload;
+                                    const view = area.nodeViews.get(node.id);
+                                    let message = "Error details not available";
+                                    if (view && view.element) {
+                                        const customNode = view.element.querySelector('custom-node');
+                                        if (customNode && customNode.error) {
+                                            message = customNode.error;
+                                        }
+                                    }
+                                    editor.triggerErrorDetails(node.id, message);
+                                }
+                            }}
+                            }}
+                .onControlChange=${(key, value) => {
+                                if (editor.triggerChange) {
+                                    const node = data.payload;
+                                    if (node.controls[key]) {
+                                        node.controls[key].value = value;
+                                        editor.triggerChange();
+                                    }
+                                }
+                            }}
             ></custom-node>`;
                 },
                 connection() {
@@ -125,9 +149,15 @@ export async function createEditor(container) {
         }
 
         const node = new ClassicPreset.Node(definition.name);
+        node.type = definition.name;
+
         if (data && data.id) {
             node.id = data.id;
         }
+        if (data && data.label) {
+            node.label = data.label;
+        }
+
         console.log("Adding node:", name, definition);
 
         if (definition.inputs) {
@@ -163,7 +193,34 @@ export async function createEditor(container) {
 
                 control.onClick = () => {
                     if (editor.triggerCodeEdit) {
-                        editor.triggerCodeEdit(node.id, node.controls[field.name].value, field.name, control.language);
+                        const getUpstreamVariables = (startNodeId) => {
+                            const variables = new Set();
+                            const visited = new Set();
+                            const queue = [startNodeId];
+
+                            while (queue.length > 0) {
+                                const currentId = queue.shift();
+                                if (visited.has(currentId)) continue;
+                                visited.add(currentId);
+
+                                const currentNode = editor.getNode(currentId);
+                                if (!currentNode) continue;
+
+                                if ((currentNode.type === 'Variable' || currentNode.label === 'Variable') && currentNode.id !== startNodeId) {
+                                    const varName = currentNode.controls.var_name?.value;
+                                    if (varName) variables.add(varName);
+                                }
+
+                                const connections = editor.getConnections().filter(c => c.target === currentId);
+                                for (const conn of connections) {
+                                    queue.push(conn.source);
+                                }
+                            }
+                            return Array.from(variables);
+                        };
+
+                        const variables = getUpstreamVariables(node.id);
+                        editor.triggerCodeEdit(node.id, node.controls[field.name].value, field.name, control.language, variables);
                     }
                 };
             } else {
@@ -194,13 +251,16 @@ export async function createEditor(container) {
             await editor.clear();
 
             for (const nodeData of nodes) {
-                const definition = definitions[nodeData.label];
+                // Use type if available, otherwise fallback to label (legacy support)
+                const nodeType = nodeData.type || nodeData.label;
+                const definition = definitions[nodeType];
+
                 if (!definition) {
-                    console.warn(`Definition not found for node type: ${nodeData.label}`);
+                    console.warn(`Definition not found for node type: ${nodeType}`);
                     continue;
                 }
                 console.log(`ReteEditor: Restoring node ${nodeData.label} (${nodeData.id})`);
-                await processAddNode(nodeData.label, definition, nodeData);
+                await processAddNode(nodeType, definition, nodeData);
             }
 
             for (const connData of connections) {
@@ -239,6 +299,9 @@ export async function createEditor(container) {
         onNodeConfig: (cb) => {
             editor.triggerNodeConfig = cb;
         },
+        onErrorDetails: (cb) => {
+            editor.triggerErrorDetails = cb;
+        },
         updateNodeCode: async (nodeId, code, fieldName) => {
             const node = editor.getNode(nodeId);
             if (!node) return;
@@ -263,6 +326,63 @@ export async function createEditor(container) {
             await area.update('node', nodeId);
             processChange();
         },
+        updateNodeLabel: async (nodeId, label) => {
+            const node = editor.getNode(nodeId);
+            if (!node) return;
+
+            node.label = label;
+            await area.update('node', nodeId);
+            processChange();
+        },
+        updateNodeSockets: async (nodeId, { inputs, outputs }) => {
+            const node = editor.getNode(nodeId);
+            if (!node) return;
+
+            // Update inputs
+            const currentInputs = Object.keys(node.inputs);
+
+            // Remove inputs that are no longer present
+            for (const inputKey of currentInputs) {
+                if (!inputs.includes(inputKey)) {
+                    const connections = editor.getConnections().filter(c => c.target === nodeId && c.targetInput === inputKey);
+                    for (const conn of connections) {
+                        await editor.removeConnection(conn.id);
+                    }
+                    node.removeInput(inputKey);
+                }
+            }
+
+            // Add new inputs
+            for (const inputKey of inputs) {
+                if (!node.inputs[inputKey]) {
+                    node.addInput(inputKey, new ClassicPreset.Input(socket));
+                }
+            }
+
+            // Update outputs
+            const currentOutputs = Object.keys(node.outputs);
+
+            // Remove outputs that are no longer present
+            for (const outputKey of currentOutputs) {
+                if (!outputs.includes(outputKey)) {
+                    const connections = editor.getConnections().filter(c => c.source === nodeId && c.sourceOutput === outputKey);
+                    for (const conn of connections) {
+                        await editor.removeConnection(conn.id);
+                    }
+                    node.removeOutput(outputKey);
+                }
+            }
+
+            // Add new outputs
+            for (const outputKey of outputs) {
+                if (!node.outputs[outputKey]) {
+                    node.addOutput(outputKey, new ClassicPreset.Output(socket));
+                }
+            }
+
+            await area.update('node', nodeId);
+            processChange();
+        },
         exportData: async () => {
             const nodes = [];
             const connections = [];
@@ -276,6 +396,7 @@ export async function createEditor(container) {
 
                 nodes.push({
                     id: node.id,
+                    type: node.type || node.label, // Use saved type, fallback to label
                     label: node.label,
                     controls,
                     position: area.nodeViews.get(node.id)?.position || { x: 0, y: 0 }
@@ -292,6 +413,37 @@ export async function createEditor(container) {
             }
 
             return { nodes, connections };
-        }
+        },
+        addNodeError: (nodeId, message) => {
+            console.log("ReteEditor: addNodeError called", { nodeId, message });
+            const view = area.nodeViews.get(nodeId);
+            console.log("ReteEditor: Found view?", view);
+            if (view && view.element) {
+                console.log("ReteEditor: Adding .error class to element", view.element);
+                const customNode = view.element.querySelector('custom-node');
+                if (customNode) {
+                    customNode.classList.add('error');
+                    customNode.error = message;
+                } else {
+                    // Fallback if custom-node is not found (should not happen with Lit render)
+                    view.element.classList.add('error');
+                }
+                // Optional: Show message somehow? For now just border.
+            } else {
+                console.warn("ReteEditor: View or element not found for nodeId", nodeId);
+            }
+        },
+        clearNodeErrors: () => {
+            area.nodeViews.forEach(view => {
+                if (view.element) {
+                    view.element.classList.remove('error');
+                    const customNode = view.element.querySelector('custom-node');
+                    if (customNode) {
+                        customNode.classList.remove('error');
+                        customNode.error = null;
+                    }
+                }
+            });
+        },
     };
 }

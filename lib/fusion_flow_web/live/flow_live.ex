@@ -25,7 +25,15 @@ defmodule FusionFlowWeb.FlowLive do
        config_modal_open: false,
        editing_node_data: nil,
        nodes_by_category: FusionFlow.Nodes.Registry.nodes_by_category(),
-       current_flow: flow
+       current_flow: flow,
+       current_flow: flow,
+       execution_result: nil,
+       show_result_modal: false,
+       error_modal_open: false,
+       current_error_message: nil,
+       current_error_message: nil,
+       current_error_node_id: nil,
+       available_variables: []
      )}
   end
 
@@ -35,7 +43,10 @@ defmodule FusionFlowWeb.FlowLive do
     nodes = flow.nodes || []
     connections = flow.connections || []
 
-    unique_node_types = nodes |> Enum.map(& &1["label"]) |> Enum.uniq()
+    unique_node_types =
+      nodes
+      |> Enum.map(fn node -> node["type"] || node["label"] end)
+      |> Enum.uniq()
 
     definitions =
       Enum.reduce(unique_node_types, %{}, fn type, acc ->
@@ -57,6 +68,50 @@ defmodule FusionFlowWeb.FlowLive do
   end
 
   @impl true
+  def handle_event("run_flow", _params, socket) do
+    {:noreply, push_event(socket, "request_save_and_run", %{})}
+  end
+
+  @impl true
+  def handle_event("save_and_run", %{"data" => data}, socket) do
+    case FusionFlow.Flows.update_flow(socket.assigns.current_flow, data) do
+      {:ok, updated_flow} ->
+        case FusionFlow.Nodes.Runner.run(updated_flow) do
+          {:ok, result_context} ->
+            {:noreply,
+             socket
+             |> assign(current_flow: updated_flow, has_changes: false)
+             |> put_flash(:info, "Flow saved and executed successfully!")
+             |> push_event("clear_node_errors", %{})
+             |> assign(execution_result: result_context, show_result_modal: true)}
+
+          {:error, reason, node_id} ->
+            error_msg = if is_binary(reason), do: reason, else: inspect(reason)
+
+            socket =
+              socket
+              |> assign(current_flow: updated_flow, has_changes: false)
+              |> put_flash(:error, "Flow saved, but execution failed: #{error_msg}")
+              |> push_event("highlight_node_error", %{
+                nodeId: to_string(node_id),
+                message: error_msg
+              })
+
+            {:noreply, socket}
+
+          {:error, reason} ->
+            {:noreply,
+             socket
+             |> assign(current_flow: updated_flow, has_changes: false)
+             |> put_flash(:error, "Flow saved, but execution failed: #{inspect(reason)}")}
+        end
+
+      {:error, _changeset} ->
+        {:noreply, put_flash(socket, :error, "Failed to save flow before running.")}
+    end
+  end
+
+  @impl true
   def handle_event("graph_changed", _params, socket) do
     {:noreply, assign(socket, has_changes: true)}
   end
@@ -64,23 +119,33 @@ defmodule FusionFlowWeb.FlowLive do
   @impl true
   def handle_event(
         "open_code_editor",
-        %{"nodeId" => node_id, "code" => code, "fieldName" => field_name, "language" => language},
+        %{"nodeId" => node_id, "code" => code, "fieldName" => field_name, "language" => language} =
+          params,
         socket
       ) do
+    variables = params["variables"] || []
+
     {:noreply,
      assign(socket,
        modal_open: true,
        current_node_id: node_id,
        current_code: code,
        current_field_name: field_name,
-       current_language: language
+       current_language: language,
+       available_variables: variables
      )}
   end
 
   def handle_event("open_code_editor", %{"nodeId" => node_id, "code" => code}, socket) do
     handle_event(
       "open_code_editor",
-      %{"nodeId" => node_id, "code" => code, "fieldName" => "code", "language" => "elixir"},
+      %{
+        "nodeId" => node_id,
+        "code" => code,
+        "fieldName" => "code",
+        "language" => "elixir",
+        "variables" => []
+      },
       socket
     )
   end
@@ -123,7 +188,45 @@ defmodule FusionFlowWeb.FlowLive do
   @impl true
   def handle_event("save_node_config", params, socket) do
     node_id = socket.assigns.current_node_id
-    config_data = Map.drop(params, ["_csrf_token", "_target"])
+    config_data = Map.drop(params, ["_csrf_token", "_target", "node_label"])
+    node_label = params["node_label"]
+
+    socket =
+      if node_label && node_label != socket.assigns.editing_node_data["label"] do
+        push_event(socket, "update_node_label", %{nodeId: node_id, label: node_label})
+      else
+        socket
+      end
+
+    # Check for code fields to update inputs/outputs
+    socket =
+      Enum.reduce(config_data, socket, fn {key, value}, acc_socket ->
+        if String.starts_with?(value, "ui do") do
+          case FusionFlow.CodeParser.parse_ui_definition(value) do
+            {:ok, ui_fields} ->
+              inputs =
+                Enum.filter(ui_fields, &(&1.type == "input")) |> Enum.map(& &1.name)
+
+              outputs =
+                Enum.filter(ui_fields, &(&1.type == "output")) |> Enum.map(& &1.name)
+
+              if inputs != [] or outputs != [] do
+                push_event(acc_socket, "update_node_sockets", %{
+                  nodeId: node_id,
+                  inputs: inputs,
+                  outputs: outputs
+                })
+              else
+                acc_socket
+              end
+
+            _ ->
+              acc_socket
+          end
+        else
+          acc_socket
+        end
+      end)
 
     socket =
       socket
@@ -160,14 +263,14 @@ defmodule FusionFlowWeb.FlowLive do
 
     socket =
       if socket.assigns.config_modal_open do
-        updated_controls =
-          put_in(
-            socket.assigns.editing_node_data["controls"][field_name]["value"],
-            code
-          )
+        editing_node_data = socket.assigns.editing_node_data
 
         updated_node_data =
-          Map.put(socket.assigns.editing_node_data, "controls", updated_controls)
+          put_in(
+            editing_node_data,
+            ["controls", field_name, "value"],
+            code
+          )
 
         socket
         |> assign(
@@ -324,6 +427,31 @@ defmodule FusionFlowWeb.FlowLive do
   end
 
   @impl true
+  def handle_event("show_error_details", %{"nodeId" => node_id, "message" => message}, socket) do
+    {:noreply,
+     assign(socket,
+       error_modal_open: true,
+       current_error_node_id: node_id,
+       current_error_message: message
+     )}
+  end
+
+  @impl true
+  def handle_event("close_error_modal", _params, socket) do
+    {:noreply,
+     assign(socket,
+       error_modal_open: false,
+       current_error_node_id: nil,
+       current_error_message: nil
+     )}
+  end
+
+  @impl true
+  def handle_event("close_result_modal", _params, socket) do
+    {:noreply, assign(socket, show_result_modal: false)}
+  end
+
+  @impl true
   def render(assigns) do
     ~H"""
     <div class="w-full h-[100vh] flex flex-col bg-white dark:bg-slate-900 overflow-hidden relative">
@@ -365,6 +493,13 @@ defmodule FusionFlowWeb.FlowLive do
           >
             Back to Home
           </a>
+
+          <button
+            phx-click="run_flow"
+            class="px-4 py-1.5 text-sm font-bold text-white bg-green-600 hover:bg-green-700 rounded-lg shadow-sm transition-all flex items-center gap-2"
+          >
+            <span>▶</span> Run Flow
+          </button>
         </div>
       </header>
 
@@ -478,6 +613,7 @@ defmodule FusionFlowWeb.FlowLive do
                 id="code-editor-wrapper"
                 phx-update="ignore"
                 phx-hook="CodeEditor"
+                data-variables={Jason.encode!(@available_variables)}
               >
                 <textarea
                   id="code_textarea"
@@ -549,6 +685,17 @@ defmodule FusionFlowWeb.FlowLive do
 
             <form phx-submit="save_node_config" class="flex-1 flex flex-col overflow-hidden">
               <div class="flex-1 p-6 overflow-y-auto space-y-6">
+                <div class="space-y-2">
+                  <label class="block text-sm font-semibold text-gray-700 dark:text-slate-300">
+                    Node Name
+                  </label>
+                  <input
+                    type="text"
+                    name="node_label"
+                    value={@editing_node_data["label"]}
+                    class="w-full px-3 py-2 border border-gray-300 dark:border-slate-600 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-primary-500 dark:bg-slate-900 dark:text-white transition-all h-10"
+                  />
+                </div>
                 <%= if @editing_node_data["controls"] do %>
                   <%= for {key, control} <- @editing_node_data["controls"] do %>
                     <div class="space-y-2">
@@ -683,6 +830,67 @@ defmodule FusionFlowWeb.FlowLive do
                 </button>
               </div>
             </form>
+          </div>
+        </div>
+      <% end %>
+
+      <%= if @error_modal_open do %>
+        <div class="fixed inset-0 z-[120] flex items-center justify-center bg-black/60 backdrop-blur-sm">
+          <div class="bg-white dark:bg-slate-800 rounded-lg shadow-2xl w-full max-w-2xl flex flex-col max-h-[80vh] border border-red-200 dark:border-red-900 animate-in fade-in zoom-in duration-200">
+            <div class="flex items-center justify-between px-6 py-4 border-b border-red-100 dark:border-red-900/50 bg-red-50 dark:bg-red-900/10 rounded-t-lg">
+              <h3 class="text-lg font-bold text-red-700 dark:text-red-400 flex items-center gap-2">
+                <svg class="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path
+                    stroke-linecap="round"
+                    stroke-linejoin="round"
+                    stroke-width="2"
+                    d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"
+                  />
+                </svg>
+                Node Execution Error
+              </h3>
+
+              <button
+                phx-click="close_error_modal"
+                class="text-red-400 hover:text-red-600 dark:hover:text-red-300 transition-colors"
+              >
+                <svg class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path
+                    stroke-linecap="round"
+                    stroke-linejoin="round"
+                    stroke-width="2"
+                    d="M6 18L18 6M6 6l12 12"
+                  />
+                </svg>
+              </button>
+            </div>
+
+            <div class="p-6 overflow-y-auto">
+              <div class="mb-4">
+                <p class="text-sm font-medium text-gray-500 dark:text-gray-400 mb-1">Node ID:</p>
+                <code class="px-2 py-1 bg-gray-100 dark:bg-slate-900 rounded text-sm text-gray-700 dark:text-gray-300 font-mono">
+                  {@current_error_node_id}
+                </code>
+              </div>
+
+              <div>
+                <p class="text-sm font-medium text-gray-500 dark:text-gray-400 mb-1">
+                  Error Message:
+                </p>
+                <div class="p-4 bg-gray-50 dark:bg-slate-900/50 rounded-lg border border-gray-200 dark:border-slate-700 overflow-x-auto">
+                  <pre class="text-sm text-red-600 dark:text-red-400 font-mono whitespace-pre-wrap">{@current_error_message}</pre>
+                </div>
+              </div>
+            </div>
+
+            <div class="px-6 py-4 border-t border-gray-200 dark:border-slate-700 flex justify-end">
+              <button
+                phx-click="close_error_modal"
+                class="px-4 py-2 text-sm font-medium text-white bg-red-600 hover:bg-red-700 rounded-lg shadow-sm transition-all focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-red-500"
+              >
+                Close
+              </button>
+            </div>
           </div>
         </div>
       <% end %>
@@ -907,6 +1115,88 @@ defmodule FusionFlowWeb.FlowLive do
                   <p>Support for {@dependencies_tab} dependencies coming soon.</p>
                 </div>
               <% end %>
+            </div>
+          </div>
+        </div>
+      <% end %>
+      <!-- Execution Result Modal -->
+      <%= if @show_result_modal do %>
+        <div class="fixed inset-0 z-[120] flex items-center justify-center bg-black/50 backdrop-blur-sm">
+          <div class="bg-white dark:bg-slate-800 rounded-lg shadow-xl w-3/4 max-w-2xl max-h-[80vh] flex flex-col border border-gray-200 dark:border-slate-700 animate-in fade-in zoom-in duration-200">
+            <div class="flex items-center justify-between p-4 border-b border-gray-200 dark:border-slate-700">
+              <h3 class="text-lg font-semibold text-gray-900 dark:text-white">Execution Result</h3>
+              <button
+                phx-click="close_result_modal"
+                class="text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-200"
+              >
+                <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path
+                    stroke-linecap="round"
+                    stroke-linejoin="round"
+                    stroke-width="2"
+                    d="M6 18L18 6M6 6l12 12"
+                  >
+                  </path>
+                </svg>
+              </button>
+            </div>
+            <div class="p-6 overflow-y-auto max-h-[60vh] bg-white dark:bg-slate-900">
+              <%= if @execution_result && map_size(@execution_result) > 0 do %>
+                <div class="space-y-4">
+                  <%= for {key, value} <- Enum.sort(@execution_result) do %>
+                    <%= if is_binary(key) and not String.starts_with?(key, "flow_") do %>
+                      <div class="flex flex-col sm:flex-row sm:items-start gap-2 p-3 rounded-lg bg-gray-50 dark:bg-slate-800/50 border border-gray-100 dark:border-slate-700/50 hover:border-indigo-200 dark:hover:border-indigo-800 transition-colors">
+                        <div class="sm:w-1/3 min-w-[120px]">
+                          <span class="text-sm font-semibold text-gray-700 dark:text-slate-300 break-words">
+                            {key}
+                          </span>
+                        </div>
+                        <div class="flex-1 min-w-0">
+                          <div class="text-sm text-gray-900 dark:text-slate-100 font-mono bg-white dark:bg-slate-950 rounded px-2 py-1 border border-gray-200 dark:border-slate-700 overflow-x-auto">
+                            <%= if is_binary(value) do %>
+                              {value}
+                            <% else %>
+                              {inspect(value, pretty: true, limit: :infinity)}
+                            <% end %>
+                          </div>
+                        </div>
+                      </div>
+                    <% end %>
+                  <% end %>
+                </div>
+              <% else %>
+                <div class="text-center py-12">
+                  <div class="inline-flex items-center justify-center w-12 h-12 rounded-full bg-gray-100 dark:bg-slate-800 mb-4">
+                    <svg
+                      class="w-6 h-6 text-gray-400"
+                      fill="none"
+                      viewBox="0 0 24 24"
+                      stroke="currentColor"
+                    >
+                      <path
+                        stroke-linecap="round"
+                        stroke-linejoin="round"
+                        stroke-width="2"
+                        d="M20 13V6a2 2 0 00-2-2H6a2 2 0 00-2 2v7m16 0v5a2 2 0 01-2 2H6a2 2 0 01-2-2v-5m16 0h-2.586a1 1 0 00-.707.293l-2.414 2.414a1 1 0 01-.707.293h-3.172a1 1 0 01-.707-.293l-2.414-2.414A1 1 0 006.586 13H4"
+                      />
+                    </svg>
+                  </div>
+                  <h3 class="text-base font-medium text-gray-900 dark:text-slate-200">
+                    No output data
+                  </h3>
+                  <p class="mt-1 text-sm text-gray-500 dark:text-slate-400">
+                    The flow finished without producing any visible output.
+                  </p>
+                </div>
+              <% end %>
+            </div>
+            <div class="p-4 border-t border-gray-200 dark:border-slate-700 flex justify-end">
+              <button
+                phx-click="close_result_modal"
+                class="px-4 py-2 bg-indigo-600 hover:bg-indigo-700 text-white rounded-lg"
+              >
+                Close
+              </button>
             </div>
           </div>
         </div>

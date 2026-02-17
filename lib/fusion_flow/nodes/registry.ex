@@ -18,6 +18,8 @@ defmodule FusionFlow.Nodes.Registry do
       FusionFlow.Nodes.SplitInBatches.definition(),
       FusionFlow.Nodes.Merge.definition(),
       FusionFlow.Nodes.Set.definition(),
+      FusionFlow.Nodes.Variable.definition(),
+      FusionFlow.Nodes.Output.definition(),
       FusionFlow.Nodes.Postgres.definition()
     ]
   end
