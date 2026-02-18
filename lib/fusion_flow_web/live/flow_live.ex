@@ -36,7 +36,9 @@ defmodule FusionFlowWeb.FlowLive do
        current_error_node_id: nil,
        available_variables: [],
        chat_open: false,
-       chat_messages: []
+       chat_messages: [],
+       pending_ai_trigger: false,
+       chat_loading: false
      )}
   end
 
@@ -146,16 +148,182 @@ defmodule FusionFlowWeb.FlowLive do
 
   @impl true
   def handle_event("send_message", %{"content" => content}, socket) do
+    IO.inspect(content, label: "RECEIVED MESSAGE CONTENT")
+
     if content == "" do
       {:noreply, socket}
     else
       messages = socket.assigns.chat_messages ++ [{:user, content}]
+      messages = messages ++ [{:ai, ""}]
 
-      ai_response = "I'm the GPT-5 mini model! I see you said: #{content}"
-      messages = messages ++ [{:ai, ai_response}]
+      ai_messages =
+        Enum.map(messages, fn
+          {:user, text} -> %{role: "user", content: text}
+          {:ai, text} -> %{role: "assistant", content: text}
+        end)
 
-      {:noreply, assign(socket, chat_messages: messages)}
+      ai_messages = List.delete_at(ai_messages, -1)
+
+      socket = assign(socket, chat_messages: messages, chat_loading: true)
+
+      parent = self()
+
+      socket =
+        start_async(socket, :ai_stream, fn ->
+          current_flow = socket.assigns.current_flow
+
+          case FusionFlow.Agents.FlowCreator.chat(ai_messages, current_flow) do
+            {:ok, result} ->
+              Enum.reduce_while(result.stream, :ok, fn event, _acc ->
+                case event do
+                  {:text_delta, text} ->
+                    send(parent, {:chat_stream_chunk, text})
+                    {:cont, :ok}
+
+                  {:error, reason} ->
+                    send(parent, {:chat_stream_error, reason})
+                    {:halt, {:error, reason}}
+
+                  {:finish, _reason} ->
+                    {:cont, :ok}
+
+                  _ ->
+                    {:cont, :ok}
+                end
+              end)
+
+              IO.puts("ASYNC TASK: Stream loop finished")
+              :ok
+
+            error ->
+              IO.inspect(error, label: "ASYNC TASK: AI Stream Error")
+              error
+          end
+        end)
+
+      {:noreply, socket}
     end
+  end
+
+  def handle_info({:chat_stream_chunk, chunk}, socket) do
+    messages = socket.assigns.chat_messages
+    {last_role, last_content} = List.last(messages)
+
+    updated_messages =
+      if last_role == :ai do
+        List.replace_at(messages, -1, {:ai, last_content <> chunk})
+      else
+        messages
+      end
+
+    {:noreply, assign(socket, chat_messages: updated_messages)}
+  end
+
+  def handle_async(:ai_stream, {:ok, _result}, socket) do
+    messages = socket.assigns.chat_messages
+    {role, content} = List.last(messages)
+
+    socket =
+      if role == :ai do
+        json_content =
+          content
+          |> String.replace(~r/^```json\s*/, "")
+          |> String.replace(~r/\s*```$/, "")
+          |> String.trim()
+
+        case Jason.decode(json_content) do
+          {:ok, %{"action" => "create_flow", "nodes" => raw_nodes, "connections" => connections}} ->
+            nodes =
+              Enum.map(raw_nodes, fn node ->
+                data = node["data"] || %{}
+
+                label = node["label"] || data["label"] || node["name"]
+
+                position =
+                  node["position"] ||
+                    %{"x" => data["x"] || 0, "y" => data["y"] || 0}
+
+                controls =
+                  cond do
+                    is_map(node["controls"]) and node["controls"] != %{} ->
+                      node["controls"]
+
+                    is_map(data["controls"]) and data["controls"] != %{} ->
+                      data["controls"]
+
+                    true ->
+                      Map.drop(data, ["label", "x", "y", "controls"])
+                  end
+
+                controls =
+                  Enum.into(controls, %{}, fn {k, v} ->
+                    if is_map(v) and Map.has_key?(v, "value") do
+                      {k, v["value"]}
+                    else
+                      {k, v}
+                    end
+                  end)
+
+                %{
+                  "id" => node["id"],
+                  "name" => node["name"],
+                  "type" => node["type"] || node["name"],
+                  "label" => label,
+                  "position" => position,
+                  "controls" => controls,
+                  "inputs" => node["inputs"] || %{},
+                  "outputs" => node["outputs"] || %{}
+                }
+              end)
+              |> Enum.with_index()
+              |> Enum.map(fn {node, index} ->
+                current_y = get_in(node, ["position", "y"]) || 100
+                new_x = 100 + index * 500
+
+                Map.put(node, "position", %{"x" => new_x, "y" => current_y})
+              end)
+
+            unique_node_types =
+              nodes
+              |> Enum.map(fn node -> node["type"] end)
+              |> Enum.uniq()
+
+            definitions =
+              Enum.reduce(unique_node_types, %{}, fn type, acc ->
+                Map.put(acc, type, FusionFlow.Nodes.Registry.get_node(type))
+              end)
+
+            socket
+            |> push_event("load_graph_data", %{
+              nodes: nodes,
+              connections: connections,
+              definitions: definitions
+            })
+            |> put_flash(:info, "Flow generated by AI applied successfully!")
+            |> assign(has_changes: true)
+            |> update(:chat_messages, fn messages ->
+              List.replace_at(
+                messages,
+                -1,
+                {:ai, "Flow created successfully! You can see it on the canvas."}
+              )
+            end)
+
+          _ ->
+            socket
+        end
+      else
+        socket
+      end
+
+    {:noreply, assign(socket, chat_loading: false)}
+  end
+
+  def handle_async(:ai_stream, {:exit, reason}, socket) do
+    {:noreply,
+     socket
+     |> put_flash(:error, "AI Stream failed: #{inspect(reason)}")
+     |> assign(chat_loading: false)}
   end
 
   def handle_event("open_code_editor", %{"nodeId" => node_id, "code" => code}, socket) do
@@ -472,6 +640,54 @@ defmodule FusionFlowWeb.FlowLive do
      |> assign(installing_dep: nil)}
   end
 
+  defp trigger_ai_stream(socket) do
+    messages = socket.assigns.chat_messages
+
+    ai_messages =
+      Enum.map(messages, fn
+        {:user, text} -> %{role: "user", content: text}
+        {:ai, text} -> %{role: "assistant", content: text}
+      end)
+
+    ai_messages = List.delete_at(ai_messages, -1)
+
+    parent = self()
+
+    socket = assign(socket, chat_loading: true)
+
+    start_async(socket, :ai_stream, fn ->
+      current_flow = socket.assigns.current_flow
+
+      case FusionFlow.Agents.FlowCreator.chat(ai_messages, current_flow) do
+        {:ok, result} ->
+          Enum.reduce_while(result.stream, :ok, fn event, _acc ->
+            case event do
+              {:text_delta, text} ->
+                send(parent, {:chat_stream_chunk, text})
+                {:cont, :ok}
+
+              {:error, reason} ->
+                send(parent, {:chat_stream_error, reason})
+                {:halt, {:error, reason}}
+
+              {:finish, _reason} ->
+                {:cont, :ok}
+
+              _ ->
+                {:cont, :ok}
+            end
+          end)
+
+          IO.puts("ASYNC TASK: Stream loop finished")
+          :ok
+
+        error ->
+          IO.inspect(error, label: "ASYNC TASK: AI Stream Error")
+          error
+      end
+    end)
+  end
+
   @impl true
   def render(assigns) do
     ~H"""
@@ -502,25 +718,20 @@ defmodule FusionFlowWeb.FlowLive do
         </div>
         
         <div class="flex items-center gap-3">
-          <!-- Back to Home -->
+          <!-- Flows Link -->
           <a
-            href="/"
-            class="group h-9 px-3 flex items-center gap-2 text-sm font-medium text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white hover:bg-gray-100 dark:hover:bg-slate-800 rounded-md transition-all"
-            title="Go to Dashboard"
+            href={~p"/flows"}
+            class="h-9 px-3 flex items-center gap-2 text-sm font-medium text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white hover:bg-gray-100 dark:hover:bg-slate-800 rounded-md transition-all"
+            title="Go to Flows"
           >
-            <svg
-              class="w-4 h-4 text-gray-400 group-hover:text-gray-600 dark:group-hover:text-gray-300 transition-colors"
-              fill="none"
-              stroke="currentColor"
-              viewBox="0 0 24 24"
-            >
+            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path
                 stroke-linecap="round"
                 stroke-linejoin="round"
                 stroke-width="2"
-                d="M10 19l-7-7m0 0l7-7m-7 7h18"
+                d="M4 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2V6zM14 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2V6zM4 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2v-2zM14 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2v-2z"
               />
-            </svg> <span class="hidden sm:inline">Back</span>
+            </svg> <span class="hidden sm:inline">Flows</span>
           </a>
           <div class="h-5 w-px bg-gray-200 dark:bg-slate-700 mx-1"></div>
           
@@ -538,47 +749,6 @@ defmodule FusionFlowWeb.FlowLive do
               </path>
             </svg> <span class="hidden sm:inline">Dependencies</span>
           </button>
-          <!-- Dark Mode -->
-          <div phx-update="ignore" id="dark-mode-toggle-wrapper">
-            <button
-              id="dark-mode-btn"
-              onclick="var html = document.documentElement; var isDark = html.classList.toggle('dark'); html.setAttribute('data-theme', isDark ? 'dark' : 'light'); localStorage.setItem('theme', isDark ? 'dark' : 'light');"
-              class="h-9 w-9 flex items-center justify-center rounded-md text-gray-500 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-slate-800 transition-colors"
-              title="Toggle Theme"
-            >
-              <span class="dark:hidden">
-                <svg
-                  class="w-5 h-5 text-orange-500"
-                  fill="none"
-                  viewBox="0 0 24 24"
-                  stroke="currentColor"
-                >
-                  <path
-                    stroke-linecap="round"
-                    stroke-linejoin="round"
-                    stroke-width="2"
-                    d="M12 3v1m0 16v1m9-9h-1M4 12H3m15.364 6.364l-.707-.707M6.343 6.343l-.707-.707m12.728 0l-.707.707M6.343 17.657l-.707.707M16 12a4 4 0 11-8 0 4 4 0 018 0z"
-                  />
-                </svg>
-              </span>
-              <span class="hidden dark:inline">
-                <svg
-                  class="w-5 h-5 text-indigo-400"
-                  fill="none"
-                  viewBox="0 0 24 24"
-                  stroke="currentColor"
-                >
-                  <path
-                    stroke-linecap="round"
-                    stroke-linejoin="round"
-                    stroke-width="2"
-                    d="M20.354 15.354A9 9 0 018.646 3.646 9.003 9.003 0 0012 21a9.003 9.003 0 008.354-5.646z"
-                  />
-                </svg>
-              </span>
-            </button>
-          </div>
-          
           <button
             phx-click="run_flow"
             class="h-9 px-4 flex items-center gap-2 text-sm font-semibold text-white bg-green-600 hover:bg-green-700 rounded-md transition-colors shadow-none hover:shadow-none"
@@ -1307,9 +1477,10 @@ defmodule FusionFlowWeb.FlowLive do
       
       <.live_component
         module={FusionFlowWeb.Components.ChatComponent}
-        id="chat-interface"
+        id="chat-component"
         open={@chat_open}
         messages={@chat_messages}
+        loading={@chat_loading}
         on_toggle="toggle_chat"
         on_send="send_message"
       />
@@ -1349,4 +1520,35 @@ defmodule FusionFlowWeb.FlowLive do
     do:
       {"Text",
        ~s|<path d="M14 2H6c-1.1 0-1.99.9-1.99 2L4 20c0 1.1.89 2 1.99 2H18c1.1 0 2-.9 2-2V8l-6-6zm2 16H8v-2h8v2zm0-4H8v-2h8v2zm-3-5V3.5L18.5 9H13z"/>|}
+
+  def handle_info({:chat_stream_chunk, chunk}, socket) do
+    messages = socket.assigns.chat_messages
+    {last_role, last_content} = List.last(messages)
+
+    updated_messages =
+      if last_role == :ai do
+        List.replace_at(messages, -1, {:ai, last_content <> chunk})
+      else
+        messages
+      end
+
+    {:noreply, assign(socket, chat_messages: updated_messages)}
+  end
+
+  def handle_info({:chat_stream_error, reason}, socket) do
+    {:noreply, put_flash(socket, :error, "AI Error: #{inspect(reason)}")}
+  end
+
+  def handle_async(:ai_stream, {:ok, :ok}, socket) do
+    {:noreply, socket}
+  end
+
+  def handle_async(:ai_stream, {:ok, error}, socket) do
+    IO.inspect(error, label: "AI Stream Async Result Error")
+    {:noreply, put_flash(socket, :error, "AI Error: #{inspect(error)}")}
+  end
+
+  def handle_async(:ai_stream, {:exit, reason}, socket) do
+    {:noreply, put_flash(socket, :error, "AI Stream failed: #{inspect(reason)}")}
+  end
 end

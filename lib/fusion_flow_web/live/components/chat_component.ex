@@ -3,6 +3,7 @@ defmodule FusionFlowWeb.Components.ChatComponent do
 
   attr :open, :boolean, default: false
   attr :messages, :list, default: []
+  attr :loading, :boolean, default: false
   attr :on_toggle, :string, default: "toggle_chat"
   attr :on_send, :string, default: "send_message"
 
@@ -11,7 +12,7 @@ defmodule FusionFlowWeb.Components.ChatComponent do
     <div>
       <%= unless @open do %>
         <button
-          phx-click={@on_toggle}
+          phx-click={JS.push(@on_toggle) |> JS.focus(to: "#chat-input-field")}
           class="fixed bottom-6 right-6 z-50 p-4 bg-indigo-600 text-white rounded-full shadow-lg hover:bg-indigo-700 transition-all duration-300 flex items-center justify-center group"
           title="AI Chat"
         >
@@ -76,14 +77,76 @@ defmodule FusionFlowWeb.Components.ChatComponent do
           </button>
         </div>
         
-        <div class="flex-1 overflow-y-auto p-4 space-y-4" id="chat-messages">
+        <div class="flex-1 overflow-y-auto p-4 space-y-4" id="chat-messages" phx-hook="ScrollToBottom">
           <%= for {role, content} <- @messages do %>
             <div class={"flex " <> if(role == :user, do: "justify-end", else: "justify-start")}>
               <div class={"max-w-[85%] rounded-2xl px-4 py-3 text-sm " <>
                 if(role == :user,
                   do: "bg-indigo-600 text-white rounded-br-none",
                   else: "bg-gray-100 dark:bg-gray-800 text-gray-800 dark:text-gray-200 rounded-bl-none border border-gray-200 dark:border-gray-700")}>
-                {content}
+                <%= if String.contains?(content, "\"action\": \"create_flow\"") or String.starts_with?(String.trim(content), "{") do %>
+                  <div class="flex items-center gap-2 text-indigo-600 dark:text-indigo-400 font-medium italic animate-pulse">
+                    <svg
+                      class="animate-spin h-4 w-4"
+                      xmlns="http://www.w3.org/2000/svg"
+                      fill="none"
+                      viewBox="0 0 24 24"
+                    >
+                      <circle
+                        class="opacity-25"
+                        cx="12"
+                        cy="12"
+                        r="10"
+                        stroke="currentColor"
+                        stroke-width="4"
+                      >
+                      </circle>
+                      
+                      <path
+                        class="opacity-75"
+                        fill="currentColor"
+                        d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
+                      >
+                      </path>
+                    </svg>
+                    Constructing flow...
+                  </div>
+                <% else %>
+                  {content}
+                <% end %>
+              </div>
+            </div>
+          <% end %>
+          
+          <%= if @loading and (List.last(@messages) |> elem(1)) == "" do %>
+            <div class="flex justify-start">
+              <div class="max-w-[85%] rounded-2xl px-4 py-3 text-sm bg-gray-100 dark:bg-gray-800 text-gray-800 dark:text-gray-200 rounded-bl-none border border-gray-200 dark:border-gray-700">
+                <div class="flex items-center gap-2 text-indigo-600 dark:text-indigo-400 font-medium italic animate-pulse">
+                  <svg
+                    class="animate-spin h-4 w-4"
+                    xmlns="http://www.w3.org/2000/svg"
+                    fill="none"
+                    viewBox="0 0 24 24"
+                  >
+                    <circle
+                      class="opacity-25"
+                      cx="12"
+                      cy="12"
+                      r="10"
+                      stroke="currentColor"
+                      stroke-width="4"
+                    >
+                    </circle>
+                    
+                    <path
+                      class="opacity-75"
+                      fill="currentColor"
+                      d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
+                    >
+                    </path>
+                  </svg>
+                  Thinking...
+                </div>
               </div>
             </div>
           <% end %>
@@ -111,16 +174,16 @@ defmodule FusionFlowWeb.Components.ChatComponent do
         
         <div class="p-4 border-t border-gray-200 dark:border-gray-800 bg-white dark:bg-gray-900">
           <form phx-submit={@on_send} class="relative">
-            <input
-              type="text"
+            <textarea
               name="content"
+              id="chat-input-field"
               placeholder="Message AI..."
-              class="w-full pr-12 pl-4 py-3 rounded-xl border border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-800 text-gray-900 dark:text-white focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 outline-none transition-all placeholder-gray-400 dark:placeholder-gray-500 text-sm shadow-sm"
-              autocomplete="off"
-            />
+              class="w-full pr-12 pl-4 py-3 rounded-xl border border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-800 text-gray-900 dark:text-white focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 outline-none transition-all placeholder-gray-400 dark:placeholder-gray-500 text-sm shadow-sm resize-none"
+              rows="3"
+            ></textarea>
             <button
               type="submit"
-              class="absolute right-2 top-1/2 -translate-y-1/2 p-1.5 text-indigo-600 dark:text-indigo-400 hover:text-indigo-700 dark:hover:text-indigo-300 hover:bg-indigo-50 dark:hover:bg-indigo-900/20 rounded-lg transition-colors"
+              class="absolute right-2 bottom-2 p-1.5 text-indigo-600 dark:text-indigo-400 hover:text-indigo-700 dark:hover:text-indigo-300 hover:bg-indigo-50 dark:hover:bg-indigo-900/20 rounded-lg transition-colors"
             >
               <svg
                 xmlns="http://www.w3.org/2000/svg"
@@ -149,7 +212,7 @@ defmodule FusionFlowWeb.Components.ChatComponent do
                   d="M19.428 15.428a2 2 0 00-1.022-.547l-2.384-.477a6 6 0 00-3.86.517l-.318.158a6 6 0 01-3.86.517L6.05 15.21a2 2 0 00-1.806.547M8 4h8l-1 1v5.172a2 2 0 00.586 1.414l5 5c1.26 1.26.367 3.414-1.415 3.414H4.828c-1.782 0-2.674-2.154-1.414-3.414l5-5A2 2 0 009 10.172V5L8 4z"
                 />
               </svg> <span class="font-medium">Model</span>
-              <span class="font-bold text-gray-800 dark:text-gray-200">gpt-5 mini</span>
+              <span class="font-bold text-gray-800 dark:text-gray-200">Flow Creator</span>
               <svg
                 xmlns="http://www.w3.org/2000/svg"
                 class="h-3 w-3 ml-1"

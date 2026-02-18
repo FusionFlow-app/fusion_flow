@@ -35,3 +35,6 @@ fusion_flow-*.tar
 npm-debug.log
 /assets/node_modules/
 
+# Environment variables
+.env
+

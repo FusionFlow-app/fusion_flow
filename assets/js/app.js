@@ -110,6 +110,14 @@ const hooks = {
 
       this.pushEvent("client_ready", {});
     },
+  },
+  ScrollToBottom: {
+    mounted() {
+      this.el.scrollTop = this.el.scrollHeight;
+    },
+    updated() {
+      this.el.scrollTop = this.el.scrollHeight;
+    },
   }
 }
 

@@ -55,7 +55,10 @@ defmodule FusionFlow.Nodes.Eval do
     {result, diagnostics} =
       Code.with_diagnostics(fn ->
         try do
-          {binding, _} = Code.eval_string(code_with_imports, input: input, context: context)
+          last_result = context["result"]
+          bindings = [input: input, context: context, result: last_result]
+
+          {binding, _} = Code.eval_string(code_with_imports, bindings)
           {:ok, binding}
         rescue
           e -> {:error, e}
@@ -76,7 +79,7 @@ defmodule FusionFlow.Nodes.Eval do
             {:ok, new_context}
 
           other_value ->
-            {:ok, Map.put(context, "last_result", other_value)}
+            {:result, other_value}
         end
 
       {:error, exception_or_reason} ->

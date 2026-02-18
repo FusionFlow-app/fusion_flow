@@ -9,6 +9,7 @@ services:
       - POOL_SIZE=10
       - DATABASE_URL=ecto://postgres:postgres@db/fusion_flow
       - SECRET_KEY_BASE=${SECRET_KEY_BASE}
+      - OPENAI_API_KEY=${OPENAI_API_KEY}
       - PHX_HOST=localhost
       - PORT=4000
     ports:

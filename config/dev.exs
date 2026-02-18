@@ -1,5 +1,15 @@
 import Config
 
+if File.exists?(".env") do
+  File.stream!(".env")
+  |> Stream.map(&String.trim/1)
+  |> Stream.reject(&(&1 == "" or String.starts_with?(&1, "#")))
+  |> Enum.each(fn line ->
+    [key, value] = String.split(line, "=", parts: 2)
+    System.put_env(key, value)
+  end)
+end
+
 # Configure your database
 config :fusion_flow, FusionFlow.Repo,
   username: "postgres",

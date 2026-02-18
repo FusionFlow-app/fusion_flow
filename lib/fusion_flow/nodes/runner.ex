@@ -32,19 +32,13 @@ defmodule FusionFlow.Nodes.Runner do
         case apply(module, :handler, [node_context, nil]) do
           {:ok, new_context} ->
             connections = Enum.filter(flow.connections, fn c -> c["source"] == node["id"] end)
+            process_connections(connections, new_context, flow)
 
-            Enum.reduce_while(connections, {:ok, new_context}, fn conn, {:ok, acc_context} ->
-              target_node = Enum.find(flow.nodes, fn n -> n["id"] == conn["target"] end)
-
-              if target_node do
-                case execute_node(target_node, acc_context, flow) do
-                  {:ok, next_ctx} -> {:cont, {:ok, next_ctx}}
-                  {:error, r, n} -> {:halt, {:error, r, n}}
-                end
-              else
-                {:cont, {:ok, acc_context}}
-              end
-            end)
+          {:result, value} ->
+            # Store the result in the context and proceed
+            new_context = Map.put(context, "result", value)
+            connections = Enum.filter(flow.connections, fn c -> c["source"] == node["id"] end)
+            process_connections(connections, new_context, flow)
 
           {:error, reason} ->
             {:error, reason, to_string(node["id"])}
@@ -60,6 +54,21 @@ defmodule FusionFlow.Nodes.Runner do
     else
       {:ok, context}
     end
+  end
+
+  defp process_connections(connections, context, flow) do
+    Enum.reduce_while(connections, {:ok, context}, fn conn, {:ok, acc_context} ->
+      target_node = Enum.find(flow.nodes, fn n -> n["id"] == conn["target"] end)
+
+      if target_node do
+        case execute_node(target_node, acc_context, flow) do
+          {:ok, next_ctx} -> {:cont, {:ok, next_ctx}}
+          {:error, r, n} -> {:halt, {:error, r, n}}
+        end
+      else
+        {:cont, {:ok, acc_context}}
+      end
+    end)
   end
 
   defp get_node_module("Start"), do: FusionFlow.Nodes.Start

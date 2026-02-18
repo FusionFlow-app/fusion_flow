@@ -49,6 +49,6 @@ defmodule FusionFlow.Nodes.Logger do
 
     Logger.log(level, message)
 
-    {:ok, :logged}
+    {:ok, context}
   end
 end

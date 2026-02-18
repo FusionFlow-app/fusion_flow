@@ -22,6 +22,7 @@ Whether you are automating simple tasks or orchestrating complex microservices, 
 ### Prerequisites
 
 - Elixir ~> 1.15, Erlang/OTP 26+, PostgreSQL, Node.js
+- OpenAI API Key (for AI features)
 
 ### Installation (Source)
 
@@ -103,7 +104,7 @@ The following features are planned for future releases:
     - [x] **Variable Node**: Define and use global variables easy.
     - [x] **Smart Autocomplete**: Context-aware variable suggestions in code editors.
     - [x] **Error Visualization**: Detailed error modals and node validation.
-    - [ ] **AI Assistant**: Embedded chat interface for assistance.
+    - [x] **AI Assistant**: Embedded chat interface for assistance.
 
 - [ ] **Multi-Language Runtime Support**:
     - [ ] **Python Runner**: Execute Python scripts natively within flows.
