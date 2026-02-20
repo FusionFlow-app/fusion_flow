@@ -1,7 +1,7 @@
 defmodule FusionFlowWeb.PageController do
   use FusionFlowWeb, :controller
 
-  def home(conn, _params) do
-    render(conn, :home)
+  def redirect_to_flows(conn, _params) do
+    redirect(conn, to: ~p"/flows")
   end
 end

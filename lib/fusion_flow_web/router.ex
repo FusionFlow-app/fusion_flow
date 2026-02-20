@@ -17,7 +17,7 @@ defmodule FusionFlowWeb.Router do
   scope "/", FusionFlowWeb do
     pipe_through :browser
 
-    get "/", PageController, :home
+    live "/", DashboardLive
     live "/flows", FlowListLive
     live "/flows/:id", FlowLive
   end

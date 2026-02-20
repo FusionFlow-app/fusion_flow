@@ -1,0 +1,11 @@
+/* styles for the grid in the rete background */
+.rete-bg-grid {
+    background-size: 50px 50px;
+    background-image: linear-gradient(to right, rgba(0, 0, 0, 0.04) 1px, transparent 1px), linear-gradient(to bottom, rgba(0, 0, 0, 0.04) 1px, transparent 1px);
+    background-color: transparent !important;
+}
+
+[data-theme="dark"] .rete-bg-grid,
+.dark .rete-bg-grid {
+    background-image: linear-gradient(to right, rgba(255, 255, 255, 0.05) 1px, transparent 1px), linear-gradient(to bottom, rgba(255, 255, 255, 0.05) 1px, transparent 1px);
+}

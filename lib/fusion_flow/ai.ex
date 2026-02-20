@@ -1,19 +1,4 @@
 defmodule FusionFlow.AI do
-  @moduledoc """
-  Abstracts the `ai_sdk` interactions for FusionFlow.
-  """
-
-  @doc """
-  Streams text generation using the configured AI model.
-
-  ## Options
-    * `:model` - The model to use (default: "gpt-4o-mini")
-    * `:system` - System message
-    * `:temperature` - Temperature setting
-
-  ## Examples
-      {:ok, result} = FusionFlow.AI.stream_text(messages)
-  """
   def stream_text(messages, opts \\ []) do
     model_id = Keyword.get(opts, :model, "gpt-4o-mini")
     system = Keyword.get(opts, :system)

@@ -142,6 +142,32 @@ export async function createEditor(container) {
         return context;
     });
 
+    // Handle drag and drop
+    container.addEventListener("dragover", (e) => {
+        e.preventDefault();
+        e.dataTransfer.dropEffect = "copy";
+    });
+
+    container.addEventListener("drop", async (e) => {
+        e.preventDefault();
+        const nodeName = e.dataTransfer.getData("application/vnd.fusionflow.node");
+        
+        if (!nodeName) return;
+
+        // Ensure we have a definition for this node
+        if (editor.handleDrop) {
+            const rect = container.getBoundingClientRect();
+            
+            // Calculate coordinates taking zoom/pan into account
+            // Adjust the - 110 and - 24 to match the drag image hook offsets
+            const { k, x: tx, y: ty } = area.area.transform;
+            const x = (e.clientX - rect.left - tx - 110 * k) / k;
+            const y = (e.clientY - rect.top - ty - 24 * k) / k;
+            
+            editor.handleDrop(nodeName, { x, y });
+        }
+    });
+
     const processAddNode = async (name, definition, data = null) => {
         if (!definition) {
             console.error("Node definition not provided for", name);
@@ -235,20 +261,34 @@ export async function createEditor(container) {
             node.addControl(field.name, control);
         });
 
-        // Restore code_elixir and code_python controls if they exist in saved data
-        if (data && data.controls) {
-            if (data.controls.code_elixir !== undefined && !node.controls.code_elixir) {
-                const ctrl = new ClassicPreset.InputControl("text", { initial: data.controls.code_elixir });
-                ctrl.value = data.controls.code_elixir;
-                ctrl.type = 'hidden';
-                node.addControl('code_elixir', ctrl);
-            }
-            if (data.controls.code_python !== undefined && !node.controls.code_python) {
-                const ctrl = new ClassicPreset.InputControl("text", { initial: data.controls.code_python });
-                ctrl.value = data.controls.code_python;
-                ctrl.type = 'hidden';
-                node.addControl('code_python', ctrl);
-            }
+        // Restore code_elixir and code_python controls if they exist in saved data or from field defaults
+        const elixirField = uiFields.find(f => f.name === 'code_elixir');
+        const pythonField = uiFields.find(f => f.name === 'code_python');
+        
+        const initialElixir = (data && data.controls && data.controls.code_elixir !== undefined) 
+            ? data.controls.code_elixir 
+            : (elixirField ? elixirField.default : "");
+            
+        const initialPython = (data && data.controls && data.controls.code_python !== undefined) 
+            ? data.controls.code_python 
+            : (pythonField ? pythonField.default : "");
+
+        if (!node.controls.code_elixir) {
+            const ctrl = new ClassicPreset.InputControl("text", { initial: initialElixir });
+            ctrl.value = initialElixir;
+            ctrl.type = 'hidden';
+            node.addControl('code_elixir', ctrl);
+        } else if (data && data.controls && data.controls.code_elixir !== undefined) {
+             node.controls.code_elixir.value = data.controls.code_elixir;
+        }
+
+        if (!node.controls.code_python) {
+            const ctrl = new ClassicPreset.InputControl("text", { initial: initialPython });
+            ctrl.value = initialPython;
+            ctrl.type = 'hidden';
+            node.addControl('code_python', ctrl);
+        } else if (data && data.controls && data.controls.code_python !== undefined) {
+             node.controls.code_python.value = data.controls.code_python;
         }
 
         await editor.addNode(node);
@@ -320,6 +360,9 @@ export async function createEditor(container) {
         },
         onErrorDetails: (cb) => {
             editor.triggerErrorDetails = cb;
+        },
+        onDrop: (cb) => {
+            editor.handleDrop = cb;
         },
         updateNodeCode: async (nodeId, code_elixir, code_python, fieldName) => {
             const node = editor.getNode(nodeId);

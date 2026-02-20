@@ -15,7 +15,7 @@ Whether you are automating simple tasks or orchestrating complex microservices, 
   - **Logic**: Execute custom logic safely.
   - **Utilities**: Logger, Cron triggers.
 - **Polyglot Potential**: Built to eventually support multiple languages (Python, JavaScript) for custom logic.
-- **Dark Mode**: Fully styled interface for any lighting condition.
+- **Ultra Dark Mode & Modern UI**: Fully styled interface using Tailwind CSS (`slate-900`/`slate-800` layers), featuring a global Sidebar and a dedicated root Dashboard with workflow metrics.
 
 ## 🚀 Getting Started
 
@@ -105,6 +105,7 @@ The following features are planned for future releases:
     - [x] **Smart Autocomplete**: Context-aware variable suggestions in code editors.
     - [x] **Error Visualization**: Detailed error modals and node validation.
     - [x] **AI Assistant**: Embedded chat interface for assistance.
+    - [x] **Dashboard & Navigation**: Root dashboard with quick stats and a global sidebar for seamless navigation.
 
 - [X] **Multi-Language Runtime Support**:
     - [X] **Python Runner**: Execute Python scripts natively within flows.

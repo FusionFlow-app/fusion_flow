@@ -1,10 +1,10 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="en" data-theme="dark">
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <meta name="csrf-token" content={get_csrf_token()} />
-    <.live_title default="FusionFlow" suffix=" · Phoenix Framework">
+    <.live_title default="FusionFlow" suffix=" · FusionFlow">
       {assigns[:page_title]}
     </.live_title>
     <link phx-track-static rel="stylesheet" href={~p"/assets/css/app.css"} />
@@ -12,21 +12,27 @@
     </script>
     <script>
       (() => {
-        const setTheme = (theme) => {
-          if (theme === "system") {
-            localStorage.removeItem("phx:theme");
-            document.documentElement.removeAttribute("data-theme");
+        const setTheme = (t) => {
+          localStorage.setItem("phx:theme", t);
+          document.documentElement.setAttribute("data-theme", t);
+          if (t === "dark") {
+            document.documentElement.classList.add("dark");
           } else {
-            localStorage.setItem("phx:theme", theme);
-            document.documentElement.setAttribute("data-theme", theme);
+            document.documentElement.classList.remove("dark");
           }
         };
-        if (!document.documentElement.hasAttribute("data-theme")) {
-          setTheme(localStorage.getItem("phx:theme") || "system");
-        }
-        window.addEventListener("storage", (e) => e.key === "phx:theme" && setTheme(e.newValue || "system"));
-        
-        window.addEventListener("phx:set-theme", (e) => setTheme(e.target.dataset.phxTheme));
+
+        const stored = localStorage.getItem("phx:theme") || "dark";
+        setTheme(stored);
+
+        window.addEventListener("storage", (e) => {
+          if (e.key === "phx:theme") {
+            setTheme(e.newValue || "dark");
+          }
+        });
+        window.addEventListener("phx:set-theme", (e) => {
+          setTheme(e.target.dataset.phxTheme || "dark");
+        });
       })();
     </script>
   </head>

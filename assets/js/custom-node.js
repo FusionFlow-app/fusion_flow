@@ -35,11 +35,11 @@ export class CustomNodeElement extends LitElement {
       }
 
       :host-context(.dark) {
-        --node-bg: #1e293b;
-        --node-border: #334155;
+        --node-bg: #222222;
+        --node-border: #333333;
         --node-text: #e2e8f0;
         --node-title-text: #f8fafc;
-        box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.5), 0 4px 6px -2px rgba(0, 0, 0, 0.3);
+        box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.8), 0 4px 6px -2px rgba(0, 0, 0, 0.5);
       }
       :host-context(.dark):host(:hover) {
         border-color: #818cf8;

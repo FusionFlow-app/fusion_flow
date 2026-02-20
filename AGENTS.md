@@ -55,16 +55,17 @@ The application uses a specific color palette defined in `app.css`. You **MUST**
 -   **Backgrounds**:
     -   Variable: `--color-base-100` (Main bg), `--color-base-200` (Secondary/Card bg), `--color-base-300` (Borders/Dividers)
     -   Usage: Page backgrounds, card backgrounds, node backgrounds.
-    -   *Rule*: **Never** hardcode hex values like `#ffffff` or `#000000`. always use `bg-base-100` or `bg-white dark:bg-zinc-900`.
+    -   *Rule*: **Never** hardcode hex values like `#ffffff` or `#000000`. always use `bg-slate-50` for light mode or `bg-slate-900`/`bg-slate-950` for Ultra Dark mode. Layering should use `slate-800` for cards and components.
 
 -   **Text**:
     -   Variable: `--color-base-content`
-    -   Usage: Primary text color. Be careful with contrast.
+    -   Usage: Primary text color. Be careful with contrast. Dark mode uses `text-gray-400` for secondary and `text-white` for primary.
 
--   **Node Specifics**:
-    -   **Node Background**: `bg-white dark:bg-zinc-900` or `bg-base-100`.
-    -   **Node Border**: `border-gray-200 dark:border-zinc-700` or `border-base-300`.
-    -   **Node Selected**: active ring using `ring-primary-500`.
+-   **Node & Component Specifics**:
+    -   **Global Sidebar**: The app uses a global Sidebar layout (`app.html.heex`) which holds the main navigation and FusionFlow logo (lightning bolt SVG).
+    -   **Node Editor Background**: `bg-white dark:bg-slate-900` combined with custom `rete-bg-grid` for the dotted canvas.
+    -   **Node Border**: `border-gray-200 dark:border-slate-700` or `border-base-300`.
+    -   **Node Selected**: active ring using `ring-indigo-500/50`.
 
 -   **Use Tailwind CSS classes and custom CSS rules** to create polished, responsive, and visually stunning interfaces.
 - Tailwindcss v4 **no longer needs a tailwind.config.js** and uses a new import syntax in `app.css`:

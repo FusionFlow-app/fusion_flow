@@ -14,16 +14,7 @@ export class CustomControlElement extends LitElement {
         --input-text: #1e293b;
         --input-placeholder: #94a3b8;
       }
-      
-      @media (prefers-color-scheme: dark) {
-        :host {
-          --input-bg: #334155;
-          --input-border: #475569;
-          --input-text: #f1f5f9;
-          --input-placeholder: #94a3b8;
-        }
-      }
-      
+
       :host-context(.dark) {
         --input-bg: #334155;
         --input-border: #475569;

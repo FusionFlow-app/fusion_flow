@@ -12,9 +12,9 @@ const hooks = {
       const container = this.el;
       const editor = await createEditor(container);
 
-      this.handleEvent("add_node", async ({ name, definition }) => {
+      this.handleEvent("add_node", async ({ name, definition, data }) => {
         if (editor.addNode) {
-          await editor.addNode(name, definition);
+          await editor.addNode(name, definition, data);
         }
       });
 
@@ -24,6 +24,78 @@ const hooks = {
           this.pushEvent("save_graph_data", { data });
         }
       });
+
+      if (editor.onDrop) {
+        editor.onDrop(async (name, position) => {
+            this.pushEvent("get_node_definition", { name }, async ({ definition }) => {
+                const node_data = {
+                    id: `node_${Date.now()}_${Math.floor(Math.random() * 1000)}`,
+                    label: name,
+                    position: position
+                };
+                
+                await editor.addNode(name, definition, node_data);
+                this.pushEvent("node_added_internally", { name, data: node_data });
+            });
+        });
+      }
+
+      const setupDraggables = () => {
+        document.querySelectorAll('button[draggable="true"]').forEach(btn => {
+            btn.removeEventListener('dragstart', handleDragStart);
+            btn.addEventListener('dragstart', handleDragStart);
+        });
+      };
+
+      const handleDragStart = (e) => {
+        const nodeName = e.currentTarget.dataset.nodeName;
+        if (nodeName) {
+            e.dataTransfer.setData("application/vnd.fusionflow.node", nodeName);
+            e.dataTransfer.effectAllowed = "copy";
+
+            // Create a custom drag image that looks like a node
+            const dragImage = document.createElement('div');
+            const isDark = document.documentElement.classList.contains('dark');
+            dragImage.style.width = '220px';
+            dragImage.style.minHeight = '80px';
+            dragImage.style.backgroundColor = isDark ? '#121212' : 'white';
+            dragImage.style.border = `2px solid ${isDark ? '#262626' : '#e2e8f0'}`;
+            dragImage.style.borderRadius = '16px';
+            dragImage.style.boxShadow = isDark ? '0 10px 15px -3px rgba(0, 0, 0, 0.8)' : '0 10px 15px -3px rgba(0, 0, 0, 0.1)';
+            dragImage.style.position = 'absolute';
+            dragImage.style.top = '-1000px';
+            dragImage.style.fontFamily = "'Inter', system-ui, -apple-system, sans-serif";
+            
+            // Add a title bar resembling the node
+            const titleBar = document.createElement('div');
+            titleBar.style.padding = '12px 16px';
+            titleBar.style.borderBottom = `1px solid ${isDark ? '#262626' : '#e2e8f0'}`;
+            titleBar.style.fontWeight = '700';
+            titleBar.style.fontSize = '15px';
+            titleBar.style.color = isDark ? '#f8fafc' : '#1e293b';
+            titleBar.style.background = isDark ? 'linear-gradient(to bottom, rgba(255,255,255,0.05), rgba(255,255,255,0))' : 'linear-gradient(to bottom, rgba(255,255,255,0.5), rgba(255,255,255,0))';
+            titleBar.style.borderRadius = '14px 14px 0 0';
+            titleBar.style.letterSpacing = '-0.01em';
+            titleBar.innerText = nodeName;
+            
+            dragImage.appendChild(titleBar);
+            document.body.appendChild(dragImage);
+
+            // Set drag image centered on cursor
+            e.dataTransfer.setDragImage(dragImage, 110, 24);
+
+            // Cleanup immediately after the browser sets the drag image
+            setTimeout(() => {
+                document.body.removeChild(dragImage);
+            }, 0);
+        }
+      };
+
+      setupDraggables();
+      
+      // Setup mutation observer to handle dynamically added/removed nodes in sidebar (if any)
+      const observer = new MutationObserver(setupDraggables);
+      observer.observe(document.body, { childList: true, subtree: true });
 
       this.handleEvent("request_save_and_run", async () => {
         if (editor.exportData) {
