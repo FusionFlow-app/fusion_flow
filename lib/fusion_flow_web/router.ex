@@ -20,6 +20,7 @@ defmodule FusionFlowWeb.Router do
 
     live "/", DashboardLive
     live "/flows", FlowListLive
+    live "/flows/new/ai", FlowAiCreatorLive
     live "/flows/:id", FlowLive
   end
 

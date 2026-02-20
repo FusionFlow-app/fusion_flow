@@ -125,3 +125,30 @@
 }
 
 /* This file is for your main application CSS */
+
+/* Chat Markdown Styles */
+.prose ul {
+  list-style-type: disc !important;
+  margin-left: 1.25rem !important;
+  margin-top: 0.5rem !important;
+  margin-bottom: 0.5rem !important;
+}
+.prose ol {
+  list-style-type: decimal !important;
+  margin-left: 1.25rem !important;
+  margin-top: 0.5rem !important;
+  margin-bottom: 0.5rem !important;
+}
+.prose li {
+  margin-bottom: 0.25rem !important;
+  display: list-item !important;
+}
+.prose strong {
+  font-weight: 700 !important;
+}
+.prose p {
+  margin-bottom: 0.75rem !important;
+}
+.prose p:last-child {
+  margin-bottom: 0 !important;
+}

@@ -492,5 +492,15 @@ And **never** do this:
 - You are FORBIDDEN from accessing the changeset in the template as it will cause errors
 - **Never** use `<.form let={f} ...>` in the template, instead **always use `<.form for={@form} ...>`**, then drive all form references from the form assign as in `@form[:field]`. The UI should **always** be driven by a `to_form/2` assigned in the LiveView module that is derived from a changeset
 <!-- phoenix:liveview-end -->
+<!-- phoenix:liveview-end -->
+
+<!-- i18n-start -->
+## Internationalization (i18n) Guidelines
+
+- **Always** translate any user-facing text strings when creating or modifying screens, components, and layouts.
+- **Always** use the `gettext/1` macro (e.g., `<%= gettext("My text") %>`) for text inside Phoenix templates (`.heex`, LiveViews) instead of hardcoding text.
+- **After adding new gettext calls**, **always** run `mix gettext.extract` and `mix gettext.merge priv/gettext` to extract the new keys.
+- **Always** update the `.po` files (`en`, `pt_BR`, etc.) inside `priv/gettext/` to provide translations for the keys you just extracted.
+<!-- i18n-end -->
 
 <!-- usage-rules-end -->

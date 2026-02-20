@@ -194,35 +194,27 @@ defmodule FusionFlowWeb.Components.ChatComponent do
 
         <%= if @ai_configured do %>
           <div class="p-4 border-t border-gray-200 dark:border-slate-800 bg-white dark:bg-slate-900">
-            <form phx-submit={@on_send} class="relative">
+            <form phx-submit={@on_send} class="flex gap-2 items-center">
               <textarea
                 name="content"
                 id="chat-input-field"
                 placeholder={if @loading, do: "AI is thinking...", else: "Message AI..."}
-                phx-keydown={JS.dispatch("submit", to: "#chat-form")}
-                phx-key="Enter"
-                phx-window-keydown={false}
                 disabled={@loading}
-                onkeydown="if(event.ctrlKey && event.key === 'Enter') { event.preventDefault(); this.form.dispatchEvent(new Event('submit', {bubbles: true, cancelable: true})); }"
-                class={["w-full pr-12 pl-4 py-3 rounded-xl border border-gray-200 dark:border-slate-700 bg-gray-50 dark:bg-slate-800 text-gray-900 dark:text-white focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 outline-none transition-all placeholder-gray-400 dark:placeholder-gray-500 text-sm shadow-sm dark:shadow-none resize-none", if(@loading, do: "cursor-not-allowed opacity-60")]}
+                onkeydown="if(event.key === 'Enter' && !event.shiftKey) { event.preventDefault(); this.form.dispatchEvent(new Event('submit', {bubbles: true, cancelable: true})); }"
+                class={["flex-1 w-full pl-4 pr-4 py-3 rounded-xl border border-gray-200 dark:border-slate-700 bg-gray-50 dark:bg-slate-800 text-gray-900 dark:text-white focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 outline-none transition-all placeholder-gray-400 dark:placeholder-gray-500 text-sm shadow-sm dark:shadow-none resize-none", if(@loading, do: "cursor-not-allowed opacity-60")]}
                 rows="3"
               ></textarea>
               <button
                 type="submit"
                 disabled={@loading}
-                title="Send (Ctrl+Enter)"
-                class={["absolute right-2 bottom-2 p-1.5 text-indigo-600 dark:text-indigo-400 hover:text-indigo-700 dark:hover:text-indigo-300 hover:bg-indigo-50 dark:hover:bg-indigo-900/20 rounded-lg transition-colors", if(@loading, do: "cursor-not-allowed opacity-50")]}
+                title={gettext("Send")}
+                class={["p-2.5 bg-indigo-600 text-white rounded-xl shadow-sm hover:bg-indigo-700 transition-all disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center w-[42px] h-[42px] flex-shrink-0", if(@loading, do: "cursor-not-allowed opacity-50")]}
               >
-                <svg
-                  xmlns="http://www.w3.org/2000/svg"
-                  class="h-5 w-5"
-                  viewBox="0 0 24 24"
-                  fill="none"
-                  stroke="currentColor"
-                  stroke-width="2"
-                >
-                  <path stroke-linecap="round" stroke-linejoin="round" d="M9 5l7 7-7 7" />
-                </svg>
+                <%= if @loading do %>
+                  <.icon name="hero-arrow-path" class="w-4 h-4 animate-spin"/>
+                <% else %>
+                  <.icon name="hero-chevron-right" class="w-5 h-5 stroke-2"/>
+                <% end %>
               </button>
             </form>
           </div>

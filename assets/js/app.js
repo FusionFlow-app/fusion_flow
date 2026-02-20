@@ -190,6 +190,14 @@ const hooks = {
     updated() {
       this.el.scrollTop = this.el.scrollHeight;
     },
+  },
+  FocusInput: {
+    mounted() {
+      this.el.focus();
+    },
+    updated() {
+      this.el.focus();
+    }
   }
 }
 
