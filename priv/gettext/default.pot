@@ -1,0 +1,191 @@
+## This file is a PO Template file.
+##
+## "msgid"s here are often extracted from source code.
+## Add new messages manually only if they're dynamic
+## messages that can't be statically extracted.
+##
+## Run "mix gettext.extract" to bring this file up to
+## date. Leave "msgstr"s empty as changing them here has no
+## effect: edit them in PO (.po) files instead.
+#
+msgid ""
+msgstr ""
+
+#: lib/fusion_flow_web/components/core_components.ex:368
+#, elixir-autogen, elixir-format
+msgid "Actions"
+msgstr ""
+
+#: lib/fusion_flow_web/live/dashboard_live.ex:61
+#, elixir-autogen, elixir-format
+msgid "Active Integrations"
+msgstr ""
+
+#: lib/fusion_flow_web/components/layouts.ex:114
+#: lib/fusion_flow_web/components/layouts.ex:126
+#, elixir-autogen, elixir-format
+msgid "Attempting to reconnect"
+msgstr ""
+
+#: lib/fusion_flow_web/live/flow_live.ex:750
+#, elixir-autogen, elixir-format
+msgid "Coming Soon"
+msgstr ""
+
+#: lib/fusion_flow_web/live/flow_live.ex:747
+#, elixir-autogen, elixir-format
+msgid "Configure Node"
+msgstr ""
+
+#: lib/fusion_flow_web/live/dashboard_live.ex:87
+#, elixir-autogen, elixir-format
+msgid "Create Flow"
+msgstr ""
+
+#: lib/fusion_flow_web/live/flow_list_live.ex:70
+#, elixir-autogen, elixir-format
+msgid "Create your first flow"
+msgstr ""
+
+#: lib/fusion_flow_web/components/layouts.ex:58
+#: lib/fusion_flow_web/live/dashboard_live.ex:25
+#, elixir-autogen, elixir-format
+msgid "Dashboard"
+msgstr ""
+
+#: lib/fusion_flow_web/live/flow_live.ex:752
+#, elixir-autogen, elixir-format
+msgid "Drag to canvas"
+msgstr ""
+
+#: lib/fusion_flow_web/live/flow_live.ex:749
+#, elixir-autogen, elixir-format
+msgid "Edit Code"
+msgstr ""
+
+#: lib/fusion_flow_web/live/flow_list_live.ex:22
+#, elixir-autogen, elixir-format
+msgid "Failed to create flow."
+msgstr ""
+
+#: lib/fusion_flow_web/live/flow_list_live.ex:33
+#, elixir-autogen, elixir-format
+msgid "Flows available"
+msgstr ""
+
+#: lib/fusion_flow_web/live/dashboard_live.ex:84
+#, elixir-autogen, elixir-format
+msgid "Get started by creating a new workflow automation."
+msgstr ""
+
+#: lib/fusion_flow_web/live/flow_list_live.ex:60
+#, elixir-autogen, elixir-format
+msgid "Get started by creating your first workflow automation. It's easy!"
+msgstr ""
+
+#: lib/fusion_flow_web/live/dashboard_live.ex:29
+#, elixir-autogen, elixir-format
+msgid "Manage Flows"
+msgstr ""
+
+#: lib/fusion_flow_web/components/layouts.ex:65
+#: lib/fusion_flow_web/live/flow_list_live.ex:8
+#: lib/fusion_flow_web/live/flow_list_live.ex:32
+#, elixir-autogen, elixir-format
+msgid "My Flows"
+msgstr ""
+
+#: lib/fusion_flow_web/live/flow_list_live.ex:42
+#, elixir-autogen, elixir-format
+msgid "New Flow"
+msgstr ""
+
+#: lib/fusion_flow_web/live/dashboard_live.ex:83
+#, elixir-autogen, elixir-format
+msgid "No flows"
+msgstr ""
+
+#: lib/fusion_flow_web/live/flow_list_live.ex:56
+#, elixir-autogen, elixir-format
+msgid "No flows created yet"
+msgstr ""
+
+#: lib/fusion_flow_web/live/dashboard_live.ex:74
+#, elixir-autogen, elixir-format
+msgid "Recent Workflows"
+msgstr ""
+
+#: lib/fusion_flow_web/live/flow_live.ex:746
+#, elixir-autogen, elixir-format
+msgid "Remove Node"
+msgstr ""
+
+#: lib/fusion_flow_web/live/flow_live.ex:744
+#, elixir-autogen, elixir-format
+msgid "Run"
+msgstr ""
+
+#: lib/fusion_flow_web/live/flow_live.ex:751
+#, elixir-autogen, elixir-format
+msgid "Select Integration"
+msgstr ""
+
+#: lib/fusion_flow_web/components/layouts.ex:121
+#, elixir-autogen, elixir-format
+msgid "Something went wrong!"
+msgstr ""
+
+#: lib/fusion_flow_web/components/layouts.ex:71
+#, elixir-autogen, elixir-format
+msgid "Theme"
+msgstr ""
+
+#: lib/fusion_flow_web/live/dashboard_live.ex:48
+#, elixir-autogen, elixir-format
+msgid "Total Processed Nodes"
+msgstr ""
+
+#: lib/fusion_flow_web/live/dashboard_live.ex:36
+#, elixir-autogen, elixir-format
+msgid "Total Workflows"
+msgstr ""
+
+#: lib/fusion_flow_web/live/flow_list_live.ex:88
+#, elixir-autogen, elixir-format
+msgid "Updated"
+msgstr ""
+
+#: lib/fusion_flow_web/live/flow_live.ex:748
+#, elixir-autogen, elixir-format
+msgid "View Error"
+msgstr ""
+
+#: lib/fusion_flow_web/live/flow_live.ex:745
+#, elixir-autogen, elixir-format
+msgid "Waiting..."
+msgstr ""
+
+#: lib/fusion_flow_web/components/layouts.ex:109
+#, elixir-autogen, elixir-format
+msgid "We can't find the internet"
+msgstr ""
+
+#: lib/fusion_flow_web/live/dashboard_live.ex:26
+#, elixir-autogen, elixir-format
+msgid "Welcome back to FusionFlow! Here's an overview of your automated logic."
+msgstr ""
+
+#: lib/fusion_flow_web/components/core_components.ex:74
+#, elixir-autogen, elixir-format
+msgid "close"
+msgstr ""
+
+#: lib/fusion_flow_web/live/flow_list_live.ex:88
+#, elixir-autogen, elixir-format
+msgid "connections"
+msgstr ""
+
+#: lib/fusion_flow_web/live/flow_list_live.ex:88
+#, elixir-autogen, elixir-format
+msgid "nodes"
+msgstr ""

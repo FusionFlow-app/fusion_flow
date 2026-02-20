@@ -8,6 +8,7 @@ defmodule FusionFlowWeb.Router do
     plug :put_root_layout, html: {FusionFlowWeb.Layouts, :root}
     plug :protect_from_forgery
     plug :put_secure_browser_headers
+    plug FusionFlowWeb.Plugs.SetLocale
   end
 
   pipeline :api do

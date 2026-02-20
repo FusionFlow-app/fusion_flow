@@ -53,6 +53,8 @@ defmodule FusionFlowWeb do
       use Phoenix.LiveView,
         layout: {FusionFlowWeb.Layouts, :app}
 
+      on_mount FusionFlowWeb.Plugs.SetLocale
+
       unquote(html_helpers())
     end
   end

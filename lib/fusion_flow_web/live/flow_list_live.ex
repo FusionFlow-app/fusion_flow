@@ -5,7 +5,7 @@ defmodule FusionFlowWeb.FlowListLive do
 
   @impl true
   def mount(_params, _session, socket) do
-    {:ok, assign(socket, flows: Flows.list_flows(), page_title: "My Flows")}
+    {:ok, assign(socket, flows: Flows.list_flows(), page_title: gettext("My Flows"))}
   end
 
   @impl true
@@ -19,8 +19,13 @@ defmodule FusionFlowWeb.FlowListLive do
         {:noreply, push_navigate(socket, to: ~p"/flows/#{flow}")}
 
       {:error, _changeset} ->
-        {:noreply, put_flash(socket, :error, "Failed to create flow.")}
+        {:noreply, put_flash(socket, :error, gettext("Failed to create flow."))}
     end
+  end
+
+  @impl true
+  def handle_event("change_locale", %{"locale" => locale}, socket) do
+    {:noreply, redirect(socket, to: ~p"/?locale=#{locale}")}
   end
 
   @impl true
@@ -29,8 +34,8 @@ defmodule FusionFlowWeb.FlowListLive do
     <div class="p-6 md:p-8 w-full max-w-7xl mx-auto">
       <div class="flex items-center justify-between mb-8">
         <div>
-          <h1 class="text-2xl font-bold text-gray-900 dark:text-white">My Flows</h1>
-          <p class="text-sm text-gray-500 dark:text-gray-400 mt-1"><%= length(@flows) %> Flows available</p>
+          <h1 class="text-2xl font-bold text-gray-900 dark:text-white"><%= gettext("My Flows") %></h1>
+          <p class="text-sm text-gray-500 dark:text-gray-400 mt-1"><%= length(@flows) %> <%= gettext("Flows available") %></p>
         </div>
         <button
           phx-click="create_flow"
@@ -39,7 +44,7 @@ defmodule FusionFlowWeb.FlowListLive do
           <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" viewBox="0 0 20 20" fill="currentColor">
             <path fill-rule="evenodd" d="M10 3a1 1 0 011 1v5h5a1 1 0 110 2h-5v5a1 1 0 11-2 0v-5H4a1 1 0 110-2h5V4a1 1 0 011-1z" clip-rule="evenodd" />
           </svg>
-          New Flow
+          <%= gettext("New Flow") %>
         </button>
       </div>
 
@@ -53,11 +58,11 @@ defmodule FusionFlowWeb.FlowListLive do
             </div>
 
             <h3 class="text-lg font-medium text-gray-900 dark:text-white mb-1">
-              No flows created yet
+              <%= gettext("No flows created yet") %>
             </h3>
 
             <p class="text-gray-500 dark:text-gray-400 mb-6 max-w-sm mx-auto text-center">
-              Get started by creating your first workflow automation. It's easy!
+              <%= gettext("Get started by creating your first workflow automation. It's easy!") %>
             </p>
 
             <button
@@ -67,7 +72,7 @@ defmodule FusionFlowWeb.FlowListLive do
               <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
                 <path fill-rule="evenodd" d="M10 3a1 1 0 011 1v5h5a1 1 0 110 2h-5v5a1 1 0 11-2 0v-5H4a1 1 0 110-2h5V4a1 1 0 011-1z" clip-rule="evenodd" />
               </svg>
-              Create your first flow
+              <%= gettext("Create your first flow") %>
             </button>
           </div>
         <% else %>
@@ -85,7 +90,7 @@ defmodule FusionFlowWeb.FlowListLive do
                       <div>
                         <p class="text-sm font-medium text-gray-900 dark:text-white truncate"><%= flow.name %></p>
                         <p class="text-xs text-gray-500 dark:text-gray-400 mt-0.5">
-                          <%= length(flow.nodes || []) %> nodes • <%= length(flow.connections || []) %> connections • Updated <%= Calendar.strftime(flow.updated_at, "%b %d, %Y") %>
+                          <%= length(flow.nodes || []) %> <%= gettext("nodes") %> • <%= length(flow.connections || []) %> <%= gettext("connections") %> • <%= gettext("Updated") %> <%= Calendar.strftime(flow.updated_at, "%b %d, %Y") %>
                         </p>
                       </div>
                     </div>

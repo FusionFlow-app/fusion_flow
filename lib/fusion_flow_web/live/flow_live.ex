@@ -48,6 +48,11 @@ defmodule FusionFlowWeb.FlowLive do
   end
 
   @impl true
+  def handle_event("change_locale", %{"locale" => locale}, socket) do
+    {:noreply, redirect(socket, to: ~p"/?locale=#{locale}")}
+  end
+
+  @impl true
   def handle_event("client_ready", _params, socket) do
     flow = socket.assigns.current_flow
     nodes = flow.nodes || []
@@ -738,6 +743,20 @@ defmodule FusionFlowWeb.FlowLive do
 
       <div class="flex-1 flex overflow-hidden">
         <FusionFlowWeb.Components.Flow.NodeSidebar.node_sidebar nodes_by_category={@nodes_by_category} />
+
+        <script>
+          window.Translations = {
+            "Run": "<%= gettext("Run") %>",
+            "Waiting...": "<%= gettext("Waiting...") %>",
+            "Remove Node": "<%= gettext("Remove Node") %>",
+            "Configure Node": "<%= gettext("Configure Node") %>",
+            "View Error": "<%= gettext("View Error") %>",
+            "Edit Code": "<%= gettext("Edit Code") %>",
+            "Coming Soon": "<%= gettext("Coming Soon") %>",
+            "Select Integration": "<%= gettext("Select Integration") %>",
+            "Drag to canvas": "<%= gettext("Drag to canvas") %>"
+          };
+        </script>
 
         <div
           class="flex-1 relative bg-gray-100 dark:bg-slate-900"

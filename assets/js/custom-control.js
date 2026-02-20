@@ -104,7 +104,7 @@ export class CustomControlElement extends LitElement {
         }}
                 style="width: 100%; box-sizing: border-box; background: #4338ca; color: white; border: none; padding: 6px; border-radius: 4px; cursor: pointer;"
             >
-                ${this.label || 'Edit Code'}
+                ${this.label || (window.Translations && window.Translations["Edit Code"]) || 'Edit Code'}
             </button>
           `;
     }
