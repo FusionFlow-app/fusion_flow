@@ -8,10 +8,29 @@ defmodule FusionFlow.Nodes.Condition do
       outputs: ["true", "false"],
       ui_fields: [
         %{
+          type: "variable-select",
+          name: :variable,
+          label: "Variable",
+          default: ""
+        },
+        %{
+          type: :select,
+          name: :operator,
+          label: "Operator",
+          options: [
+            %{label: "equal", value: "=="},
+            %{label: "not equal", value: "!="},
+            %{label: "greater than", value: ">"},
+            %{label: "less than", value: "<"},
+            %{label: "contains", value: "contains"}
+          ],
+          default: "=="
+        },
+        %{
           type: :text,
-          name: :expression,
-          label: "Condition",
-          default: "true"
+          name: :value,
+          label: "Value",
+          default: ""
         },
         %{
           type: :code,
@@ -20,7 +39,9 @@ defmodule FusionFlow.Nodes.Condition do
           language: "elixir",
           default: """
           ui do
-            text :expression, label: "Condition", default: "true"
+            variable_select :variable, label: "Variable"
+            select :operator, ["==", "!=", ">", "<", "contains"], default: "=="
+            text :value, label: "Value"
           end
           """
         }
@@ -29,12 +50,39 @@ defmodule FusionFlow.Nodes.Condition do
   end
 
   def handler(context, _input) do
-    {result, _} = Code.eval_string(context["expression"] || "false")
+    var_name = context["variable"]
+    operator = context["operator"] || "=="
+    compare_value = context["value"] || ""
+
+    actual_value = Map.get(context, var_name) || Map.get(context, String.to_atom(var_name))
+
+    result = evaluate_condition(actual_value, operator, compare_value)
 
     if result do
-      {:ok, true}
+      {:ok, context, "true"}
     else
-      {:ok, false}
+      {:ok, context, "false"}
+    end
+  end
+
+  defp evaluate_condition(val, "==", target), do: to_string(val) == to_string(target)
+  defp evaluate_condition(val, "!=", target), do: to_string(val) != to_string(target)
+  defp evaluate_condition(val, ">", target), do: to_number(val) > to_number(target)
+  defp evaluate_condition(val, "<", target), do: to_number(val) < to_number(target)
+  defp evaluate_condition(val, "contains", target) do
+    to_string(val) |> String.contains?(to_string(target))
+  end
+  defp evaluate_condition(_, _, _), do: false
+
+  defp to_number(val) do
+    case val do
+      v when is_number(v) -> v
+      v when is_binary(v) ->
+        case Float.parse(v) do
+          {num, _} -> num
+          _ -> 0
+        end
+      _ -> 0
     end
   end
 end

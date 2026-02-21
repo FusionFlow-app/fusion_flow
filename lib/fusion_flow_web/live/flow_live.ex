@@ -42,7 +42,8 @@ defmodule FusionFlowWeb.FlowLive do
        chat_messages: [],
        pending_ai_trigger: false,
        chat_loading: false,
-       ai_configured: System.get_env("OPENAI_API_KEY") not in [nil, ""]
+       ai_configured: System.get_env("OPENAI_API_KEY") not in [nil, ""],
+       inspecting_result: false
      ),
      layout: false}
   end
@@ -326,7 +327,8 @@ defmodule FusionFlowWeb.FlowLive do
       |> assign(
         config_modal_open: false,
         editing_node_data: nil,
-        current_node_id: nil
+        current_node_id: nil,
+        inspecting_result: false
       )
 
     {:noreply, socket}
@@ -524,7 +526,12 @@ defmodule FusionFlowWeb.FlowLive do
 
   @impl true
   def handle_event("close_result_modal", _params, socket) do
-    {:noreply, assign(socket, show_result_modal: false)}
+    {:noreply, assign(socket, show_result_modal: false, inspecting_result: false)}
+  end
+
+  @impl true
+  def handle_event("toggle_inspect_result", _params, socket) do
+    {:noreply, assign(socket, inspecting_result: !socket.assigns.inspecting_result)}
   end
 
   @impl true
@@ -797,6 +804,7 @@ defmodule FusionFlowWeb.FlowLive do
       <FusionFlowWeb.Components.Modals.ExecutionResultModal.execution_result_modal
         show_result_modal={@show_result_modal}
         execution_result={@execution_result}
+        inspecting_result={@inspecting_result}
       />
 
       <.live_component

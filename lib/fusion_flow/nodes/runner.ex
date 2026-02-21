@@ -26,22 +26,42 @@ defmodule FusionFlow.Nodes.Runner do
 
     if definition do
       module = get_node_module(node_type)
+
+      context = if is_map(context), do: context, else: %{"result" => context}
       node_context = Map.merge(context, node["controls"] || %{})
 
       try do
         case apply(module, :handler, [node_context, nil]) do
-          {:ok, new_context} ->
-            connections = Enum.filter(flow.connections, fn c -> c["source"] == node["id"] end)
-            process_connections(connections, new_context, flow)
+          {:ok, result, output_name} ->
+            connections =
+              flow.connections
+              |> Enum.filter(fn c -> c["source"] == node["id"] && c["sourceOutput"] == to_string(output_name) end)
+            process_connections(connections, result, flow)
+
+          {:ok, result} ->
+            output_name = List.first(definition[:outputs]) || "exec"
+            connections =
+              flow.connections
+              |> Enum.filter(fn c -> c["source"] == node["id"] && c["sourceOutput"] == to_string(output_name) end)
+            process_connections(connections, result, flow)
 
           {:result, value} ->
-            # Store the result in the context and proceed
+            output_name = List.first(definition[:outputs]) || "exec"
             new_context = Map.put(context, "result", value)
-            connections = Enum.filter(flow.connections, fn c -> c["source"] == node["id"] end)
+            connections =
+              flow.connections
+              |> Enum.filter(fn c -> c["source"] == node["id"] && c["sourceOutput"] == to_string(output_name) end)
             process_connections(connections, new_context, flow)
 
           {:error, reason} ->
-            {:error, reason, to_string(node["id"])}
+            if "error" in (definition[:outputs] || []) do
+              connections =
+                flow.connections
+                |> Enum.filter(fn c -> c["source"] == node["id"] && c["sourceOutput"] == "error" end)
+              process_connections(connections, reason, flow)
+            else
+              {:error, reason, to_string(node["id"])}
+            end
         end
       rescue
         e ->
@@ -75,6 +95,7 @@ defmodule FusionFlow.Nodes.Runner do
   defp get_node_module("Variable"), do: FusionFlow.Nodes.Variable
   defp get_node_module("Output"), do: FusionFlow.Nodes.Output
   defp get_node_module("Evaluate Code"), do: FusionFlow.Nodes.Eval
+  defp get_node_module("HTTP Request"), do: FusionFlow.Nodes.HttpRequest
 
   defp get_node_module(name) do
     module_name = "Elixir.FusionFlow.Nodes.#{String.replace(name, " ", "")}"

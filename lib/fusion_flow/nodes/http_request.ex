@@ -27,30 +27,69 @@ defmodule FusionFlow.Nodes.HttpRequest do
           default: "https://api.example.com"
         },
         %{
-          type: :code,
-          name: :code,
-          label: "Logic",
-          language: "elixir",
-          default: """
-          ui do
-            select :method, ["GET", "POST", "PUT", "DELETE", "PATCH"], default: "GET"
-            text :url, label: "Endpoint URL", default: "https://api.example.com"
-          end
-          """
+          type: :text,
+          name: :headers,
+          label: "Headers (JSON)",
+          default: "{}"
+        },
+        %{
+          type: :text,
+          name: :body,
+          label: "Body",
+          default: ""
         }
       ]
     }
   end
 
-  def handler(context, _input) do
-    method = String.to_atom(String.downcase(context["method"] || "get"))
-    url = context["url"]
+  def handler(context, input) do
+    context = if is_map(input), do: Map.merge(context, input), else: context
 
-    if Code.ensure_loaded?(Req) do
-      case Req.request(method: method, url: url) do
-        {:ok, response} -> {:ok, response.body}
-        {:error, error} -> {:error, error}
+    method = String.to_atom(String.downcase(context["method"] || "get"))
+    url = interpolate(context["url"] || "", context)
+    headers_str = interpolate(context["headers"] || "{}", context)
+    body_str = interpolate(context["body"] || "", context)
+
+    headers =
+      case Jason.decode(headers_str) do
+        {:ok, h} when is_map(h) -> Map.to_list(h)
+        _ -> []
       end
+
+    req_opts = [
+      method: method,
+      url: url,
+      headers: headers,
+      retry: false
+    ]
+
+    req_opts =
+      if method in [:post, :put, :patch] and body_str != "" do
+        case Jason.decode(body_str) do
+          {:ok, json} -> req_opts ++ [json: json]
+          {:error, _} -> req_opts ++ [body: body_str]
+        end
+      else
+        req_opts
+      end
+
+    case Req.request(req_opts) do
+      {:ok, %{status: status, body: body}} when status >= 200 and status < 300 ->
+        {:ok, Map.put(context, "result", body), "success"}
+
+      {:ok, %{status: status, body: body}} ->
+        {:ok, Map.put(context, "result", %{"error" => "HTTP #{status}", "body" => body}), "error"}
+
+      {:error, reason} ->
+        {:ok, Map.put(context, "result", %{"error" => inspect(reason)}), "error"}
     end
+  end
+
+  defp interpolate(string, context) do
+    Regex.replace(~r/\{\{(.*?)\}\}/, string, fn _, key ->
+      trimmed_key = String.trim(key)
+      val = Map.get(context, trimmed_key) || Map.get(context, String.to_atom(trimmed_key))
+      to_string(val || "")
+    end)
   end
 end

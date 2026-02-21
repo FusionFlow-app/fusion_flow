@@ -105,7 +105,6 @@ const hooks = {
       });
 
       this.handleEvent("load_graph_data", async ({ nodes, connections, definitions }) => {
-        console.log("LiveView: Received load_graph_data", { nodes, connections, definitions });
         if (editor.importData) {
           await editor.importData({ nodes, connections, definitions });
         } else {
@@ -162,7 +161,6 @@ const hooks = {
       }
 
       this.handleEvent("highlight_node_error", ({ nodeId, message }) => {
-        console.log("LiveView: highlight_node_error received", { nodeId, message });
         if (editor.addNodeError) {
           editor.addNodeError(nodeId, message);
         } else {

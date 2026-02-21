@@ -20,7 +20,7 @@ defmodule FusionFlowWeb.Components.Flow.NodeSidebar do
 
             <div class="space-y-0.5">
               <%= for node <- nodes do %>
-                <% is_active = node.name in ["Evaluate Code", "Start", "Output", "Logger", "Variable"] %>
+                <% is_active = node.name in ["Evaluate Code", "Start", "Output", "Logger", "Variable", "HTTP Request", "Condition"] %>
                 <button
                   draggable={is_active |> to_string()}
                   data-node-name={node.name}

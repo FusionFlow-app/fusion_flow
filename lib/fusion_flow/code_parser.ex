@@ -89,6 +89,18 @@ defmodule FusionFlow.CodeParser do
     }
   end
 
+  defp parse_ui_expression({:variable_select, _, [name | opts]}) do
+    label = extract_option(opts, :label)
+    default = extract_option(opts, :default)
+
+    %{
+      type: "variable-select",
+      name: Atom.to_string(name),
+      label: label || name |> Atom.to_string() |> String.capitalize(),
+      value: default || ""
+    }
+  end
+
   defp parse_ui_expression(_), do: nil
 
   defp extract_list_values({:__block__, _, values}) do

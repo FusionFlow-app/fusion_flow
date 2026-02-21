@@ -65,6 +65,18 @@ defmodule FusionFlowWeb.Components.Modals.NodeConfigModal do
                             <% end %>
                           <% end %>
                         </select>
+                      <% "variable-select" -> %>
+                        <select
+                          name={key}
+                          class="w-full px-3 py-2 border border-gray-300 dark:border-slate-600 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-primary-500 dark:bg-slate-900 dark:text-white transition-all h-10"
+                        >
+                          <option value="">Select a variable...</option>
+                          <%= for var <- (@editing_node_data["variables"] || []) do %>
+                            <option value={var} selected={var == control["value"]}>
+                              {var}
+                            </option>
+                          <% end %>
+                        </select>
                       <% "code-icon" -> %>
                         <div class="relative group">
                           <textarea

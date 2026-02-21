@@ -53,7 +53,6 @@ defmodule FusionFlow.Nodes.Eval do
     language = context["language"] || "elixir"
 
     # Select the appropriate code field based on language
-    # Fallback to legacy "code" field for backward compatibility
     code =
       case language do
         "elixir" -> context["code_elixir"] || context["code"] || ""
