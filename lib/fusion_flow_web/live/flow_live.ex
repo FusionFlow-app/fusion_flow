@@ -215,8 +215,6 @@ defmodule FusionFlowWeb.FlowLive do
 
   @impl true
   def handle_event("send_message", %{"content" => content}, socket) do
-    IO.inspect(content, label: "RECEIVED MESSAGE CONTENT")
-
     if content == "" do
       {:noreply, socket}
     else
@@ -238,33 +236,27 @@ defmodule FusionFlowWeb.FlowLive do
 
       socket =
         start_async(socket, :ai_stream, fn ->
-          case FusionFlow.Agents.FlowCreator.chat(ai_messages, current_flow) do
-            {:ok, result} ->
-              Enum.reduce_while(result.stream, :ok, fn event, _acc ->
-                case event do
-                  {:text_delta, text} ->
-                    send(parent, {:chat_stream_chunk, text})
-                    {:cont, :ok}
+          {:ok, result} = FusionFlow.Agents.FlowCreator.chat(ai_messages, current_flow)
 
-                  {:error, reason} ->
-                    send(parent, {:chat_stream_error, reason})
-                    {:halt, {:error, reason}}
+          Enum.reduce_while(result.stream, :ok, fn event, _acc ->
+            case event do
+              {:text_delta, text} ->
+                send(parent, {:chat_stream_chunk, text})
+                {:cont, :ok}
 
-                  {:finish, _reason} ->
-                    {:cont, :ok}
+              {:error, reason} ->
+                send(parent, {:chat_stream_error, reason})
+                {:halt, {:error, reason}}
 
-                  _ ->
-                    {:cont, :ok}
-                end
-              end)
+              {:finish, _reason} ->
+                {:cont, :ok}
 
-              IO.puts("ASYNC TASK: Stream loop finished")
-              :ok
+              _ ->
+                {:cont, :ok}
+            end
+          end)
 
-            error ->
-              IO.inspect(error, label: "ASYNC TASK: AI Stream Error")
-              error
-          end
+          :ok
         end)
 
       {:noreply, socket}

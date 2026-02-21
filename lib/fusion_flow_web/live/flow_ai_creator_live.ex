@@ -52,30 +52,26 @@ defmodule FusionFlowWeb.FlowAiCreatorLive do
 
       socket =
         start_async(socket, :ai_stream, fn ->
-          case FlowPlanner.chat(ai_messages, nil, locale) do
-            {:ok, result} ->
-              Enum.reduce_while(result.stream, :ok, fn event, _acc ->
-                case event do
-                  {:text_delta, text} ->
-                    send(parent, {:chat_stream_chunk, text})
-                    {:cont, :ok}
+          {:ok, result} = FlowPlanner.chat(ai_messages, nil, locale)
 
-                  {:error, reason} ->
-                    send(parent, {:chat_stream_error, reason})
-                    {:halt, {:error, reason}}
+          Enum.reduce_while(result.stream, :ok, fn event, _acc ->
+            case event do
+              {:text_delta, text} ->
+                send(parent, {:chat_stream_chunk, text})
+                {:cont, :ok}
 
-                  {:finish, _reason} ->
-                    {:cont, :ok}
+              {:error, reason} ->
+                send(parent, {:chat_stream_error, reason})
+                {:halt, {:error, reason}}
 
-                  _ ->
-                    {:cont, :ok}
-                end
-              end)
-              :ok
+              {:finish, _reason} ->
+                {:cont, :ok}
 
-            error ->
-              error
-          end
+              _ ->
+                {:cont, :ok}
+            end
+          end)
+          :ok
         end)
 
       {:noreply, socket}
@@ -100,23 +96,21 @@ defmodule FusionFlowWeb.FlowAiCreatorLive do
 
     socket =
       start_async(socket, :ai_stream_json, fn ->
-        case FlowPlanner.chat(ai_messages, nil, locale) do
-          {:ok, result} ->
-            full_reply =
-              Enum.reduce_while(result.stream, "", fn event, acc ->
-                case event do
-                  {:text_delta, text} ->
-                    send(parent, {:chat_stream_chunk, text})
-                    {:cont, acc <> text}
-                  _ ->
-                    {:cont, acc}
-                end
-              end)
-            {:ok, full_reply}
+        {:ok, result} = FlowPlanner.chat(ai_messages, nil, locale)
 
-          error ->
-            error
-        end
+        full_reply =
+          Enum.reduce_while(result.stream, "", fn event, acc ->
+            case event do
+              {:text_delta, text} ->
+                send(parent, {:chat_stream_chunk, text})
+                {:cont, acc <> text}
+
+              _ ->
+                {:cont, acc}
+            end
+          end)
+
+        {:ok, full_reply}
       end)
 
     {:noreply, socket}

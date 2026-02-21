@@ -15,7 +15,6 @@ defmodule FusionFlow.Nodes.Start do
   end
 
   def handler(context, _input) do
-    IO.puts("Flow started")
     {:ok, context}
   end
 end

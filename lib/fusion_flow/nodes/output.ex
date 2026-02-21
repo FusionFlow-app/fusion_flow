@@ -43,12 +43,10 @@ defmodule FusionFlow.Nodes.Output do
            node_id: "Output"
          }) do
       {:ok, _log} ->
-        IO.puts("Execução finalizada e log salva no Postgres.")
         {:ok, context}
 
-      {:error, changeset} ->
-        IO.inspect(changeset, label: "Erro ao salvar log")
-        {:error, "Failed to save execution log"}
+      {:error, _changeset} ->
+        {:ok, context}
     end
   end
 end
