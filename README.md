@@ -8,50 +8,8 @@ Whether you are automating simple tasks or orchestrating complex microservices, 
 
 ## 🚀 Getting Started
 
-### Prerequisites
+To get **FusionFlow** up and running, please refer to our full **[Installation Guide](https://hexdocs.pm/fusion_flow/installation.html)**.
 
-- Elixir ~> 1.15, Erlang/OTP 26+, PostgreSQL, Node.js
-
-### Installation (Source)
-
-1.  **Clone the repository:**
-    ```bash
-    git clone https://github.com/pedrohfonseca81/fusion_flow.git
-    cd fusion_flow
-    ```
-
-2.  **Install dependencies:**
-    ```bash
-    mix setup
-    ```
-
-3.  **Start the server:**
-    ```bash
-    mix phx.server
-    ```
-
-Now you can visit [`localhost:4000`](http://localhost:4000) from your browser.
-
-### Installation (Docker)
-
-1.  **Clone the repository:**
-    ```bash
-    git clone https://github.com/pedrohfonseca81/fusion_flow.git
-    cd fusion_flow
-    ```
-
-2.  **Start with Docker Compose:**
-    ```bash
-    docker compose up -d --build
-    ```
-    This command will automatically:
-    - Build the application image.
-    - Start the database (Postgres).
-    - Run necessary migrations.
-    - Start the server.
-
-3.  **Access the application:**
-    Visit [`localhost:4000`](http://localhost:4000).
 
 ## 🤝 Community & Contributing
 

@@ -11,7 +11,30 @@ defmodule FusionFlow.MixProject do
       aliases: aliases(),
       deps: deps(),
       compilers: [:phoenix_live_view] ++ Mix.compilers(),
-      listeners: [Phoenix.CodeReloader]
+      listeners: [Phoenix.CodeReloader],
+      name: "FusionFlow",
+      source_url: "https://github.com/FusionFlow-app/fusion_flow",
+      homepage_url: "https://github.com/FusionFlow-app/fusion_flow",
+      docs: [
+        main: "FusionFlow",
+        extras: ["guides/installation.md"]
+      ],
+      description: description(),
+      package: package()
+    ]
+  end
+
+  defp description do
+    "A powerful, low-code workflow automation platform with advanced no-code capabilities."
+  end
+
+  defp package do
+    [
+      name: "fusion_flow",
+      maintainers: ["Pedro Fonseca"],
+      licenses: ["MIT"],
+      links: %{"GitHub" => "https://github.com/FusionFlow-app/fusion_flow"},
+      files: ~w(lib priv guides mix.exs README.md LICENSE config scripts)
     ]
   end
 
@@ -56,13 +79,7 @@ defmodule FusionFlow.MixProject do
       {:phoenix_live_dashboard, "~> 0.8.3"},
       {:esbuild, "~> 0.10", runtime: Mix.env() == :dev},
       {:tailwind, "~> 0.3", runtime: Mix.env() == :dev},
-      {:heroicons,
-       github: "tailwindlabs/heroicons",
-       tag: "v2.2.0",
-       sparse: "optimized",
-       app: false,
-       compile: false,
-       depth: 1},
+      {:heroicons_css, "~> 2.2", app: false, compile: false},
       {:telemetry_metrics, "~> 1.0"},
       {:telemetry_poller, "~> 1.0"},
       {:gettext, "~> 1.0"},
@@ -71,7 +88,8 @@ defmodule FusionFlow.MixProject do
       {:bandit, "~> 1.5"},
       {:ai_sdk, "~> 0.0.1-rc.0"},
       {:pythonx, "~> 0.3.0"},
-      {:earmark, "~> 1.4"}
+      {:earmark, "~> 1.4"},
+      {:ex_doc, "~> 0.21", only: :dev, runtime: false}
     ]
   end
 
