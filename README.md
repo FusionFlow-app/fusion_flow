@@ -6,19 +6,6 @@
 
 Whether you are automating simple tasks or orchestrating complex microservices, FusionFlow provides the visual tools to build without boundaries.
 
-## ✨ Features
-
-- **Visual Workflow Editor**: Intuitive drag-and-drop interface to build flows effortlessly.
-- **Robust Execution**: Engines designed for fault tolerance and massive concurrency, ensuring your workflows run reliably under any load.
-- **Real-time Synchronization**: collaborate with your team and see changes instantly.
-- **Extensible Node System**:
-  - **Flow Control**: Condition, Merge, SplitInBatches, Start.
-  - **Integrations**: HTTP Request, Postgres, Webhook, and more coming soon.
-  - **Logic**: Execute custom logic safely.
-  - **Utilities**: Logger, Cron triggers.
-- **Polyglot Potential**: Built to eventually support multiple languages (Python, JavaScript) for custom logic.
-- **Ultra Dark Mode & Modern UI**: Fully styled interface using Tailwind CSS (`slate-900`/`slate-800` layers), featuring a global Sidebar and a dedicated root Dashboard with workflow metrics.
-
 ## 🚀 Getting Started
 
 ### Prerequisites
@@ -67,66 +54,14 @@ Now you can visit [`localhost:4000`](http://localhost:4000) from your browser.
 3.  **Access the application:**
     Visit [`localhost:4000`](http://localhost:4000).
 
-## 🛠️ Contributing
+## 🤝 Community & Contributing
 
-We love contributions! Please see our [Contributing Guide](CONTRIBUTING.md) for more details.
+We believe in building in public. Join our community to discuss ideas, track our vision, or help us build:
 
-## 📝 TO-DO / Roadmap
-
-The following features are planned for future releases:
-
-- [x] **Visual Flow Execution**:
-    - [x] **Run Button**: Execute flows directly from the editor.
-    - [x] **Real-time Feedback**: Visual error highlighting and execution results.
-    - [x] **Execution Persistence**: Log execution context to Postgres via `Output` node.
-
-- [x] **Developer Experience**:
-    - [x] **Variable Node**: Define and use global variables easily.
-    - [x] **Smart Autocomplete**: Context-aware variable suggestions in code editors.
-    - [x] **Error Visualization**: Detailed error modals and node validation.
-    - [x] **AI Assistant**: Embedded chat interface for assistance.
-    - [x] **Dashboard & Navigation**: Root dashboard with quick stats and a global sidebar for seamless navigation.
-
-- [x] **Multi-Language Runtime Support**:
-    - [x] **Python Runner**: Execute Python scripts natively within flows.
-    - [ ] **JavaScript/Node.js Runner**: Run JS code for logic and data manipulation.
-
-- [ ] **Enhanced Real-time Collaboration**:
-    - [ ] **Live Cursors**: See where other users are working in real-time.
-    - [ ] **Presence Indicators**: Visual list of currently active users.
-    - [ ] **Comments & Annotations**: Add sticky notes to the canvas for team communication.
-
-- [ ] **Execution Engine Integration**:
-    - [ ] Integrate [Oban](https://github.com/sorentwo/oban) for reliable background job processing.
-    - [ ] Add support for "awaiting" asynchronous events (e.g., Webhook callbacks).
-
-- [ ] **Dynamic Supervision**:
-    - [ ] Implement supervisors to isolate running flows.
-    - [ ] Add "Stop/Pause" functionality for running flows.
-
-- [ ] **Expanded Node Library**:
-    - [ ] **Productivity**: Google Sheets, Notion, Airtable, Slack, Discord.
-    - [ ] **Communication**: SendGrid, Twilio (SMS), SMTP.
-    - [ ] **Data & Helpers**: JSON Transform (JQ), CSV Parser, XML/SOAP Helpers, Regex Extractor.
-    - [ ] **File I/O**: S3 Bucket, FTP/SFTP, Local File System.
-
-- [ ] **Workflow Management**:
-    - [ ] **Versioning**: History, snapshots, and rollback capabilities.
-    - [ ] **AI Agents**: Native AI agents with state and supervision.
-
-- [ ] **Authentication & Authorization**:
-    - [ ] Multi-user support with `phx_gen_auth`.
-    - [ ] Role-based access control (RBAC) for editing flows vs. viewing logs.
-
-- [ ] **Monitoring & Analytics**:
-    - [ ] Dashboard for execution metrics (success/failure rates, duration).
-
-- [ ] **Deployment & Distribution**:
-    - [ ] **Official Docker Image**: Publish to Docker Hub.
-
-## 💬 Community
-
-Join our [Discord server](https://discord.gg/VMdJhMQpDE) to chat with the community, ask questions, and share your flows!
+- **Contributing**: Check our [Contributing Guide](CONTRIBUTING.md) to get started.
+- **Public Roadmap**: Long-term vision and goals on our [Roadmap Repository](https://github.com/FusionFlow-app/roadmap).
+- **Project Board**: Live active tasks on our [GitHub Project Board](https://github.com/orgs/FusionFlow-app/projects/2).
+- **Discord Server**: Real-time chat and support in our [Discord Server](https://discord.gg/VMdJhMQpDE).
 
 ## License
 
