@@ -3,9 +3,10 @@ defmodule FusionFlow.Nodes.Webhook do
     %{
       name: "Webhook",
       category: :trigger,
-      icon: "🔗",
+      icon: "hero-link",
       inputs: [],
       outputs: ["exec"],
+      show: false,
       ui_fields: [
         %{
           type: :select,

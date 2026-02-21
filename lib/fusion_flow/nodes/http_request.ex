@@ -3,9 +3,10 @@ defmodule FusionFlow.Nodes.HttpRequest do
     %{
       name: "HTTP Request",
       category: :integration,
-      icon: "⇄",
+      icon: "hero-globe-alt",
       inputs: [:exec],
       outputs: ["success", "error"],
+      show: true,
       ui_fields: [
         %{
           type: :select,

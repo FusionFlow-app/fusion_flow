@@ -94,7 +94,6 @@ export async function createEditor(container) {
                                     editor.triggerErrorDetails(node.id, message);
                                 }
                             }}
-                            }}
                 .onControlChange=${(key, value) => {
                                 if (editor.triggerChange) {
                                     const node = data.payload;
@@ -111,7 +110,7 @@ export async function createEditor(container) {
                         html`<custom-connection .path=${props.path}></custom-connection>`;
                 },
                 socket(data) {
-                    return () => html`<custom-socket .data=${data} slot="${data.side}-${data.key}"></custom-socket>`;
+                    return () => html`<custom-socket .data=${data}></custom-socket>`;
                 },
             },
         })
@@ -189,8 +188,8 @@ export async function createEditor(container) {
             // Calculate coordinates taking zoom/pan into account
             // Adjust the - 110 and - 24 to match the drag image hook offsets
             const { k, x: tx, y: ty } = area.area.transform;
-            const x = (e.clientX - rect.left - tx - 110 * k) / k;
-            const y = (e.clientY - rect.top - ty - 24 * k) / k;
+            const x = (e.clientX - rect.left - tx - 40 * k) / k;
+            const y = (e.clientY - rect.top - ty - 40 * k) / k;
             
             editor.handleDrop(nodeName, { x, y });
         }
@@ -204,6 +203,8 @@ export async function createEditor(container) {
 
         const node = new ClassicPreset.Node(definition.name);
         node.type = definition.name;
+        node.icon = definition.icon;
+        node.category = definition.category;
 
         if (data && data.id) {
             node.id = data.id;

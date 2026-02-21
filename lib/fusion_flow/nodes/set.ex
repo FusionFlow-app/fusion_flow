@@ -3,9 +3,10 @@ defmodule FusionFlow.Nodes.Set do
     %{
       name: "Set",
       category: :data_manipulation,
-      icon: "📝",
+      icon: "hero-adjustments-horizontal",
       inputs: [:exec],
       outputs: ["exec"],
+      show: false,
       ui_fields: [
         %{
           type: :json,

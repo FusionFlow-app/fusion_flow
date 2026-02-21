@@ -3,9 +3,10 @@ defmodule FusionFlow.Nodes.Merge do
     %{
       name: "Merge",
       category: :flow_control,
-      icon: "⭀",
+      icon: "hero-arrows-pointing-in",
       inputs: [:in1, :in2, :in3],
       outputs: ["exec"],
+      show: false,
       ui_fields: [
         %{
           type: :select,

@@ -3,9 +3,10 @@ defmodule FusionFlow.Nodes.Start do
     %{
       name: "Start",
       category: :flow_control,
-      icon: "▶",
+      icon: "hero-play",
       inputs: [],
       outputs: ["exec"],
+      show: true,
       ui_fields: [],
       default_code: """
       ui do

@@ -7,6 +7,8 @@ export class CustomSocketElement extends LitElement {
         display: block;
         width: 24px;
         height: 24px;
+        padding: 0;
+        margin: 0;
       }
       .socket {
         width: 100% !important;
