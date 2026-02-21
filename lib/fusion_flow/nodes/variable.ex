@@ -3,9 +3,10 @@ defmodule FusionFlow.Nodes.Variable do
     %{
       name: "Variable",
       category: :data_manipulation,
-      icon: "📦",
+      icon: "hero-variable",
       inputs: [:exec],
       outputs: ["exec"],
+      show: true,
       ui_fields: [
         %{
           type: :text,

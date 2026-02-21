@@ -3,9 +3,10 @@ defmodule FusionFlow.Nodes.Postgres do
     %{
       name: "Postgres",
       category: :integration,
-      icon: "🐘",
+      icon: "hero-circle-stack",
       inputs: [:exec],
       outputs: ["success", "error"],
+      show: false,
       ui_fields: [
         %{
           type: :code,

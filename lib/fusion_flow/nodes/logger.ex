@@ -3,9 +3,10 @@ defmodule FusionFlow.Nodes.Logger do
     %{
       name: "Logger",
       category: :utility,
-      icon: "📋",
+      icon: "hero-chat-bubble-bottom-center-text",
       inputs: [:exec],
       outputs: ["exec"],
+      show: true,
       ui_fields: [
         %{
           type: :select,

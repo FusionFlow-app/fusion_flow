@@ -193,12 +193,13 @@ defmodule FusionFlowWeb.FlowLive do
         %{"field-name" => field_name, "code" => code, "language" => language},
         socket
       ) do
-    # Determine which code field to populate based on language
-    {code_elixir, code_python} =
-      case language do
-        "python" -> {"", code}
-        _ -> {code, ""}
-      end
+    # When opening from config, we want to preserve both Elixir and Python code
+    # if they already exist in the editing state.
+    editing_data = socket.assigns.editing_node_data
+
+    code_elixir = get_in(editing_data, ["controls", "code_elixir", "value"]) ||
+                  get_in(editing_data, ["controls", "code", "value"]) || ""
+    code_python = get_in(editing_data, ["controls", "code_python", "value"]) || ""
 
     {:noreply,
      assign(socket,
@@ -393,10 +394,21 @@ defmodule FusionFlowWeb.FlowLive do
       if socket.assigns.config_modal_open do
         editing_node_data = socket.assigns.editing_node_data
 
+        # Updated logic: also update the triggering field (e.g. "code") with the current language's content
+        # so the preview and the modal itself stay in sync.
+        current_code = if socket.assigns.current_language == "python", do: code_python, else: code_elixir
+
         updated_node_data =
           editing_node_data
           |> put_in(["controls", "code_elixir", "value"], code_elixir)
           |> put_in(["controls", "code_python", "value"], code_python)
+
+        updated_node_data =
+          if field_name && get_in(updated_node_data, ["controls", field_name]) do
+            put_in(updated_node_data, ["controls", field_name, "value"], current_code)
+          else
+            updated_node_data
+          end
 
         socket
         |> assign(

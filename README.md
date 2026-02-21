@@ -6,17 +6,16 @@
 
 Whether you are automating simple tasks or orchestrating complex microservices, FusionFlow provides the visual tools to build without boundaries.
 
+## 🚀 Getting Started
+
+To get **FusionFlow** up and running, please refer to our full **[Installation Guide](https://hexdocs.pm/fusion_flow/installation.html)**.
+
 ## ✨ Showcase
 
 | Dashboard | Create Flow with AI | Flow Editor |
 | :---: | :---: | :---: |
 | ![Dashboard](assets/screenshots/dashboard.png) | ![AI Creator](assets/screenshots/ai_creator.png) | ![Flow Editor](assets/screenshots/flow_editor.png) |
-| *System overview* | *Describe your logic, AI builds it* | *Visual orchestration (Under study)* |
-
-## 🚀 Getting Started
-
-To get **FusionFlow** up and running, please refer to our full **[Installation Guide](https://hexdocs.pm/fusion_flow/installation.html)**.
-
+| *System overview* | *Describe your logic, AI builds it* | *Visual orchestration* |
 
 ## 🤝 Community & Contributing
 

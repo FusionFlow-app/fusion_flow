@@ -23,7 +23,7 @@ defmodule FusionFlowWeb.Components.Modals.NodeConfigModal do
               </span>
               Configure {@editing_node_data["label"]}
             </h3>
-            
+
             <.button
               variant="ghost"
               phx-click="close_config_modal"
@@ -32,7 +32,7 @@ defmodule FusionFlowWeb.Components.Modals.NodeConfigModal do
               <.icon name="hero-x-mark" class="h-6 w-6" />
             </.button>
           </div>
-          
+
           <form phx-submit="save_node_config" class="flex-1 flex flex-col overflow-hidden">
             <div class="flex-1 p-6 overflow-y-auto space-y-6">
               <div class="space-y-2">
@@ -45,99 +45,103 @@ defmodule FusionFlowWeb.Components.Modals.NodeConfigModal do
                   value={@editing_node_data["label"]}
                 />
               </div>
-              
+
               <%= if @editing_node_data["controls"] do %>
                 <%= for {key, control} <- @editing_node_data["controls"] do %>
-                  <div class="space-y-2">
-                    <label class="block text-sm font-semibold text-gray-700 dark:text-slate-300 capitalize">
-                      {control["label"] || String.replace(key, "_", " ")}
-                    </label>
-                    <%= case control["type"] do %>
-                      <% "select" -> %>
-                        <.input
-                          type="select"
-                          name={key}
-                          options={
-                            for(
-                              option <- control["options"] || [],
-                              do:
-                                if(is_map(option),
-                                  do: {option["label"], option["value"]},
-                                  else: {option, option}
-                                )
-                            )
-                          }
-                          value={control["value"]}
-                        />
-                      <% "variable-select" -> %>
-                        <.input
-                          type="select"
-                          name={key}
-                          prompt="Select a variable..."
-                          options={for var <- @editing_node_data["variables"] || [], do: {var, var}}
-                          value={control["value"]}
-                        />
-                      <% "code-icon" -> %>
-                        <div class="relative group">
-                          <.textarea
+                  <%= if control["type"] == "hidden" do %>
+                    <input type="hidden" name={key} value={control["value"]} />
+                  <% else %>
+                    <div class="space-y-2">
+                      <label class="block text-sm font-semibold text-gray-700 dark:text-slate-300 capitalize">
+                        {control["label"] || String.replace(key, "_", " ")}
+                      </label>
+                      <%= case control["type"] do %>
+                        <% "select" -> %>
+                          <.input
+                            type="select"
                             name={key}
-                            rows="3"
-                            readonly
-                            disabled
+                            options={
+                              for(
+                                option <- control["options"] || [],
+                                do:
+                                  if(is_map(option),
+                                    do: {option["label"], option["value"]},
+                                    else: {option, option}
+                                  )
+                              )
+                            }
                             value={control["value"]}
                           />
-                          <.button
-                            type="button"
-                            variant="outline"
-                            phx-click="open_code_editor_from_config"
-                            phx-value-field-name={key}
-                            phx-value-code={control["value"]}
-                            phx-value-language={control["language"] || "elixir"}
-                            class="absolute top-2 right-2 p-1.5 h-auto"
-                            title="Open Code Editor"
-                          >
-                            <.icon name="hero-code-bracket" class="w-4 h-4" />
-                          </.button>
-                        </div>
-                      <% "code-button" -> %>
-                        <div class="flex items-center gap-3 p-3 border border-gray-200 dark:border-slate-700 rounded-lg bg-gray-50 dark:bg-slate-800/50">
-                          <div class="flex-1">
-                            <div class="text-xs font-mono text-gray-500 dark:text-gray-400 truncate">
-                              {String.slice(control["value"] || "", 0, 50)}...
-                            </div>
+                        <% "variable-select" -> %>
+                          <.input
+                            type="select"
+                            name={key}
+                            prompt="Select a variable..."
+                            options={for var <- @editing_node_data["variables"] || [], do: {var, var}}
+                            value={control["value"]}
+                          />
+                        <% "code-icon" -> %>
+                          <div class="relative group">
+                            <.textarea
+                              name={key}
+                              rows="3"
+                              readonly
+                              disabled
+                              value={control["value"]}
+                            />
+                            <.button
+                              type="button"
+                              variant="outline"
+                              phx-click="open_code_editor_from_config"
+                              phx-value-field-name={key}
+                              phx-value-code={control["value"]}
+                              phx-value-language={control["language"] || "elixir"}
+                              class="absolute top-2 right-2 p-1.5 h-auto"
+                              title="Open Code Editor"
+                            >
+                              <.icon name="hero-code-bracket" class="w-4 h-4" />
+                            </.button>
                           </div>
-                          
-                          <.button
-                            type="button"
-                            variant="primary"
-                            phx-click="open_code_editor_from_config"
-                            phx-value-field-name={key}
-                            phx-value-code={control["value"]}
-                            phx-value-language={control["language"] || "elixir"}
-                            class="px-3 py-1.5 text-xs h-auto"
-                          >
-                            <.icon name="hero-code-bracket" class="w-3.5 h-3.5 mr-1" /> {gettext(
-                              "Edit Code"
-                            )}
-                          </.button> <input type="hidden" name={key} value={control["value"]} />
-                        </div>
-                      <% _ -> %>
-                        <%= if String.length(to_string(control["value"])) > 50 do %>
-                          <textarea
-                            name={key}
-                            rows="4"
-                            class="w-full px-3 py-2 border border-gray-300 dark:border-slate-600 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-primary-500 dark:bg-slate-900 dark:text-white transition-all"
-                          >{control["value"]}</textarea>
-                        <% else %>
-                          <input
-                            type="text"
-                            name={key}
-                            value={control["value"]}
-                            class="w-full px-3 py-2 border border-gray-300 dark:border-slate-600 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-primary-500 dark:bg-slate-900 dark:text-white transition-all h-10"
-                          />
-                        <% end %>
-                    <% end %>
-                  </div>
+                        <% "code-button" -> %>
+                          <div class="flex items-center gap-3 p-3 border border-gray-200 dark:border-slate-700 rounded-lg bg-gray-50 dark:bg-slate-800/50">
+                            <div class="flex-1">
+                              <div class="text-xs font-mono text-gray-500 dark:text-gray-400 truncate">
+                                {String.slice(control["value"] || "", 0, 50)}...
+                              </div>
+                            </div>
+
+                            <.button
+                              type="button"
+                              variant="primary"
+                              phx-click="open_code_editor_from_config"
+                              phx-value-field-name={key}
+                              phx-value-code={control["value"]}
+                              phx-value-language={control["language"] || "elixir"}
+                              class="px-3 py-1.5 text-xs h-auto"
+                            >
+                              <.icon name="hero-code-bracket" class="w-3.5 h-3.5 mr-1" /> {gettext(
+                                "Edit Code"
+                              )}
+                            </.button> <input type="hidden" name={key} value={control["value"]} />
+                          </div>
+                        <% _ -> %>
+                          <%= if String.length(to_string(control["value"])) > 50 do %>
+                            <textarea
+                              name={key}
+                              rows="4"
+                              class="w-full px-3 py-2 border border-gray-300 dark:border-slate-600 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-primary-500 dark:bg-slate-900 dark:text-white transition-all"
+                            >{control["value"]}</textarea>
+                          <% else %>
+                            <input
+                              type="text"
+                              name={key}
+                              value={control["value"]}
+                              class="w-full px-3 py-2 border border-gray-300 dark:border-slate-600 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-primary-500 dark:bg-slate-900 dark:text-white transition-all h-10"
+                            />
+                          <% end %>
+                      <% end %>
+                    </div>
+                  <% end %>
                 <% end %>
               <% else %>
                 <p class="text-gray-500 dark:text-gray-400 italic">
@@ -145,7 +149,7 @@ defmodule FusionFlowWeb.Components.Modals.NodeConfigModal do
                 </p>
               <% end %>
             </div>
-            
+
             <div class="px-6 py-5 bg-white dark:bg-slate-800 border-t border-gray-200 dark:border-slate-700 flex justify-end gap-3 rounded-b-lg">
               <.button
                 type="button"

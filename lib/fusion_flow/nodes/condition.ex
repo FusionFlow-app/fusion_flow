@@ -3,9 +3,10 @@ defmodule FusionFlow.Nodes.Condition do
     %{
       name: "Condition",
       category: :flow_control,
-      icon: "⑂",
+      icon: "hero-arrows-right-left",
       inputs: [:exec],
       outputs: ["true", "false"],
+      show: true,
       ui_fields: [
         %{
           type: "variable-select",

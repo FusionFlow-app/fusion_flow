@@ -3,9 +3,10 @@ defmodule FusionFlow.Nodes.Cron do
     %{
       name: "Cron",
       category: :trigger,
-      icon: "⏱",
+      icon: "hero-clock",
       inputs: [],
       outputs: ["exec"],
+      show: false,
       ui_fields: [
         %{
           type: :text,

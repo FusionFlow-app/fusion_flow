@@ -3,9 +3,10 @@ defmodule FusionFlow.Nodes.SplitInBatches do
     %{
       name: "SplitInBatches",
       category: :flow_control,
-      icon: "✂",
+      icon: "hero-arrows-pointing-out",
       inputs: [:exec],
       outputs: ["exec"],
+      show: false,
       ui_fields: [
         %{
           type: :number,

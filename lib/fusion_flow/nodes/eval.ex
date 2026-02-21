@@ -7,9 +7,10 @@ defmodule FusionFlow.Nodes.Eval do
     %{
       name: "Evaluate Code",
       category: :code,
-      icon: "</>",
+      icon: "hero-code-bracket",
       inputs: [:exec],
       outputs: [:exec],
+      show: true,
       ui_fields: [
         %{
           type: :select,

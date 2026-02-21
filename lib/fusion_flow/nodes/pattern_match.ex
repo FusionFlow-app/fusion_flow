@@ -3,9 +3,10 @@ defmodule FusionFlow.Nodes.PatternMatch do
     %{
       name: "Pattern Match",
       category: :flow_control,
-      icon: "≡",
+      icon: "hero-magnifying-glass",
       inputs: [:exec],
       outputs: ["match", "no_match"],
+      show: false,
       ui_fields: [
         %{
           type: :text,

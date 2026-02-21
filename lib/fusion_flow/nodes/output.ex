@@ -5,9 +5,10 @@ defmodule FusionFlow.Nodes.Output do
     %{
       name: "Output",
       category: :flow_control,
-      icon: "🏁",
+      icon: "hero-check-circle",
       inputs: [:exec],
       outputs: [],
+      show: true,
       ui_fields: [
         %{
           type: :text,
