@@ -8,11 +8,26 @@ on:
 
 jobs:
   test:
-    name: Rodar mix test
+    name: Run mix test
     runs-on: ubuntu-latest
 
+    services:
+      db:
+        image: postgres:17-alpine
+        ports:
+          - 5432:5432
+        env:
+          POSTGRES_USER: postgres
+          POSTGRES_PASSWORD: postgres
+          POSTGRES_DB: fusion_flow
+        options: >-
+          --health-cmd pg_isready
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+
     steps:
-      - name: Checkout do código
+      - name: Checkout code
         uses: actions/checkout@v4
 
       - name: Setup Elixir
@@ -21,15 +36,20 @@ jobs:
           elixir-version: '1.18'
           otp-version: '28'
 
-      - name: Cache das dependências
+      - name: Cache dependencies
         uses: actions/cache@v3
         with:
           path: deps
           key: ${{ runner.os }}-mix-${{ hashFiles('**/mix.lock') }}
           restore-keys: ${{ runner.os }}-mix-
 
-      - name: Instalar dependências
+      - name: Install dependencies
         run: mix deps.get
 
       - name: Run tests
+        env:
+          POSTGRES_USER: postgres
+          POSTGRES_PASSWORD: postgres
+          SECRET_KEY_BASE: dummy_secret_key_base_for_ci_tests_only_1234567890
+          OPENAI_API_KEY: dummy_openai_key
         run: mix test
