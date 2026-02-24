@@ -99,6 +99,27 @@ defmodule FusionFlow.Accounts do
     |> Repo.insert!()
   end
 
+  @doc """
+  Returns whether at least one user is a system admin.
+  Used to decide whether to show the setup page or normal login.
+  """
+  def has_system_admin? do
+    import Ecto.Query
+    Repo.exists?(from u in User, where: u.is_system_admin == true)
+  end
+
+  @doc """
+  Registers the first user as system admin (used by the setup flow).
+  """
+  def register_system_admin(attrs) do
+    %User{}
+    |> User.registration_changeset(attrs)
+    |> User.password_changeset(attrs)
+    |> User.confirm_changeset()
+    |> User.admin_changeset(%{is_system_admin: true})
+    |> Repo.insert()
+  end
+
   ## Settings
 
   @doc """
@@ -173,6 +194,20 @@ defmodule FusionFlow.Accounts do
   def update_user_username(user, attrs) do
     user
     |> User.registration_changeset(attrs)
+    |> Repo.update()
+  end
+
+  @doc """
+  Updates user attributes allowed only for admins (e.g. is_system_admin).
+
+  ## Example
+
+      iex> update_user(user, %{is_system_admin: true})
+      {:ok, %User{}}
+  """
+  def update_user(user, attrs) do
+    user
+    |> User.admin_changeset(attrs)
     |> Repo.update()
   end
 

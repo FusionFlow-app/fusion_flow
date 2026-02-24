@@ -9,6 +9,7 @@ defmodule FusionFlow.Accounts.User do
     field :hashed_password, :string, redact: true
     field :confirmed_at, :utc_datetime
     field :authenticated_at, :utc_datetime, virtual: true
+    field :is_system_admin, :boolean, default: false
 
     timestamps(type: :utc_datetime)
   end
@@ -124,6 +125,14 @@ defmodule FusionFlow.Accounts.User do
   end
 
   @doc """
+  Changeset for updating user attributes that only admins may set (e.g. is_system_admin).
+  """
+  def admin_changeset(user, attrs) do
+    user
+    |> cast(attrs, [:is_system_admin])
+  end
+
+  @doc """
   Confirms the account by setting `confirmed_at`.
   """
   def confirm_changeset(user) do
@@ -146,4 +155,10 @@ defmodule FusionFlow.Accounts.User do
     Pbkdf2.no_user_verify()
     false
   end
+
+  @doc """
+  Returns whether the user is a system admin.
+  """
+  def system_admin?(%__MODULE__{is_system_admin: value}), do: value == true
+  def system_admin?(_), do: false
 end
