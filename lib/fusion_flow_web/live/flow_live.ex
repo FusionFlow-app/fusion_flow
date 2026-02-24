@@ -834,7 +834,8 @@ defmodule FusionFlowWeb.FlowLive do
             "Paste": "<%= gettext("Paste") %>",
             "Delete Selected": "<%= gettext("Delete Selected") %>",
             "Undo": "<%= gettext("Undo") %>",
-            "Redo": "<%= gettext("Redo") %>"
+            "Redo": "<%= gettext("Redo") %>",
+            "Delete connection": "<%= gettext("Delete connection") %>"
           };
         </script>
 

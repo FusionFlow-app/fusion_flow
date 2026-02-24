@@ -136,6 +136,11 @@ msgstr "Undo"
 msgid "Redo"
 msgstr "Redo"
 
+#: lib/fusion_flow_web/live/flow_live.ex:838
+#, elixir-autogen, elixir-format
+msgid "Delete connection"
+msgstr "Delete connection"
+
 #: lib/fusion_flow_web/live/flow_live.ex:757
 #, elixir-autogen, elixir-format
 msgid "Select Integration"

@@ -32,9 +32,51 @@ export async function createEditor(container) {
     const connection = new ConnectionPlugin();
     const render = new LitPlugin();
 
+    const selectedNodeIds = new Set();
+    const selectNode = (nodeId, add = false) => {
+        if (!add) selectedNodeIds.clear();
+        selectedNodeIds.add(nodeId);
+        updateNodeSelectionVisuals();
+    };
+    const deselectNode = (nodeId) => {
+        selectedNodeIds.delete(nodeId);
+        updateNodeSelectionVisuals();
+    };
+    const clearNodeSelection = () => {
+        selectedNodeIds.clear();
+        updateNodeSelectionVisuals();
+    };
+    const updateNodeSelectionVisuals = () => {
+        for (const node of editor.getNodes()) {
+            const sel = selectedNodeIds.has(node.id);
+            node.selected = sel;
+            const view = area.nodeViews.get(node.id);
+            if (view && view.element) {
+                const customNode = view.element.querySelector('custom-node');
+                if (customNode) {
+                    customNode.selected = sel;
+                    customNode.requestUpdate();
+                }
+            }
+        }
+    };
+
     AreaExtensions.selectableNodes(area, AreaExtensions.selector(), {
         accumulating: AreaExtensions.accumulateOnCtrl(),
     });
+
+    const selectedConnectionIds = new Set();
+    const selectConnection = (connId, addToSelection = false) => {
+        if (!addToSelection) selectedConnectionIds.clear();
+        selectedConnectionIds.add(connId);
+        area.update('connection', connId);
+        // Não limpar seleção de nós ao selecionar conexão, para permitir apagar nó + conexão em conjunto
+    };
+    const clearConnectionSelection = () => {
+        if (selectedConnectionIds.size === 0) return;
+        selectedConnectionIds.clear();
+        editor.getConnections().forEach(c => area.update('connection', c.id));
+    };
 
     render.addPreset(
         Presets.classic.setup({
@@ -105,9 +147,21 @@ export async function createEditor(container) {
                             }}
             ></custom-node>`;
                 },
-                connection() {
+                connection(data) {
+                    const connId = data.payload?.id;
+                    const selected = connId ? selectedConnectionIds.has(connId) : false;
                     return (props) =>
-                        html`<custom-connection .path=${props.path}></custom-connection>`;
+                        html`<custom-connection
+                            .path=${props.path}
+                            .connectionId=${connId}
+                            .selected=${selected}
+                            data-connection-id=${connId || ''}
+                            @connection-click=${(e) => {
+                                if (e.detail && e.detail.connectionId) {
+                                    selectConnection(e.detail.connectionId, e.detail.shiftKey || e.detail.ctrlKey || e.detail.metaKey);
+                                }
+                            }}
+                        ></custom-connection>`;
                 },
                 socket(data) {
                     return () => html`<custom-socket .data=${data}></custom-socket>`;
@@ -140,10 +194,9 @@ export async function createEditor(container) {
         if (isTranslatingSelection) return context;
         const { id: draggedId, position, previous } = context.data;
         const delta = { x: position.x - previous.x, y: position.y - previous.y };
-        const selected = editor.getNodes().filter(n => n.selected);
-        if (selected.length <= 1) return context;
-        const draggedInSelection = selected.some(n => n.id === draggedId);
-        if (!draggedInSelection) return context;
+        if (selectedNodeIds.size <= 1) return context;
+        if (!selectedNodeIds.has(draggedId)) return context;
+        const selected = editor.getNodes().filter(n => selectedNodeIds.has(n.id));
         if (!isMultiNodeDragging) {
             isMultiNodeDragging = true;
             container.style.cursor = 'grabbing';
@@ -170,6 +223,7 @@ export async function createEditor(container) {
     const redoStack = [];
     let isRestoring = false;
     let isImportingData = false;
+    let isDeletingSelection = false;
     let translateDebounce = null;
     let lastImportOrRestoreTime = 0;
     const IGNORE_TRANSLATED_MS = 600;
@@ -206,17 +260,7 @@ export async function createEditor(container) {
     };
 
     const clearSelection = () => {
-        editor.getNodes().forEach(node => {
-            node.selected = false;
-            const view = area.nodeViews.get(node.id);
-            if (view && view.element) {
-                const customNode = view.element.querySelector('custom-node');
-                if (customNode) {
-                    customNode.selected = false;
-                    customNode.requestUpdate();
-                }
-            }
-        });
+        clearNodeSelection();
     };
 
     const pushUndo = () => {
@@ -320,7 +364,7 @@ export async function createEditor(container) {
             context.type === 'translated'
         ) {
             processChange();
-            if (!isRestoring && !isImportingData && !isTranslatingSelection) {
+            if (!isRestoring && !isImportingData && !isTranslatingSelection && !isDeletingSelection) {
                 if (context.type === 'translated') {
                     if (Date.now() - lastImportOrRestoreTime < IGNORE_TRANSLATED_MS) return context;
                     if (translateDebounce) clearTimeout(translateDebounce);
@@ -424,29 +468,17 @@ export async function createEditor(container) {
             }
         });
         
-        editor.getNodes().forEach(node => {
-            node.selected = false;
-            const view = area.nodeViews.get(node.id);
-            if (view && view.element) {
-                const customNode = view.element.querySelector('custom-node');
-                if (customNode) {
-                    customNode.selected = false;
-                    customNode.requestUpdate();
-                }
+        selectedNodeIds.clear();
+        nodesInBox.forEach(node => selectedNodeIds.add(node.id));
+        updateNodeSelectionVisuals();
+        const nodeIdsInBox = new Set(nodesInBox.map(n => n.id));
+        selectedConnectionIds.clear();
+        editor.getConnections().forEach(conn => {
+            if (nodeIdsInBox.has(conn.source) && nodeIdsInBox.has(conn.target)) {
+                selectedConnectionIds.add(conn.id);
             }
         });
-        
-        nodesInBox.forEach(node => {
-            node.selected = true;
-            const view = area.nodeViews.get(node.id);
-            if (view && view.element) {
-                const customNode = view.element.querySelector('custom-node');
-                if (customNode) {
-                    customNode.selected = true;
-                    customNode.requestUpdate();
-                }
-            }
-        });
+        editor.getConnections().forEach(c => area.update('connection', c.id));
         
         selectionBox.style.display = 'none';
         
@@ -473,6 +505,40 @@ export async function createEditor(container) {
         }
     };
 
+    document.addEventListener('pointerdown', (e) => {
+        if (e.button !== 0 || !container.contains(e.target)) return;
+        let clickedNodeId = null;
+        for (const [nodeId, view] of area.nodeViews) {
+            if (view.element && (view.element.contains(e.target) || view.element === e.target)) {
+                clickedNodeId = nodeId;
+                break;
+            }
+        }
+        if (!clickedNodeId) {
+            const el = document.elementFromPoint(e.clientX, e.clientY);
+            for (const [nodeId, view] of area.nodeViews) {
+                if (view.element && view.element.contains(el)) {
+                    clickedNodeId = nodeId;
+                    break;
+                }
+            }
+        }
+        if ((e.shiftKey || e.ctrlKey || e.metaKey) && clickedNodeId) {
+            if (selectedNodeIds.has(clickedNodeId)) {
+                deselectNode(clickedNodeId);
+            } else {
+                selectNode(clickedNodeId, true);
+            }
+            e.stopPropagation();
+            e.preventDefault();
+            return;
+        }
+        if (clickedNodeId) {
+            if (!selectedNodeIds.has(clickedNodeId)) {
+                selectNode(clickedNodeId, false);
+            }
+        }
+    }, true);
     container.addEventListener('mousedown', (e) => {
         if (!container.contains(e.target)) return;
         
@@ -500,24 +566,6 @@ export async function createEditor(container) {
             }
         }
         
-        if (clickedNodeId && e.shiftKey && e.button === 0) {
-            e.preventDefault();
-            e.stopPropagation();
-            const node = editor.getNode(clickedNodeId);
-            if (node) {
-                node.selected = true;
-                const view = area.nodeViews.get(clickedNodeId);
-                if (view && view.element) {
-                    const customNode = view.element.querySelector('custom-node');
-                    if (customNode) {
-                        customNode.selected = true;
-                        customNode.requestUpdate();
-                    }
-                }
-                return;
-            }
-        }
-        
         if (e.shiftKey && isBackground) {
             e.preventDefault();
             e.stopPropagation();
@@ -534,17 +582,10 @@ export async function createEditor(container) {
             document.addEventListener('mouseup', handleSelectionUp);
         }
         else if (isBackground && e.button === 0) {
-            editor.getNodes().forEach(node => {
-                node.selected = false;
-                const view = area.nodeViews.get(node.id);
-                if (view && view.element) {
-                    const customNode = view.element.querySelector('custom-node');
-                    if (customNode) {
-                        customNode.selected = false;
-                        customNode.requestUpdate();
-                    }
-                }
-            });
+            clearNodeSelection();
+            clearConnectionSelection();
+        } else if (clickedNodeId && e.button === 0) {
+            clearConnectionSelection();
         }
     });
 
@@ -561,7 +602,7 @@ export async function createEditor(container) {
         }
     };
 
-    const createContextMenu = (x, y) => {
+    const createContextMenu = (x, y, contextMenuConnectionId = null) => {
         removeContextMenu();
         
         contextMenuX = x;
@@ -572,17 +613,11 @@ export async function createEditor(container) {
         
         const allNodes = editor.getNodes();
         
-        const selectedNodes = allNodes.filter(n => {
-            if (n.selected) return true;
-            const view = area.nodeViews.get(n.id);
-            if (view && view.element) {
-                const customNode = view.element.querySelector('custom-node');
-                if (customNode && customNode.selected) return true;
-            }
-            return false;
-        });
+        const selectedNodes = allNodes.filter(n => selectedNodeIds.has(n.id));
         
         const hasSelection = selectedNodes.length > 0;
+        const hasConnectionSelection = selectedConnectionIds.size > 0;
+        const hasDeleteTarget = hasSelection || hasConnectionSelection;
         const hasCopiedData = window.copiedNodesData && window.copiedNodesData.length > 0;
         
         const undoItem = document.createElement('button');
@@ -615,12 +650,16 @@ export async function createEditor(container) {
             copyItem.innerHTML = `<span>Copy <span class="text-gray-400 text-xs">Ctrl+C</span></span>`;
             copyItem.addEventListener('click', (e) => {
                 e.stopPropagation();
+                const selectedIds = new Set(selectedNodes.map(n => n.id));
                 window.copiedNodesData = selectedNodes.map(node => {
                     let position = { x: 0, y: 0 };
                     const view = area.nodeViews.get(node.id);
                     if (view && view.position) position = { x: view.position.x, y: view.position.y };
-                    return { type: node.type, label: node.label, data: { ...node.data }, position };
+                    return { type: node.type, label: node.label, data: { ...node.data }, position, originalId: node.id };
                 });
+                window.copiedConnections = editor.getConnections()
+                    .filter(c => selectedIds.has(c.source) && selectedIds.has(c.target))
+                    .map(c => ({ source: c.source, target: c.target, sourceOutput: c.sourceOutput, targetInput: c.targetInput }));
                 removeContextMenu();
             });
             menu.appendChild(copyItem);
@@ -638,14 +677,28 @@ export async function createEditor(container) {
                 const positions = window.copiedNodesData.map(n => n.position || { x: 0, y: 0 });
                 const minX = Math.min(...positions.map(p => p.x));
                 const minY = Math.min(...positions.map(p => p.y));
-                
+                const oldIdToNewId = {};
                 for (const nodeData of window.copiedNodesData) {
                     const pos = nodeData.position || { x: 0, y: 0 };
                     const newId = 'node_' + Date.now() + '_' + Math.random().toString(36).substr(2, 9);
+                    oldIdToNewId[nodeData.originalId || nodeData.data?.id] = newId;
                     const newData = { ...nodeData.data, id: newId, label: nodeData.label, position: { x: pasteX + (pos.x - minX) + 20, y: pasteY + (pos.y - minY) + 20 }};
                     const definition = editor.nodeDefinitions && editor.nodeDefinitions[nodeData.type];
                     if (definition) {
                         await processAddNode(nodeData.type, definition, newData);
+                    }
+                }
+                const conns = window.copiedConnections || [];
+                for (const conn of conns) {
+                    const sourceNew = oldIdToNewId[conn.source];
+                    const targetNew = oldIdToNewId[conn.target];
+                    if (!sourceNew || !targetNew) continue;
+                    const sourceNode = editor.getNode(sourceNew);
+                    const targetNode = editor.getNode(targetNew);
+                    if (sourceNode && targetNode) {
+                        try {
+                            await editor.addConnection(new ClassicPreset.Connection(sourceNode, conn.sourceOutput, targetNode, conn.targetInput));
+                        } catch (err) {}
                     }
                 }
                 removeContextMenu();
@@ -653,31 +706,36 @@ export async function createEditor(container) {
             menu.appendChild(pasteItem);
         }
         
-        if (hasSelection) {
+        if (hasDeleteTarget) {
             const deleteItem = document.createElement('button');
             deleteItem.className = 'w-full px-4 py-2 text-left text-sm text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-900/20 flex items-center gap-3';
             deleteItem.innerHTML = `<span>Delete <span class="text-gray-400 text-xs">Del</span></span>`;
-            deleteItem.addEventListener('click', (e) => {
+            deleteItem.addEventListener('click', async (e) => {
                 e.stopPropagation();
-                
-                const currentNodes = editor.getNodes();
-                const selectedIds = new Set(selectedNodes.map(n => n.id));
-                
-                const allConnections = [...editor.getConnections()];
-                allConnections.forEach(conn => {
-                    if (selectedIds.has(conn.source) || selectedIds.has(conn.target)) {
-                        try { editor.removeConnection(conn.id); } catch(e) { 
+                isDeletingSelection = true;
+                try {
+                    const selectedIds = new Set(selectedNodes.map(n => n.id));
+                    for (const connId of [...selectedConnectionIds]) {
+                        try { await editor.removeConnection(connId); } catch (err) {}
+                    }
+                    selectedConnectionIds.clear();
+                    const allConnections = [...editor.getConnections()];
+                    for (const conn of allConnections) {
+                        if (selectedIds.has(conn.source) || selectedIds.has(conn.target)) {
+                            try { await editor.removeConnection(conn.id); } catch (err) {}
                         }
                     }
-                });
-                
-                currentNodes.forEach(node => {
-                    if (selectedIds.has(node.id)) {
-                        try { editor.removeNode(node.id); } catch(e) { 
+                    for (const node of editor.getNodes()) {
+                        if (selectedIds.has(node.id)) {
+                            try { await editor.removeNode(node.id); } catch (err) {}
                         }
                     }
-                });
-                
+                    editor.getConnections().forEach(c => area.update('connection', c.id));
+                    processChange();
+                } finally {
+                    isDeletingSelection = false;
+                    pushUndo();
+                }
                 removeContextMenu();
             });
             menu.appendChild(deleteItem);
@@ -713,10 +771,28 @@ export async function createEditor(container) {
         contextMenu = menu;
     };
 
+    container.addEventListener('connection-contextmenu', (e) => {
+        e.preventDefault();
+        e.stopPropagation();
+        if (e.detail && e.detail.connectionId != null) {
+            selectConnection(e.detail.connectionId, true);
+            createContextMenu(e.detail.clientX, e.detail.clientY, e.detail.connectionId);
+        }
+    });
     container.addEventListener('contextmenu', (e) => {
         e.preventDefault();
-        createContextMenu(e.clientX, e.clientY);
-    });
+        const path = e.composedPath && e.composedPath();
+        const connectionEl = path && Array.isArray(path) && path.find(el => {
+            if (el.nodeType !== 1) return false;
+            if (el.hasAttribute && el.hasAttribute('data-connection-id')) return true;
+            return el.tagName && el.tagName.toLowerCase() === 'custom-connection' && el.connectionId;
+        });
+        const contextMenuConnectionId = connectionEl
+            ? (connectionEl.getAttribute && connectionEl.getAttribute('data-connection-id')) || connectionEl.connectionId || null
+            : null;
+        if (contextMenuConnectionId) selectConnection(contextMenuConnectionId, true);
+        createContextMenu(e.clientX, e.clientY, contextMenuConnectionId);
+    }, true);
 
     document.addEventListener('click', (e) => {
         if (e.button === 0 && contextMenu && !contextMenu.contains(e.target)) {
@@ -755,82 +831,99 @@ export async function createEditor(container) {
         
         if (e.key === 'Escape') {
             removeContextMenu();
-            editor.getNodes().forEach(node => {
-                node.selected = false;
-                const view = area.nodeViews.get(node.id);
-                if (view && view.element) {
-                    const customNode = view.element.querySelector('custom-node');
-                    if (customNode) { customNode.selected = false; customNode.requestUpdate(); }
-                }
-            });
+            clearNodeSelection();
+            clearConnectionSelection();
         }
         
         if (e.key === 'c' && (e.ctrlKey || e.metaKey)) {
-            const nodes = editor.getNodes().filter(n => n.selected);
+            const nodes = editor.getNodes().filter(n => selectedNodeIds.has(n.id));
             if (nodes.length > 0) {
                 e.preventDefault();
+                const selectedIds = new Set(nodes.map(n => n.id));
                 window.copiedNodesData = nodes.map(node => {
                     let position = { x: 0, y: 0 };
                     const view = area.nodeViews.get(node.id);
                     if (view && view.position) position = { x: view.position.x, y: view.position.y };
-                    return { type: node.type, label: node.label, data: { ...node.data }, position };
+                    return { type: node.type, label: node.label, data: { ...node.data }, position, originalId: node.id };
                 });
+                window.copiedConnections = editor.getConnections()
+                    .filter(c => selectedIds.has(c.source) && selectedIds.has(c.target))
+                    .map(c => ({ source: c.source, target: c.target, sourceOutput: c.sourceOutput, targetInput: c.targetInput }));
             }
         }
         
         if (e.key === 'v' && (e.ctrlKey || e.metaKey)) {
             if (window.copiedNodesData && window.copiedNodesData.length > 0) {
                 e.preventDefault();
-                const { k, x: tx, y: ty } = area.area.transform;
-                const centerX = window.innerWidth / 2;
-                const centerY = window.innerHeight / 2;
-                const pasteX = (centerX - tx) / k;
-                const pasteY = (centerY - ty) / k;
-                const positions = window.copiedNodesData.map(n => n.position || { x: 0, y: 0 });
-                const minX = Math.min(...positions.map(p => p.x));
-                const minY = Math.min(...positions.map(p => p.y));
-                
-                window.copiedNodesData.forEach(async (nodeData) => {
-                    const pos = nodeData.position || { x: 0, y: 0 };
-                    const newId = 'node_' + Date.now() + '_' + Math.random().toString(36).substr(2, 9);
-                    const newData = { ...nodeData.data, id: newId, label: nodeData.label, position: { x: pasteX + (pos.x - minX) + 20, y: pasteY + (pos.y - minY) + 20 }};
-                    const definition = editor.nodeDefinitions && editor.nodeDefinitions[nodeData.type];
-                    if (definition) await processAddNode(nodeData.type, definition, newData);
-                });
+                (async () => {
+                    const { k, x: tx, y: ty } = area.area.transform;
+                    const centerX = window.innerWidth / 2;
+                    const centerY = window.innerHeight / 2;
+                    const pasteX = (centerX - tx) / k;
+                    const pasteY = (centerY - ty) / k;
+                    const positions = window.copiedNodesData.map(n => n.position || { x: 0, y: 0 });
+                    const minX = Math.min(...positions.map(p => p.x));
+                    const minY = Math.min(...positions.map(p => p.y));
+                    const oldIdToNewId = {};
+                    for (const nodeData of window.copiedNodesData) {
+                        const pos = nodeData.position || { x: 0, y: 0 };
+                        const newId = 'node_' + Date.now() + '_' + Math.random().toString(36).substr(2, 9);
+                        oldIdToNewId[nodeData.originalId || nodeData.data?.id] = newId;
+                        const newData = { ...nodeData.data, id: newId, label: nodeData.label, position: { x: pasteX + (pos.x - minX) + 20, y: pasteY + (pos.y - minY) + 20 }};
+                        const definition = editor.nodeDefinitions && editor.nodeDefinitions[nodeData.type];
+                        if (definition) await processAddNode(nodeData.type, definition, newData);
+                    }
+                    const conns = window.copiedConnections || [];
+                    for (const conn of conns) {
+                        const sourceNew = oldIdToNewId[conn.source];
+                        const targetNew = oldIdToNewId[conn.target];
+                        if (!sourceNew || !targetNew) continue;
+                        const sourceNode = editor.getNode(sourceNew);
+                        const targetNode = editor.getNode(targetNew);
+                        if (sourceNode && targetNode) {
+                            try {
+                                await editor.addConnection(new ClassicPreset.Connection(sourceNode, conn.sourceOutput, targetNode, conn.targetInput));
+                            } catch (err) {}
+                        }
+                    }
+                })();
             }
         }
         
         if (e.key === 'Delete' || e.key === 'Backspace') {
+            if (isInput) return;
             const allNodes = editor.getNodes();
-            const nodes = allNodes.filter(n => {
-                if (n.selected) return true;
-                const view = area.nodeViews.get(n.id);
-                if (view && view.element) {
-                    const customNode = view.element.querySelector('custom-node');
-                    if (customNode && customNode.selected) return true;
+            const selectedNodes = allNodes.filter(n => selectedNodeIds.has(n.id));
+            const hasConnectionSelection = selectedConnectionIds.size > 0;
+            const hasNodeSelection = selectedNodes.length > 0;
+            if (!hasConnectionSelection && !hasNodeSelection) return;
+            e.preventDefault();
+            isDeletingSelection = true;
+            (async () => {
+                try {
+                    const selectedIds = new Set(selectedNodes.map(n => n.id));
+                    for (const connId of [...selectedConnectionIds]) {
+                        try { await editor.removeConnection(connId); } catch (err) {}
+                    }
+                    selectedConnectionIds.clear();
+                    const allConnections = [...editor.getConnections()];
+                    for (const conn of allConnections) {
+                        if (selectedIds.has(conn.source) || selectedIds.has(conn.target)) {
+                            try { await editor.removeConnection(conn.id); } catch (err) {}
+                        }
+                    }
+                    for (const node of editor.getNodes()) {
+                        if (selectedIds.has(node.id)) {
+                            try { await editor.removeNode(node.id); } catch (err) {}
+                        }
+                    }
+                    editor.getConnections().forEach(c => area.update('connection', c.id));
+                    processChange();
+                } finally {
+                    isDeletingSelection = false;
+                    pushUndo();
                 }
-                return false;
-            });
-            
-            if (nodes.length > 0) {
-                e.preventDefault();
-                
-                const selectedIds = new Set(nodes.map(n => n.id));
-                
-                const allConnections = [...editor.getConnections()];
-                allConnections.forEach(conn => {
-                    if (selectedIds.has(conn.source) || selectedIds.has(conn.target)) {
-                        try { editor.removeConnection(conn.id); } catch(e) {}
-                    }
-                });
-                
-                const currentNodes = editor.getNodes();
-                currentNodes.forEach(node => {
-                    if (selectedIds.has(node.id)) {
-                        try { editor.removeNode(node.id); } catch(e) {}
-                    }
-                });
-            }
+            })();
         }
     });
 

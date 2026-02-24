@@ -136,6 +136,11 @@ msgstr "Desfazer"
 msgid "Redo"
 msgstr "Refazer"
 
+#: lib/fusion_flow_web/live/flow_live.ex:838
+#, elixir-autogen, elixir-format
+msgid "Delete connection"
+msgstr "Excluir conexão"
+
 #: lib/fusion_flow_web/live/flow_live.ex:757
 #, elixir-autogen, elixir-format
 msgid "Select Integration"
