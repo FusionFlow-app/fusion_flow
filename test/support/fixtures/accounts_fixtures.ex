@@ -44,6 +44,21 @@ defmodule FusionFlow.AccountsFixtures do
     user
   end
 
+  @doc """
+  Ensures at least one system admin exists (for tests that expect redirect to /users/log-in).
+  Creates one if none exist. Returns the system admin user.
+  """
+  def ensure_system_admin do
+    if Accounts.has_system_admin?() do
+      import Ecto.Query
+      FusionFlow.Repo.one(from u in Accounts.User, where: u.is_system_admin == true, limit: 1)
+    else
+      user = unconfirmed_user_fixture()
+      {:ok, admin} = Accounts.update_user(user, %{is_system_admin: true})
+      admin
+    end
+  end
+
   def user_scope_fixture do
     user = user_fixture()
     user_scope_fixture(user)
