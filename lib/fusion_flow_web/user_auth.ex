@@ -223,10 +223,17 @@ defmodule FusionFlowWeb.UserAuth do
     if socket.assigns.current_scope && socket.assigns.current_scope.user do
       {:cont, socket}
     else
+      {redirect_to, flash_type, flash_msg} =
+        if Accounts.has_system_admin?() do
+          {~p"/users/log-in", :error, gettext("You must log in to access this page.")}
+        else
+          {~p"/setup", :info, gettext("Create the first administrator account to get started.")}
+        end
+
       socket =
         socket
-        |> Phoenix.LiveView.put_flash(:error, gettext("You must log in to access this page."))
-        |> Phoenix.LiveView.redirect(to: ~p"/users/log-in")
+        |> Phoenix.LiveView.put_flash(flash_type, flash_msg)
+        |> Phoenix.LiveView.redirect(to: redirect_to)
 
       {:halt, socket}
     end
@@ -271,16 +278,43 @@ defmodule FusionFlowWeb.UserAuth do
 
   @doc """
   Plug for routes that require the user to be authenticated.
+  When no user is logged in, redirects to /setup if there is no system admin yet.
   """
   def require_authenticated_user(conn, _opts) do
     if conn.assigns.current_scope && conn.assigns.current_scope.user do
       conn
     else
+      if Accounts.has_system_admin?() do
+        conn
+        |> put_flash(:error, gettext("You must log in to access this page."))
+        |> maybe_store_return_to()
+        |> redirect(to: ~p"/users/log-in")
+        |> halt()
+      else
+        conn
+        |> redirect(to: ~p"/setup")
+        |> halt()
+      end
+    end
+  end
+
+  @doc """
+  Plug that redirects to /setup when there is no system admin.
+  Only the /setup path is allowed when no admin exists.
+  """
+  def redirect_to_setup_if_no_admin(conn, _opts) do
+    path = conn.request_path
+
+    if path == "/setup" do
       conn
-      |> put_flash(:error, gettext("You must log in to access this page."))
-      |> maybe_store_return_to()
-      |> redirect(to: ~p"/users/log-in")
-      |> halt()
+    else
+      if Accounts.has_system_admin?() do
+        conn
+      else
+        conn
+        |> redirect(to: ~p"/setup")
+        |> halt()
+      end
     end
   end
 
