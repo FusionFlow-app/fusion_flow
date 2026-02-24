@@ -99,14 +99,9 @@ defmodule FusionFlowWeb.UserLive.Setup do
          |> redirect(to: ~p"/users/log-in")}
 
       {:error, %Ecto.Changeset{} = changeset} ->
-        # Rebuild from params so all fields persist when showing validation errors
-        form_changeset =
-          %FusionFlow.Accounts.User{}
-          |> FusionFlow.Accounts.User.registration_changeset(user_params)
-          |> FusionFlow.Accounts.User.password_changeset(user_params)
-          |> Ecto.Changeset.merge(changeset)
-
-        form = to_form(form_changeset, as: "user")
+        form =
+          changeset
+          |> to_form(as: "user")
 
         {:noreply,
          socket

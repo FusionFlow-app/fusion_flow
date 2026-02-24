@@ -3,22 +3,6 @@ defmodule FusionFlowWeb.FlowLive do
 
   @impl true
   def mount(%{"id" => id}, _session, socket) do
-    if not system_admin?(socket) do
-      {:ok,
-       socket
-       |> put_flash(:error, gettext("You do not have permission to access this page."))
-       |> redirect(to: ~p"/")}
-    else
-      mount_flow(socket, id)
-    end
-  end
-
-  defp system_admin?(socket) do
-    user = socket.assigns[:current_scope] && socket.assigns.current_scope.user
-    user && FusionFlow.Accounts.User.system_admin?(user)
-  end
-
-  defp mount_flow(socket, id) do
     flow = FusionFlow.Flows.get_flow!(id)
 
     {:ok,

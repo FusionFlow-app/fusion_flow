@@ -299,23 +299,6 @@ defmodule FusionFlowWeb.UserAuth do
   end
 
   @doc """
-  Plug that redirects authenticated users away from guest-only pages
-  (login, setup, invite register). Use in the pipeline for those routes.
-  """
-  def redirect_if_authenticated(conn, _opts) do
-    scope = conn.assigns[:current_scope]
-
-    if scope && scope.user do
-      conn
-      |> put_flash(:info, gettext("You are already logged in."))
-      |> redirect(to: ~p"/")
-      |> halt()
-    else
-      conn
-    end
-  end
-
-  @doc """
   Plug that redirects to /setup when there is no system admin.
   Only the /setup path is allowed when no admin exists.
   """
