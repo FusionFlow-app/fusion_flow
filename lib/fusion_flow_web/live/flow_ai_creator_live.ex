@@ -6,22 +6,6 @@ defmodule FusionFlowWeb.FlowAiCreatorLive do
 
   @impl true
   def mount(_params, _session, socket) do
-    if not system_admin?(socket) do
-      {:ok,
-       socket
-       |> put_flash(:error, gettext("You do not have permission to access this page."))
-       |> redirect(to: ~p"/")}
-    else
-      mount_configured(socket)
-    end
-  end
-
-  defp system_admin?(socket) do
-    user = socket.assigns[:current_scope] && socket.assigns.current_scope.user
-    user && FusionFlow.Accounts.User.system_admin?(user)
-  end
-
-  defp mount_configured(socket) do
     ai_configured? = System.get_env("OPENAI_API_KEY") not in [nil, ""]
 
     if ai_configured? do

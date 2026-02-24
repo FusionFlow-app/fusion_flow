@@ -11,7 +11,6 @@ defmodule FusionFlow.Accounts.UserToken do
   @magic_link_validity_in_minutes 15
   @change_email_validity_in_days 7
   @session_validity_in_days 14
-  @invite_validity_in_days 7
 
   schema "users_tokens" do
     field :token, :binary
@@ -81,35 +80,6 @@ defmodule FusionFlow.Accounts.UserToken do
   """
   def build_email_token(user, context) do
     build_hashed_token(user, context, user.email)
-  end
-
-  @doc """
-  Builds an invite token so a user can share a registration link.
-  Valid for @invite_validity_in_days days. Returns {encoded_token, %UserToken{}}.
-  """
-  def build_invite_token(inviter_user) do
-    build_hashed_token(inviter_user, "invite", "")
-  end
-
-  @doc """
-  Verifies an invite token and returns the inviter user and token if valid.
-  """
-  def verify_invite_token_query(token) do
-    case Base.url_decode64(token, padding: false) do
-      {:ok, decoded_token} ->
-        hashed_token = :crypto.hash(@hash_algorithm, decoded_token)
-
-        query =
-          from token in by_token_and_context_query(hashed_token, "invite"),
-            join: user in assoc(token, :user),
-            where: token.inserted_at > ago(^@invite_validity_in_days, "day"),
-            select: {user, token}
-
-        {:ok, query}
-
-      :error ->
-        :error
-    end
   end
 
   defp build_hashed_token(user, context, sent_to) do

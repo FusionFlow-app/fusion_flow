@@ -6,18 +6,6 @@ import { CodeEditorHook } from "./code_editor"
 
 const hooks = {
   CodeEditor: CodeEditorHook,
-  CopyInviteLink: {
-    mounted() {
-      this.handleEvent("copy_invite_link", ({ selector }) => {
-        const el = document.querySelector(selector);
-        if (el && el.value) {
-          navigator.clipboard.writeText(el.value).then(() => {
-            this.pushEvent("invite_link_copied", {});
-          });
-        }
-      });
-    }
-  },
   NodeSearch: {
     mounted() {
       this.el.addEventListener("input", (e) => {

@@ -69,14 +69,6 @@ defmodule FusionFlow.Accounts do
   """
   def get_user!(id), do: Repo.get!(User, id)
 
-  @doc """
-  Lists all users ordered by inserted_at.
-  """
-  def list_users do
-    import Ecto.Query
-    Repo.all(from u in User, order_by: [desc: u.inserted_at])
-  end
-
   ## User registration
 
   @doc """
@@ -126,56 +118,6 @@ defmodule FusionFlow.Accounts do
     |> User.confirm_changeset()
     |> User.admin_changeset(%{is_system_admin: true})
     |> Repo.insert()
-  end
-
-  ## Invites
-
-  @doc """
-  Creates an invite token for the given user. Returns the encoded token to build the invite URL.
-  """
-  def create_invite_token(inviter_user) do
-    {encoded_token, token} = UserToken.build_invite_token(inviter_user)
-
-    case Repo.insert(token) do
-      {:ok, _} -> {:ok, encoded_token}
-      {:error, changeset} -> {:error, changeset}
-    end
-  end
-
-  @doc """
-  Verifies an invite token and returns the inviter user and token record if valid.
-  """
-  def get_invite_by_token(token) when is_binary(token) do
-    case UserToken.verify_invite_token_query(token) do
-      {:ok, query} ->
-        case Repo.one(query) do
-          {inviter_user, token_struct} -> {:ok, inviter_user, token_struct}
-          nil -> :error
-        end
-
-      :error ->
-        :error
-    end
-  end
-
-  @doc """
-  Registers a new user using a valid invite token. Invalidates the token after success.
-  """
-  def register_user_from_invite(attrs, token) do
-    case get_invite_by_token(token) do
-      :error ->
-        {:error, :invalid_token}
-
-      {:ok, _inviter, token_struct} ->
-        case register_user(attrs) do
-          {:ok, user} ->
-            Repo.delete(token_struct)
-            {:ok, user}
-
-          {:error, changeset} ->
-            {:error, changeset}
-        end
-    end
   end
 
   ## Settings

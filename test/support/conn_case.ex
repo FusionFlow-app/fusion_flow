@@ -33,8 +33,6 @@ defmodule FusionFlowWeb.ConnCase do
 
   setup tags do
     FusionFlow.DataCase.setup_sandbox(tags)
-    # Ensure a system admin exists so redirects go to /users/log-in instead of /setup
-    FusionFlow.AccountsFixtures.ensure_system_admin()
     {:ok, conn: Phoenix.ConnTest.build_conn()}
   end
 
