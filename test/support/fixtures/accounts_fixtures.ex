@@ -44,6 +44,16 @@ defmodule FusionFlow.AccountsFixtures do
     user
   end
 
+  @doc """
+  Creates a user with is_system_admin: true.
+  Use in tests that need a system admin to exist (e.g. to avoid redirect to /setup).
+  """
+  def system_admin_fixture(attrs \\ %{}) do
+    user = user_fixture(attrs)
+    {:ok, admin} = Accounts.update_user(user, %{is_system_admin: true})
+    admin
+  end
+
   def user_scope_fixture do
     user = user_fixture()
     user_scope_fixture(user)
