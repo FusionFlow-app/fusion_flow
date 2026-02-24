@@ -13,17 +13,6 @@ defmodule FusionFlow.Nodes.SplitInBatches do
           name: :batch_size,
           label: "Batch Size",
           default: "10"
-        },
-        %{
-          type: :code,
-          name: :code,
-          label: "Logic",
-          language: "elixir",
-          default: """
-          ui do
-            number :batch_size, label: "Batch Size", default: "10"
-          end
-          """
         }
       ]
     }

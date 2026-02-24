@@ -17,17 +17,6 @@ defmodule FusionFlow.Nodes.Merge do
             %{label: "Any", value: "any"}
           ],
           default: "any"
-        },
-        %{
-          type: :code,
-          name: :code,
-          label: "Logic",
-          language: "elixir",
-          default: """
-          ui do
-            select :mode, ["wait_all", "any"], default: "any"
-          end
-          """
         }
       ]
     }

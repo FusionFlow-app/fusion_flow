@@ -34,4 +34,9 @@ defmodule FusionFlow.Nodes.Registry do
     |> Enum.filter(fn node -> Map.get(node, :show, true) end)
     |> Enum.group_by(& &1.category)
   end
+
+  def visible_nodes do
+    all_nodes()
+    |> Enum.filter(fn node -> Map.get(node, :show, true) end)
+  end
 end

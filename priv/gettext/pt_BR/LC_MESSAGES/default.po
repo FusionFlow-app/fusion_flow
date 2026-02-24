@@ -126,6 +126,21 @@ msgstr "Remover Nó"
 msgid "Run"
 msgstr "Executar"
 
+#: lib/fusion_flow_web/live/flow_live.ex:836
+#, elixir-autogen, elixir-format
+msgid "Undo"
+msgstr "Desfazer"
+
+#: lib/fusion_flow_web/live/flow_live.ex:837
+#, elixir-autogen, elixir-format
+msgid "Redo"
+msgstr "Refazer"
+
+#: lib/fusion_flow_web/live/flow_live.ex:838
+#, elixir-autogen, elixir-format
+msgid "Delete connection"
+msgstr "Excluir conexão"
+
 #: lib/fusion_flow_web/live/flow_live.ex:757
 #, elixir-autogen, elixir-format
 msgid "Select Integration"

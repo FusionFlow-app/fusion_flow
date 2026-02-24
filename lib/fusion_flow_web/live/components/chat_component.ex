@@ -24,7 +24,7 @@ defmodule FusionFlowWeb.Components.ChatComponent do
           />
         </.button>
       <% end %>
-      
+
       <div class={"fixed top-0 right-0 h-full w-[350px] bg-white dark:bg-slate-900 shadow-2xl z-[100] transform transition-transform duration-300 ease-in-out flex flex-col border-l border-gray-200 dark:border-slate-800 " <> if(@open, do: "translate-x-0", else: "translate-x-full")}>
         <div class="p-4 border-b border-gray-200 dark:border-slate-800 flex items-center justify-between bg-gray-50 dark:bg-slate-800">
           <div class="flex items-center gap-2">
@@ -38,9 +38,9 @@ defmodule FusionFlowWeb.Components.ChatComponent do
                 <path d="M12 2a2 2 0 012 2c0 .74-.4 1.39-1 1.73V7h1a7 7 0 017 7h1a1 1 0 011 1v3a1 1 0 01-1 1h-1v1a2 2 0 01-2 2H5a2 2 0 01-2-2v-1H2a1 1 0 01-1-1v-3a1 1 0 011-1h1a7 7 0 017-7h1V5.73c-.6-.34-1-.99-1-1.73a2 2 0 012-2zM9 11a2 2 0 100 4 2 2 0 000-4zm6 0a2 2 0 100 4 2 2 0 000-4z" />
               </svg>
             </div>
-             <span class="font-semibold text-gray-900 dark:text-white">AI Assistant</span>
+            <span class="font-semibold text-gray-900 dark:text-white">AI Assistant</span>
           </div>
-          
+
           <.button
             variant="ghost"
             phx-click={@on_toggle}
@@ -50,7 +50,7 @@ defmodule FusionFlowWeb.Components.ChatComponent do
             <.icon name="hero-x-mark" class="h-6 w-6" />
           </.button>
         </div>
-        
+
         <div class="flex-1 overflow-y-auto p-4 space-y-4" id="chat-messages" phx-hook="ScrollToBottom">
           <%= for {role, content} <- @messages, not (role == :ai and content == "") do %>
             <div class={"flex " <> if(role == :user, do: "justify-end", else: "justify-start")}>
@@ -75,7 +75,7 @@ defmodule FusionFlowWeb.Components.ChatComponent do
                         stroke-width="4"
                       >
                       </circle>
-                      
+
                       <path
                         class="opacity-75"
                         fill="currentColor"
@@ -91,7 +91,7 @@ defmodule FusionFlowWeb.Components.ChatComponent do
               </div>
             </div>
           <% end %>
-          
+
           <%= if @loading and (List.last(@messages) |> elem(1)) == "" do %>
             <div class="flex justify-start">
               <div class="max-w-[85%] rounded-2xl px-4 py-3 text-sm bg-gray-100 dark:bg-slate-800 text-gray-800 dark:text-gray-200 rounded-bl-none border border-gray-200 dark:border-slate-700 shadow-sm dark:shadow-none">
@@ -111,7 +111,7 @@ defmodule FusionFlowWeb.Components.ChatComponent do
                       stroke-width="4"
                     >
                     </circle>
-                    
+
                     <path
                       class="opacity-75"
                       fill="currentColor"
@@ -124,7 +124,7 @@ defmodule FusionFlowWeb.Components.ChatComponent do
               </div>
             </div>
           <% end %>
-          
+
           <%= if not @ai_configured do %>
             <div class="flex flex-col items-center justify-center h-full text-gray-400 dark:text-gray-500 px-6">
               <div class="w-16 h-16 bg-amber-100 dark:bg-amber-900/30 rounded-2xl flex items-center justify-center mb-4">
@@ -141,11 +141,11 @@ defmodule FusionFlowWeb.Components.ChatComponent do
                   />
                 </svg>
               </div>
-              
+
               <p class="text-sm font-semibold text-gray-700 dark:text-gray-300 mb-1">
                 AI Assistant Disabled
               </p>
-              
+
               <p class="text-xs text-center text-gray-500 dark:text-gray-400">
                 Set
                 <code class="bg-gray-100 dark:bg-gray-700 px-1.5 py-0.5 rounded font-mono text-xs">
@@ -176,7 +176,7 @@ defmodule FusionFlowWeb.Components.ChatComponent do
             <% end %>
           <% end %>
         </div>
-        
+
         <%= if @ai_configured do %>
           <div class="p-4 border-t border-gray-200 dark:border-slate-800 bg-white dark:bg-slate-900">
             <form phx-submit={@on_send} class="flex gap-2 items-center">

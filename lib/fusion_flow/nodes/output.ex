@@ -15,17 +15,6 @@ defmodule FusionFlow.Nodes.Output do
           name: :status,
           label: "Final Status",
           default: "success"
-        },
-        %{
-          type: :code,
-          name: :code,
-          label: "Logic",
-          language: "elixir",
-          default: """
-          ui do
-            text :status, label: "Final Status", default: "success"
-          end
-          """
         }
       ]
     }

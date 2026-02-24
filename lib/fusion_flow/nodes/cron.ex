@@ -19,18 +19,6 @@ defmodule FusionFlow.Nodes.Cron do
           name: :timezone,
           label: "Timezone",
           default: "UTC"
-        },
-        %{
-          type: :code,
-          name: :code,
-          label: "Logic",
-          language: "elixir",
-          default: """
-          ui do
-            text :expression, label: "Cron Expression", default: "* * * * *"
-            text :timezone, label: "Timezone", default: "UTC"
-          end
-          """
         }
       ]
     }

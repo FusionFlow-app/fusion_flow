@@ -36,10 +36,22 @@ defmodule FusionFlow.Nodes.ConditionTest do
     end
 
     test "evaluates contains condition correctly" do
-      context = %{"variable" => "text", "operator" => "contains", "value" => "hello", "text" => "hello world"}
+      context = %{
+        "variable" => "text",
+        "operator" => "contains",
+        "value" => "hello",
+        "text" => "hello world"
+      }
+
       assert Condition.handler(context, nil) == {:ok, context, "true"}
 
-      context = %{"variable" => "text", "operator" => "contains", "value" => "bye", "text" => "hello world"}
+      context = %{
+        "variable" => "text",
+        "operator" => "contains",
+        "value" => "bye",
+        "text" => "hello world"
+      }
+
       assert Condition.handler(context, nil) == {:ok, context, "false"}
     end
   end

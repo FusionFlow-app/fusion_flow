@@ -6,6 +6,13 @@ import { CodeEditorHook } from "./code_editor"
 
 const hooks = {
   CodeEditor: CodeEditorHook,
+  NodeSearch: {
+    mounted() {
+      this.el.addEventListener("input", (e) => {
+        this.pushEvent("filter_nodes", { value: e.target.value });
+      });
+    }
+  },
   Rete: {
     async mounted() {
       const { createEditor } = await import("./rete_editor.js");
@@ -148,6 +155,12 @@ const hooks = {
       if (editor.onNodeConfig) {
         editor.onNodeConfig((nodeId, nodeData) => {
           this.pushEvent("open_node_config", { nodeId, nodeData });
+        });
+      }
+
+      if (editor.onCreateNode) {
+        editor.onCreateNode((x, y) => {
+          this.pushEvent("open_create_node_modal", { x, y });
         });
       }
 

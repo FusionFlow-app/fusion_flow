@@ -58,9 +58,38 @@ export class CustomNodeElement extends LitElement {
         transform: translateY(-2px) scale(1.05);
         box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1);
       }
-      .selected .circular-node {
+      .selected .circular-node,
+      .circular-node.is-selected {
         box-shadow: 0 0 0 4px rgba(99, 102, 241, 0.4) !important;
         transform: scale(1.05);
+        border-color: rgb(99, 102, 241) !important;
+      }
+      .dark .selected .circular-node,
+      .dark .circular-node.is-selected {
+        box-shadow: 0 0 0 4px rgba(129, 140, 248, 0.5) !important;
+        border-color: rgb(99, 102, 241) !important;
+      }
+      .selected .selection-indicator {
+        opacity: 1;
+      }
+      .selection-indicator {
+        position: absolute;
+        top: -8px;
+        right: -8px;
+        width: 20px;
+        height: 20px;
+        background: rgb(99, 102, 241);
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        opacity: 0;
+        transition: opacity 0.2s, transform 0.2s;
+        transform: scale(0.5);
+        z-index: 20;
+      }
+      .dark .selection-indicator {
+        background: rgb(129, 140, 248);
       }
       .dark .circular-node {
         --node-bg: #18181b;
@@ -246,11 +275,36 @@ export class CustomNodeElement extends LitElement {
       <div class="node-name-hover">${this.data.label || this.data.name}</div>
 
       <div 
-        class="circular-node" 
+        class="circular-node ${this.selected ? 'is-selected' : ''}" 
         style="border-color: ${nodeColor}aa"
-        @pointerdown=${this._onPointerDown}
-        @click=${this._onClick}
+        @pointerdown=${(e) => {
+          if (e.shiftKey) {
+            e.preventDefault();
+            e.stopPropagation();
+            this.selected = !this.selected;
+            // Also update the Rete node's selected property
+            const nodeId = this.data.id;
+            const reteNode = window.reteEditorInstance?.getNode(nodeId);
+            if (reteNode) {
+              reteNode.selected = this.selected;
+            }
+            this.requestUpdate();
+            this.dispatchEvent(new CustomEvent('node-select', { 
+              bubbles: true, 
+              detail: { selected: this.selected, nodeId: this.data.id }
+            }));
+          } else if (this._onPointerDown) {
+            this._onPointerDown(e);
+          }
+        }}
       >
+        ${this.selected ? html`
+          <div class="selection-indicator">
+            <svg class="w-3 h-3 text-white" fill="currentColor" viewBox="0 0 20 20">
+              <path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd"/>
+            </svg>
+          </div>
+        ` : ''}
         ${this.error ? html`
           <div 
             class="error-node-btn"

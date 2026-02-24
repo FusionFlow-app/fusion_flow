@@ -26,19 +26,6 @@ defmodule FusionFlow.Nodes.Variable do
           label: "Type",
           options: ["String", "Integer", "JSON"],
           default: "String"
-        },
-        %{
-          type: :code,
-          name: :code,
-          label: "Logic",
-          language: "elixir",
-          default: """
-          ui do
-            text :var_name, label: "Variable Name", default: "my_var"
-            text :var_value, label: "Value", default: ""
-            select :var_type, label: "Type", options: ["String", "Integer", "JSON"], default: "String"
-          end
-          """
         }
       ]
     }

@@ -38,11 +38,12 @@ defmodule FusionFlowWeb.FlowLiveTest do
 
   describe "client_ready" do
     test "has nodes data", %{conn: conn} do
-      flow = flow_fixture(%{
-        name: "Test Flow",
-        nodes: [%{"id" => "1", "type" => "Start"}],
-        connections: []
-      })
+      flow =
+        flow_fixture(%{
+          name: "Test Flow",
+          nodes: [%{"id" => "1", "type" => "Start"}],
+          connections: []
+        })
 
       {:ok, lv, html} =
         conn

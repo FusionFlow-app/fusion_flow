@@ -25,18 +25,6 @@ defmodule FusionFlow.Nodes.Logger do
           name: :message,
           label: "Message",
           default: "Log message"
-        },
-        %{
-          type: :code,
-          name: :code,
-          label: "Logic",
-          language: "elixir",
-          default: """
-          ui do
-            select :level, ["debug", "info", "warning", "error"], default: "info"
-            text :message, label: "Message", default: "Log message"
-          end
-          """
         }
       ]
     }

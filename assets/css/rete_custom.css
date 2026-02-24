@@ -9,3 +9,18 @@
 .dark .rete-bg-grid {
     background-image: linear-gradient(to right, rgba(255, 255, 255, 0.05) 1px, transparent 1px), linear-gradient(to bottom, rgba(255, 255, 255, 0.05) 1px, transparent 1px);
 }
+
+/* Selection box */
+#rete-selection-box {
+    position: fixed;
+    pointer-events: none;
+    z-index: 9999;
+    border: 2px solid oklch(58% 0.233 277.117);
+    background: oklch(58% 0.233 277.117 / 0.1);
+    border-radius: 0.5rem;
+    display: none;
+}
+
+#rete-selection-box.visible {
+    display: block;
+}

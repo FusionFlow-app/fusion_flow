@@ -36,13 +36,12 @@ defmodule FusionFlowWeb.Components.Flow.NodeSidebar do
                   <div class="flex items-center gap-3">
                     <span class={[
                       "w-5 h-5 rounded flex items-center justify-center",
-                        color_class
+                      color_class
                     ]}>
                       <span class={[node.icon, "w-3.5 h-3.5"]} />
                     </span>
-                     {node.name}
+                    {node.name}
                   </div>
-
                 </button>
               <% end %>
             </div>

@@ -122,7 +122,8 @@ defmodule FusionFlowWeb.Components.Modals.NodeConfigModal do
                               <.icon name="hero-code-bracket" class="w-3.5 h-3.5 mr-1" /> {gettext(
                                 "Edit Code"
                               )}
-                            </.button> <input type="hidden" name={key} value={control["value"]} />
+                            </.button>
+                            <input type="hidden" name={key} value={control["value"]} />
                           </div>
                         <% _ -> %>
                           <%= if String.length(to_string(control["value"])) > 50 do %>

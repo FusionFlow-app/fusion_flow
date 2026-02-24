@@ -7,9 +7,10 @@ defmodule FusionFlow.Nodes.LoggerTest do
     test "logs a message at the correct level" do
       context = %{"level" => "warning", "message" => "test log message"}
 
-      log = capture_log(fn ->
-        assert Logger.handler(context, nil) == {:ok, context}
-      end)
+      log =
+        capture_log(fn ->
+          assert Logger.handler(context, nil) == {:ok, context}
+        end)
 
       assert log =~ "test log message"
       assert log =~ "warning"
@@ -18,9 +19,10 @@ defmodule FusionFlow.Nodes.LoggerTest do
     test "logs an error message" do
       context = %{"level" => "error", "message" => "test error message"}
 
-      log = capture_log(fn ->
-        assert Logger.handler(context, nil) == {:ok, context}
-      end)
+      log =
+        capture_log(fn ->
+          assert Logger.handler(context, nil) == {:ok, context}
+        end)
 
       assert log =~ "test error message"
       assert log =~ "error"
@@ -31,9 +33,10 @@ defmodule FusionFlow.Nodes.LoggerTest do
       # For test purposes we verify with warning
       context = %{"level" => "warning", "message" => "warning log label"}
 
-      log = capture_log(fn ->
-        assert Logger.handler(context, nil) == {:ok, context}
-      end)
+      log =
+        capture_log(fn ->
+          assert Logger.handler(context, nil) == {:ok, context}
+        end)
 
       assert log =~ "warning log label"
       assert log =~ "warning"

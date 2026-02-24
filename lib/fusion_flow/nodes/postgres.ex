@@ -20,18 +20,6 @@ defmodule FusionFlow.Nodes.Postgres do
           name: :params,
           label: "Parameters (JSON)",
           default: "[1]"
-        },
-        %{
-          type: :code,
-          name: :code,
-          label: "Logic",
-          language: "elixir",
-          default: """
-          ui do
-            textarea :query, label: "SQL Query", default: "SELECT * FROM users WHERE id = $1"
-            json :params, label: "Parameters", default: "[1]"
-          end
-          """
         }
       ]
     }

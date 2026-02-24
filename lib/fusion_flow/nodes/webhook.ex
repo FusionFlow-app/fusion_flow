@@ -23,18 +23,6 @@ defmodule FusionFlow.Nodes.Webhook do
           name: :path,
           label: "Path",
           default: "/webhook/uuid"
-        },
-        %{
-          type: :code,
-          name: :code,
-          label: "Logic",
-          language: "elixir",
-          default: """
-          ui do
-            select :method, ["GET", "POST"], default: "POST"
-            text :path, label: "Path", default: "/webhook/uuid"
-          end
-          """
         }
       ]
     }

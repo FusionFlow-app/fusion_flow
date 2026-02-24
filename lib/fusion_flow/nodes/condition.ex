@@ -32,19 +32,6 @@ defmodule FusionFlow.Nodes.Condition do
           name: :value,
           label: "Value",
           default: ""
-        },
-        %{
-          type: :code,
-          name: :code,
-          label: "Logic (Elixir)",
-          language: "elixir",
-          default: """
-          ui do
-            variable_select :variable, label: "Variable"
-            select :operator, ["==", "!=", ">", "<", "contains"], default: "=="
-            text :value, label: "Value"
-          end
-          """
         }
       ]
     }

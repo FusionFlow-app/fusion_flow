@@ -7,11 +7,7 @@ defmodule FusionFlow.Nodes.Start do
       inputs: [],
       outputs: ["exec"],
       show: true,
-      ui_fields: [],
-      default_code: """
-      ui do
-      end
-      """
+      ui_fields: []
     }
   end
 

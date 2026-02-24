@@ -40,7 +40,12 @@ defmodule FusionFlowWeb.FlowLive do
        pending_ai_trigger: false,
        chat_loading: false,
        ai_configured: System.get_env("OPENAI_API_KEY") not in [nil, ""],
-       inspecting_result: false
+       inspecting_result: false,
+       create_node_modal_open: false,
+       selected_position: nil,
+       available_nodes: FusionFlow.Nodes.Registry.visible_nodes(),
+       filtered_nodes: FusionFlow.Nodes.Registry.visible_nodes(),
+       search_query: ""
      ), layout: false}
   end
 
@@ -55,28 +60,22 @@ defmodule FusionFlowWeb.FlowLive do
     nodes = flow.nodes || []
     connections = flow.connections || []
 
-    unique_node_types =
-      nodes
-      |> Enum.map(fn node -> node["type"] || node["label"] end)
-      |> Enum.uniq()
-
-    definitions =
-      Enum.reduce(unique_node_types, %{}, fn type, acc ->
-        Map.put(acc, type, FusionFlow.Nodes.Registry.get_node(type))
+    all_definitions =
+      FusionFlow.Nodes.Registry.all_nodes()
+      |> Enum.reduce(%{}, fn node, acc ->
+        Map.put(acc, node.name, node)
       end)
 
     {:noreply,
      push_event(socket, "load_graph_data", %{
        nodes: nodes,
        connections: connections,
-       definitions: definitions
+       definitions: all_definitions
      })}
   end
 
   @impl true
   def handle_event("node_added_internally", %{"name" => _name, "data" => _data}, socket) do
-    # At this point the node is already rendered in JS.
-    # We just need to flag it as changed here:
     {:noreply, assign(socket, has_changes: true)}
   end
 
@@ -150,7 +149,6 @@ defmodule FusionFlowWeb.FlowLive do
       ) do
     variables = params["variables"] || []
 
-    # Load both code_elixir and code_python from params if available
     code_elixir = params["code_elixir"] || params["code"] || ""
     code_python = params["code_python"] || ""
 
@@ -190,15 +188,15 @@ defmodule FusionFlowWeb.FlowLive do
   @impl true
   def handle_event(
         "open_code_editor_from_config",
-        %{"field-name" => field_name, "code" => code, "language" => language},
+        %{"field-name" => field_name, "code" => _code, "language" => language},
         socket
       ) do
-    # When opening from config, we want to preserve both Elixir and Python code
-    # if they already exist in the editing state.
     editing_data = socket.assigns.editing_node_data
 
-    code_elixir = get_in(editing_data, ["controls", "code_elixir", "value"]) ||
-                  get_in(editing_data, ["controls", "code", "value"]) || ""
+    code_elixir =
+      get_in(editing_data, ["controls", "code_elixir", "value"]) ||
+        get_in(editing_data, ["controls", "code", "value"]) || ""
+
     code_python = get_in(editing_data, ["controls", "code_python", "value"]) || ""
 
     {:noreply,
@@ -394,9 +392,8 @@ defmodule FusionFlowWeb.FlowLive do
       if socket.assigns.config_modal_open do
         editing_node_data = socket.assigns.editing_node_data
 
-        # Updated logic: also update the triggering field (e.g. "code") with the current language's content
-        # so the preview and the modal itself stay in sync.
-        current_code = if socket.assigns.current_language == "python", do: code_python, else: code_elixir
+        current_code =
+          if socket.assigns.current_language == "python", do: code_python, else: code_elixir
 
         updated_node_data =
           editing_node_data
@@ -547,6 +544,75 @@ defmodule FusionFlowWeb.FlowLive do
   end
 
   @impl true
+  def handle_event("open_create_node_modal", %{"x" => x, "y" => y}, socket) do
+    {:noreply,
+     assign(socket,
+       create_node_modal_open: true,
+       selected_position: %{"x" => x, "y" => y}
+     )}
+  end
+
+  @impl true
+  def handle_event("close_create_node_modal", _params, socket) do
+    {:noreply,
+     assign(socket,
+       create_node_modal_open: false,
+       selected_position: nil,
+       filtered_nodes: FusionFlow.Nodes.Registry.visible_nodes(),
+       search_query: ""
+     )}
+  end
+
+  @impl true
+  def handle_event("create_node_from_modal", %{"name" => name}, socket) do
+    position = socket.assigns.selected_position || %{"x" => 100, "y" => 100}
+
+    node_data = %{
+      "id" => "node_#{:os.system_time(:millisecond)}_#{:rand.uniform(1000)}",
+      "label" => name,
+      "position" => position
+    }
+
+    socket =
+      socket
+      |> assign(
+        create_node_modal_open: false,
+        selected_position: nil,
+        filtered_nodes: FusionFlow.Nodes.Registry.visible_nodes()
+      )
+      |> push_event("add_node", %{
+        name: name,
+        definition: FusionFlow.Nodes.Registry.get_node(name),
+        data: node_data
+      })
+
+    {:noreply, socket}
+  end
+
+  @impl true
+  def handle_event("filter_nodes", %{"value" => query}, socket) do
+    all_nodes = FusionFlow.Nodes.Registry.visible_nodes()
+
+    filtered_nodes =
+      if String.trim(query) == "" do
+        all_nodes
+      else
+        query_lower = String.downcase(query)
+
+        Enum.filter(all_nodes, fn node ->
+          name_match = String.contains?(String.downcase(node.name), query_lower)
+
+          category_match =
+            String.contains?(String.downcase(to_string(node.category)), query_lower)
+
+          name_match || category_match
+        end)
+      end
+
+    {:noreply, assign(socket, filtered_nodes: filtered_nodes, search_query: query)}
+  end
+
+  @impl true
   def handle_async(:ai_stream, {:ok, _result}, socket) do
     messages = socket.assigns.chat_messages
     {role, content} = List.last(messages)
@@ -592,7 +658,6 @@ defmodule FusionFlowWeb.FlowLive do
                     end
                   end)
 
-                # Map generic 'code' from AI to 'code_elixir' for Evaluate Code nodes
                 controls =
                   if node["type"] == "Evaluate Code" or node["name"] == "Evaluate Code" do
                     code_val = controls["code"] || controls["code_elixir"]
@@ -627,21 +692,17 @@ defmodule FusionFlowWeb.FlowLive do
                 Map.put(node, "position", %{"x" => new_x, "y" => current_y})
               end)
 
-            unique_node_types =
-              nodes
-              |> Enum.map(fn node -> node["type"] end)
-              |> Enum.uniq()
-
-            definitions =
-              Enum.reduce(unique_node_types, %{}, fn type, acc ->
-                Map.put(acc, type, FusionFlow.Nodes.Registry.get_node(type))
+            all_definitions =
+              FusionFlow.Nodes.Registry.all_nodes()
+              |> Enum.reduce(%{}, fn node, acc ->
+                Map.put(acc, node.name, node)
               end)
 
             socket
             |> push_event("load_graph_data", %{
               nodes: nodes,
               connections: connections,
-              definitions: definitions
+              definitions: all_definitions
             })
             |> put_flash(:info, "Flow generated by AI applied successfully!")
             |> assign(has_changes: true)
@@ -767,7 +828,14 @@ defmodule FusionFlowWeb.FlowLive do
             "Edit Code": "<%= gettext("Edit Code") %>",
             "Coming Soon": "<%= gettext("Coming Soon") %>",
             "Select Integration": "<%= gettext("Select Integration") %>",
-            "Drag to canvas": "<%= gettext("Drag to canvas") %>"
+            "Drag to canvas": "<%= gettext("Drag to canvas") %>",
+            "Create Node": "<%= gettext("Create Node") %>",
+            "Copy": "<%= gettext("Copy") %>",
+            "Paste": "<%= gettext("Paste") %>",
+            "Delete Selected": "<%= gettext("Delete Selected") %>",
+            "Undo": "<%= gettext("Undo") %>",
+            "Redo": "<%= gettext("Redo") %>",
+            "Delete connection": "<%= gettext("Delete connection") %>"
           };
         </script>
 
@@ -815,6 +883,12 @@ defmodule FusionFlowWeb.FlowLive do
         show_result_modal={@show_result_modal}
         execution_result={@execution_result}
         inspecting_result={@inspecting_result}
+      />
+      <FusionFlowWeb.Components.Modals.CreateNodeModal.create_node_modal
+        create_node_modal_open={@create_node_modal_open}
+        available_nodes={@filtered_nodes}
+        selected_position={@selected_position}
+        search_query={@search_query}
       />
       <.live_component
         module={FusionFlowWeb.Components.ChatComponent}

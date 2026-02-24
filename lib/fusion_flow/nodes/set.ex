@@ -13,17 +13,6 @@ defmodule FusionFlow.Nodes.Set do
           name: :fields,
           label: "Fields (Key, Value)",
           default: "[{\"key\": \"new_var\", \"value\": \"some_value\", \"type\": \"string\"}]"
-        },
-        %{
-          type: :code,
-          name: :code,
-          label: "Logic",
-          language: "elixir",
-          default: """
-          ui do
-            list :fields, keys: [:key, :value, :type]
-          end
-          """
         }
       ]
     }
