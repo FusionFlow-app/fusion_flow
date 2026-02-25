@@ -33,12 +33,12 @@ defmodule FusionFlowWeb.UserLive.Setup do
           <h1 class="text-3xl font-extrabold text-gray-900 dark:text-white tracking-tight">
             {gettext("Setup FusionFlow")}
           </h1>
-
+          
           <p class="mt-2 text-sm text-gray-500 dark:text-gray-400">
             {gettext("Create the first administrator account to get started.")}
           </p>
         </div>
-
+        
         <.form
           for={@form}
           id="setup_form"

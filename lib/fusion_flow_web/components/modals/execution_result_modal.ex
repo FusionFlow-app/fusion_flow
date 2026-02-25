@@ -12,7 +12,7 @@ defmodule FusionFlowWeb.Components.Modals.ExecutionResultModal do
         <div class="bg-white dark:bg-slate-800 rounded-lg shadow-xl w-3/4 max-w-2xl max-h-[80vh] flex flex-col border border-gray-200 dark:border-slate-700 animate-in fade-in zoom-in duration-200">
           <div class="flex items-center justify-between p-4 border-b border-gray-200 dark:border-slate-700">
             <h3 class="text-lg font-semibold text-gray-900 dark:text-white">Execution Output</h3>
-
+            
             <.button
               variant="ghost"
               phx-click="close_result_modal"
@@ -21,7 +21,7 @@ defmodule FusionFlowWeb.Components.Modals.ExecutionResultModal do
               <.icon name="hero-x-mark" class="h-6 w-6" />
             </.button>
           </div>
-
+          
           <div class="p-6 overflow-y-auto max-h-[60vh] bg-white dark:bg-slate-900">
             <%= if @execution_result && map_size(@execution_result) > 0 do %>
               <%= if @inspecting_result do %>
@@ -38,7 +38,7 @@ defmodule FusionFlowWeb.Components.Modals.ExecutionResultModal do
                       &larr; {gettext("Back to Result")}
                     </.button>
                   </div>
-                  <pre class="text-xs font-mono p-4 bg-gray-50 dark:bg-slate-950 rounded-lg border border-gray-200 dark:border-slate-800 text-gray-800 dark:text-slate-300 overflow-x-auto">{Jason.encode!(@execution_result, pretty: true)}</pre>
+                   <pre class="text-xs font-mono p-4 bg-gray-50 dark:bg-slate-950 rounded-lg border border-gray-200 dark:border-slate-800 text-gray-800 dark:text-slate-300 overflow-x-auto">{Jason.encode!(@execution_result, pretty: true)}</pre>
                 </div>
               <% else %>
                 <div class="flex flex-col text-left">
@@ -63,7 +63,7 @@ defmodule FusionFlowWeb.Components.Modals.ExecutionResultModal do
                       <% end %>
                     </div>
                   </div>
-
+                  
                   <div class="mt-4">
                     <.button
                       phx-click="toggle_inspect_result"
@@ -84,14 +84,14 @@ defmodule FusionFlowWeb.Components.Modals.ExecutionResultModal do
             <% else %>
               <div class="text-left py-4">
                 <h3 class="text-base font-medium text-gray-900 dark:text-slate-200">No data</h3>
-
+                
                 <p class="mt-1 text-sm text-gray-500 dark:text-slate-400">
                   The flow finished without any context data.
                 </p>
               </div>
             <% end %>
           </div>
-
+          
           <div class="p-4 border-t border-gray-200 dark:border-slate-700 flex justify-end">
             <.button
               phx-click="close_result_modal"

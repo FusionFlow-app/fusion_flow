@@ -15,10 +15,9 @@ defmodule FusionFlowWeb.Components.Modals.CreateNodeModal do
             <h3 class="text-xl font-bold text-gray-900 dark:text-slate-100 tracking-tight flex items-center gap-3">
               <span class="w-9 h-9 rounded-lg bg-gradient-to-br from-primary-500 to-primary-600 flex items-center justify-center text-white shadow-lg shadow-primary-500/30">
                 <.icon name="hero-plus" class="w-5 h-5" />
-              </span>
-              {gettext("Create Node")}
+              </span> {gettext("Create Node")}
             </h3>
-
+            
             <.button
               variant="ghost"
               phx-click="close_create_node_modal"
@@ -27,7 +26,7 @@ defmodule FusionFlowWeb.Components.Modals.CreateNodeModal do
               <.icon name="hero-x-mark" class="h-5 w-5" />
             </.button>
           </div>
-
+          
           <div class="p-4 border-b border-gray-100 dark:border-slate-700">
             <div class="relative group">
               <.icon
@@ -44,7 +43,7 @@ defmodule FusionFlowWeb.Components.Modals.CreateNodeModal do
               />
             </div>
           </div>
-
+          
           <div class="flex-1 overflow-y-auto">
             <div class="divide-y divide-gray-50 dark:divide-slate-700/50">
               <%= for node <- @available_nodes do %>
@@ -57,10 +56,12 @@ defmodule FusionFlowWeb.Components.Modals.CreateNodeModal do
                   <div class="w-11 h-11 rounded-xl bg-gradient-to-br from-primary-50 to-primary-100 dark:from-primary-900/30 dark:to-primary-900/10 flex items-center justify-center text-primary-600 dark:text-primary-400 flex-shrink-0 group-hover:scale-110 group-hover:shadow-lg group-hover:shadow-primary-500/20 transition-all duration-200">
                     <.icon name={Map.get(node, :icon, "hero-square-3-stack-3d")} class="w-5 h-5" />
                   </div>
+                  
                   <div class="flex-1 min-w-0">
                     <div class="font-semibold text-gray-900 dark:text-slate-100 group-hover:text-primary-600 dark:group-hover:text-primary-400 transition-colors">
                       {node.name}
                     </div>
+                    
                     <%= if Map.get(node, :description) do %>
                       <div class="text-sm text-gray-500 dark:text-gray-400 truncate">
                         {node.description}
@@ -71,6 +72,7 @@ defmodule FusionFlowWeb.Components.Modals.CreateNodeModal do
                       </div>
                     <% end %>
                   </div>
+                  
                   <.icon
                     name="hero-chevron-right"
                     class="w-5 h-5 text-gray-300 dark:text-gray-600 group-hover:text-primary-500 group-hover:translate-x-1 transition-all duration-200 flex-shrink-0"
@@ -79,7 +81,7 @@ defmodule FusionFlowWeb.Components.Modals.CreateNodeModal do
               <% end %>
             </div>
           </div>
-
+          
           <div class="px-6 py-4 bg-gray-50 dark:bg-slate-800/50 border-t border-gray-100 dark:border-slate-700 flex justify-end rounded-b-xl">
             <.button
               type="button"

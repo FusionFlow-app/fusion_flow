@@ -10,7 +10,7 @@ defmodule FusionFlowWeb.UserLive.Login do
           <h1 class="text-3xl font-extrabold text-gray-900 dark:text-white tracking-tight">
             {gettext("Welcome back")}
           </h1>
-
+          
           <p class="mt-2 text-sm text-gray-500 dark:text-gray-400">
             <%= if @current_scope && @current_scope.user do %>
               {gettext("You need to re-authenticate to perform sensitive actions.")}
@@ -19,7 +19,7 @@ defmodule FusionFlowWeb.UserLive.Login do
             <% end %>
           </p>
         </div>
-
+        
         <div
           :if={local_mail_adapter?()}
           class="mb-6 p-4 bg-blue-50 dark:bg-blue-900/20 rounded-xl border border-blue-100 dark:border-blue-800 flex gap-3"
@@ -30,13 +30,13 @@ defmodule FusionFlowWeb.UserLive.Login do
           />
           <div class="text-xs text-blue-700 dark:text-blue-300">
             <p class="font-bold">Local Mail Adapter active</p>
-
+            
             <p class="mt-1">
               Sent emails are available at <.link href="/dev/mailbox" class="font-bold underline">/dev/mailbox</.link>.
             </p>
           </div>
         </div>
-
+        
         <.form
           :let={f}
           for={@form}

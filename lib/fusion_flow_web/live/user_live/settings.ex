@@ -14,25 +14,25 @@ defmodule FusionFlowWeb.UserLive.Settings do
           <h1 class="text-2xl font-bold text-gray-900 dark:text-white">
             {gettext("Account Settings")}
           </h1>
-
+          
           <p class="text-sm text-gray-500 dark:text-gray-400 mt-1">
             {gettext("Manage your account settings, security, and preferences.")}
           </p>
         </div>
       </div>
-
+      
       <div class="space-y-6">
         <div class="bg-white dark:bg-slate-800 border border-gray-200 dark:border-slate-700 rounded-xl shadow-sm overflow-hidden">
           <div class="p-6 border-b border-gray-100 dark:border-slate-700/50">
             <h3 class="text-base font-semibold text-gray-900 dark:text-white">
               {gettext("Profile Information")}
             </h3>
-
+            
             <p class="text-xs text-gray-500 dark:text-gray-400">
               {gettext("Update your public username and email address.")}
             </p>
           </div>
-
+          
           <div class="p-6 space-y-6">
             <.form
               for={@username_form}
@@ -53,7 +53,7 @@ defmodule FusionFlowWeb.UserLive.Settings do
                 </.button>
               </div>
             </.form>
-
+            
             <div class="border-t border-gray-100 dark:border-slate-700/50 pt-6">
               <.form
                 for={@email_form}
@@ -77,18 +77,18 @@ defmodule FusionFlowWeb.UserLive.Settings do
             </div>
           </div>
         </div>
-
+        
         <div class="bg-white dark:bg-slate-800 border border-gray-200 dark:border-slate-700 rounded-xl shadow-sm overflow-hidden">
           <div class="p-6 border-b border-gray-100 dark:border-slate-700/50">
             <h3 class="text-base font-semibold text-gray-900 dark:text-white">
               {gettext("Change Password")}
             </h3>
-
+            
             <p class="text-xs text-gray-500 dark:text-gray-400">
               {gettext("Ensure your account is using a long, random password to stay secure.")}
             </p>
           </div>
-
+          
           <div class="p-6">
             <.form
               for={@password_form}

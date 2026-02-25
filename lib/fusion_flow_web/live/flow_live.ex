@@ -838,7 +838,7 @@ defmodule FusionFlowWeb.FlowLive do
             "Delete connection": "<%= gettext("Delete connection") %>"
           };
         </script>
-
+        
         <div
           class="flex-1 relative bg-gray-100 dark:bg-slate-900"
           id="rete-container"
@@ -852,7 +852,7 @@ defmodule FusionFlowWeb.FlowLive do
           </div>
         </div>
       </div>
-
+      
       <FusionFlowWeb.Components.Modals.CodeEditorModal.code_editor_modal
         modal_open={@modal_open}
         current_code_tab={@current_code_tab}

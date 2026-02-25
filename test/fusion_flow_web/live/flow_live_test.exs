@@ -447,7 +447,11 @@ defmodule FusionFlowWeb.FlowLiveTest do
 
       assert has_element?(lv, "[phx-click=close_create_node_modal]")
       assert has_element?(lv, "[phx-click=create_node_from_modal][phx-value-name=Start]")
-      assert has_element?(lv, "[phx-click=create_node_from_modal][phx-value-name=\"Evaluate Code\"]")
+
+      assert has_element?(
+               lv,
+               "[phx-click=create_node_from_modal][phx-value-name=\"Evaluate Code\"]"
+             )
 
       render_click(lv, "close_create_node_modal")
       refute has_element?(lv, "[phx-click=close_create_node_modal]")
@@ -472,12 +476,21 @@ defmodule FusionFlowWeb.FlowLiveTest do
       render_hook(lv, "open_create_node_modal", %{"x" => 100, "y" => 100})
 
       render_hook(lv, "filter_nodes", %{"value" => "Eval"})
-      assert has_element?(lv, "[phx-click=create_node_from_modal][phx-value-name=\"Evaluate Code\"]")
+
+      assert has_element?(
+               lv,
+               "[phx-click=create_node_from_modal][phx-value-name=\"Evaluate Code\"]"
+             )
+
       refute has_element?(lv, "[phx-click=create_node_from_modal][phx-value-name=Logger]")
 
       render_hook(lv, "filter_nodes", %{"value" => ""})
       assert has_element?(lv, "[phx-click=create_node_from_modal][phx-value-name=Logger]")
-      assert has_element?(lv, "[phx-click=create_node_from_modal][phx-value-name=\"Evaluate Code\"]")
+
+      assert has_element?(
+               lv,
+               "[phx-click=create_node_from_modal][phx-value-name=\"Evaluate Code\"]"
+             )
     end
   end
 
@@ -547,7 +560,11 @@ defmodule FusionFlowWeb.FlowLiveTest do
               "id" => "2",
               "type" => "Variable",
               "label" => "Variable",
-              "controls" => %{"var_name" => "greeting", "var_value" => "Hello!", "var_type" => "String"}
+              "controls" => %{
+                "var_name" => "greeting",
+                "var_value" => "Hello!",
+                "var_type" => "String"
+              }
             },
             %{
               "id" => "3",
@@ -557,7 +574,12 @@ defmodule FusionFlowWeb.FlowLiveTest do
             }
           ],
           connections: [
-            %{"source" => "1", "sourceOutput" => "exec", "target" => "2", "targetInput" => "exec"},
+            %{
+              "source" => "1",
+              "sourceOutput" => "exec",
+              "target" => "2",
+              "targetInput" => "exec"
+            },
             %{"source" => "2", "sourceOutput" => "exec", "target" => "3", "targetInput" => "exec"}
           ]
         })
@@ -657,7 +679,12 @@ defmodule FusionFlowWeb.FlowLiveTest do
             }
           ],
           connections: [
-            %{"source" => "1", "sourceOutput" => "exec", "target" => "2", "targetInput" => "exec"},
+            %{
+              "source" => "1",
+              "sourceOutput" => "exec",
+              "target" => "2",
+              "targetInput" => "exec"
+            },
             %{"source" => "2", "sourceOutput" => "exec", "target" => "3", "targetInput" => "exec"}
           ]
         })
@@ -695,7 +722,12 @@ defmodule FusionFlowWeb.FlowLiveTest do
             }
           ],
           connections: [
-            %{"source" => "1", "sourceOutput" => "exec", "target" => "2", "targetInput" => "exec"},
+            %{
+              "source" => "1",
+              "sourceOutput" => "exec",
+              "target" => "2",
+              "targetInput" => "exec"
+            },
             %{"source" => "2", "sourceOutput" => "exec", "target" => "3", "targetInput" => "exec"}
           ]
         })
