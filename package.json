@@ -26,6 +26,6 @@
   },
   "homepage": "https://github.com/FusionFlow-app/fusion_flow#readme",
   "devDependencies": {
-    "@playwright/test": "^1.58.2"
+    "@playwright/test": "1.57.0"
   }
 }
