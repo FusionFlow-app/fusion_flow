@@ -1,0 +1,32 @@
+{
+  "name": "fusion_flow",
+  "version": "1.0.0",
+  "description": "[![Discord](https://img.shields.io/discord/1474594465225117740?color=7289da&label=discord&logo=discord&logoColor=white)](https://discord.gg/7zjnpna239)",
+  "main": "index.js",
+  "directories": {
+    "doc": "doc",
+    "lib": "lib",
+    "test": "test"
+  },
+  "scripts": {
+    "test:e2e": "playwright test",
+    "test:e2e:headed": "playwright test --headed",
+    "test:e2e:signin:headed": "playwright test e2e/auth/sign_in.spec.js --headed --project=chromium"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/FusionFlow-app/fusion_flow.git"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "type": "commonjs",
+  "bugs": {
+    "url": "https://github.com/FusionFlow-app/fusion_flow/issues"
+  },
+  "homepage": "https://github.com/FusionFlow-app/fusion_flow#readme",
+  "devDependencies": {
+    "@playwright/test": "^1.58.2",
+    "@types/node": "^25.3.0"
+  }
+}
