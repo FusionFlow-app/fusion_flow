@@ -2,6 +2,8 @@ defmodule FusionFlowWeb.DashboardLiveTest do
   use FusionFlowWeb.ConnCase, async: true
 
   import Phoenix.LiveViewTest
+  import FusionFlow.AccountsFixtures
+  import FusionFlow.FlowsFixtures
 
   describe "mount" do
     test "requires authentication", %{conn: conn} do
@@ -10,45 +12,67 @@ defmodule FusionFlowWeb.DashboardLiveTest do
       assert path == ~p"/users/log-in"
     end
 
-    test "renders dashboard with flows", %{conn: conn} do
-      flow = FusionFlow.FlowsFixtures.flow_fixture(%{name: "Test Flow"})
+    test "renders dashboard with flows for system admin", %{conn: conn} do
+      admin = system_admin_fixture()
+      flow_fixture(%{name: "Test Flow"})
 
       {:ok, _lv, html} =
         conn
-        |> log_in_user(FusionFlow.AccountsFixtures.user_fixture())
+        |> log_in_user(admin)
         |> live(~p"/")
 
       assert html =~ "Dashboard"
       assert html =~ "Test Flow"
       assert html =~ "Total Workflows"
+      assert html =~ "Manage Flows"
     end
 
-    test "shows empty state when no flows", %{conn: conn} do
+    test "shows restricted message and no flows for non-admin", %{conn: conn} do
+      user = user_fixture()
+
       {:ok, _lv, html} =
         conn
-        |> log_in_user(FusionFlow.AccountsFixtures.user_fixture())
+        |> log_in_user(user)
+        |> live(~p"/")
+
+      assert html =~ "Dashboard"
+      assert html =~ "Contact an administrator"
+      refute html =~ "Total Workflows"
+      refute html =~ "Manage Flows"
+      refute html =~ "Recent Workflows"
+    end
+
+    test "shows empty state when no flows for admin", %{conn: conn} do
+      admin = system_admin_fixture()
+
+      {:ok, _lv, html} =
+        conn
+        |> log_in_user(admin)
         |> live(~p"/")
 
       assert html =~ "No flows"
       assert html =~ "Create Flow"
     end
 
-    test "displays flow count", %{conn: conn} do
-      FusionFlow.FlowsFixtures.flow_fixture(%{name: "Flow 1"})
-      FusionFlow.FlowsFixtures.flow_fixture(%{name: "Flow 2"})
+    test "displays flow count for admin", %{conn: conn} do
+      admin = system_admin_fixture()
+      flow_fixture(%{name: "Flow 1"})
+      flow_fixture(%{name: "Flow 2"})
 
       {:ok, _lv, html} =
         conn
-        |> log_in_user(FusionFlow.AccountsFixtures.user_fixture())
+        |> log_in_user(admin)
         |> live(~p"/")
 
       assert html =~ "2"
     end
 
     test "handles change_locale event", %{conn: conn} do
+      admin = system_admin_fixture()
+
       {:ok, lv, _html} =
         conn
-        |> log_in_user(FusionFlow.AccountsFixtures.user_fixture())
+        |> log_in_user(admin)
         |> live(~p"/")
 
       {:ok, conn} =

@@ -19,15 +19,15 @@ jobs:
         env:
           POSTGRES_USER: postgres
           POSTGRES_PASSWORD: postgres
-          POSTGRES_DB: fusion_flow_dev
+          POSTGRES_DB: fusion_flow_test
         options: >-
-          --health-cmd pg_isready
-          --health-interval 10s
+          --health-cmd "pg_isready -U postgres"
+          --health-interval 5s
           --health-timeout 5s
           --health-retries 5
 
     env:
-      MIX_ENV: dev
+      MIX_ENV: test
 
     steps:
       - uses: actions/checkout@v4
@@ -50,7 +50,7 @@ jobs:
           path: |
             deps
             _build
-          key: ${{ runner.os }}-mix-dev-${{ hashFiles('**/mix.lock') }}
+          key: ${{ runner.os }}-mix-test-${{ hashFiles('**/mix.lock') }}
 
       - name: Install Elixir dependencies
         run: mix deps.get
@@ -73,6 +73,7 @@ jobs:
 
       - name: Setup database
         run: mix ecto.setup
+        # Creates test DB, runs migrations and seeds (admin user for E2E login)
 
       - name: Install Playwright browsers
         run: npx playwright install --with-deps
@@ -80,16 +81,22 @@ jobs:
       - name: Start Phoenix server
         run: mix phx.server &
         env:
+          PHX_SERVER: "true"
           SECRET_KEY_BASE: dummy_secret_key_base_for_ci_e2e_tests_only_1234567890ab
           OPENAI_API_KEY: dummy_openai_key
 
       - name: Wait for Phoenix server
         run: |
-          for i in $(seq 1 30); do
-            curl -s http://localhost:4000/users/log-in > /dev/null && break
-            echo "Waiting for Phoenix... ($i)"
+          for i in $(seq 1 60); do
+            if curl -sf http://localhost:4000/users/log-in > /dev/null; then
+              echo "Phoenix is up."
+              exit 0
+            fi
+            echo "Waiting for Phoenix... ($i/60)"
             sleep 2
           done
+          echo "Phoenix failed to start in time."
+          exit 1
 
       - name: Run Playwright tests
         run: npx playwright test

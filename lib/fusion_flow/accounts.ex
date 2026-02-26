@@ -6,7 +6,7 @@ defmodule FusionFlow.Accounts do
   import Ecto.Query, warn: false
   alias FusionFlow.Repo
 
-  alias FusionFlow.Accounts.{User, UserToken, UserNotifier}
+  alias FusionFlow.Accounts.{User, UserToken, UserNotifier, Invite}
 
   ## Database getters
 
@@ -69,6 +69,13 @@ defmodule FusionFlow.Accounts do
   """
   def get_user!(id), do: Repo.get!(User, id)
 
+  @doc """
+  Lists all users, ordered by inserted_at descending.
+  """
+  def list_users do
+    Repo.all(from u in User, order_by: [desc: u.inserted_at])
+  end
+
   ## User registration
 
   @doc """
@@ -97,6 +104,29 @@ defmodule FusionFlow.Accounts do
     |> User.password_changeset(attrs)
     |> User.confirm_changeset()
     |> Repo.insert!()
+  end
+
+  @doc """
+  Registers a new user and marks the invite as used in a single transaction.
+  Ensures that if marking the invite fails, the user is not created (rollback).
+  Returns `{:ok, user}` or `{:error, :invite_mark_failed}` or `{:error, changeset}`.
+  """
+  def register_user_with_invite(attrs, %Invite{} = invite) do
+    Repo.transaction(fn ->
+      case register_user(attrs) do
+        {:ok, user} ->
+          case mark_invite_used(invite) do
+            {:ok, _updated_invite} ->
+              user
+
+            {:error, _changeset} ->
+              Repo.rollback(:invite_mark_failed)
+          end
+
+        {:error, changeset} ->
+          Repo.rollback(changeset)
+      end
+    end)
   end
 
   @doc """
@@ -358,6 +388,84 @@ defmodule FusionFlow.Accounts do
   def delete_user_session_token(token) do
     Repo.delete_all(from(UserToken, where: [token: ^token, context: "session"]))
     :ok
+  end
+
+  ## Invites
+
+  @doc """
+  Returns an existing valid invite for the given admin user, or creates a new one.
+  Only one unused, non-expired invite per admin is kept; reusing it avoids creating duplicates.
+  """
+  def create_invite_or_reuse(%User{id: user_id} = admin) do
+    unless User.system_admin?(admin) do
+      {:error, :forbidden}
+    else
+      now = DateTime.utc_now()
+      validity_days = Invite.invite_validity_days()
+      expires_at = DateTime.add(now, validity_days, :day)
+
+      existing =
+        Repo.one(
+          from i in Invite,
+            where: i.invited_by_user_id == ^user_id,
+            where: is_nil(i.used_at),
+            where: i.expires_at > ^now,
+            order_by: [desc: i.inserted_at],
+            limit: 1
+        )
+
+      if existing do
+        {:ok, Repo.preload(existing, :invited_by_user)}
+      else
+        token = generate_invite_token()
+        %Invite{}
+        |> Invite.changeset(%{
+          token: token,
+          expires_at: expires_at,
+          invited_by_user_id: user_id
+        })
+        |> Repo.insert()
+        |> case do
+          {:ok, invite} -> {:ok, Repo.preload(invite, :invited_by_user)}
+          err -> err
+        end
+      end
+    end
+  end
+
+  defp generate_invite_token do
+    32
+    |> :crypto.strong_rand_bytes()
+    |> Base.url_encode64(padding: false)
+  end
+
+  @doc """
+  Gets an invite by token. Returns nil if not found.
+  """
+  def get_invite_by_token(token) when is_binary(token) do
+    Repo.get_by(Invite, token: token) |> Repo.preload(:invited_by_user)
+  end
+
+  @doc """
+  Marks an invite as used (sets used_at to now).
+  Returns {:ok, invite} or {:error, changeset}.
+  """
+  def mark_invite_used(%Invite{} = invite) do
+    invite
+    |> Invite.changeset(%{used_at: DateTime.utc_now()})
+    |> Repo.update()
+  end
+
+  @doc """
+  Lists invites created by the given admin user, most recent first.
+  """
+  def list_invites_by_admin(%User{id: user_id}) do
+    Repo.all(
+      from i in Invite,
+        where: i.invited_by_user_id == ^user_id,
+        order_by: [desc: i.inserted_at],
+        preload: [:invited_by_user]
+    )
   end
 
   ## Token helper

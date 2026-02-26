@@ -257,6 +257,22 @@ defmodule FusionFlowWeb.UserAuth do
     end
   end
 
+  def on_mount(:require_system_admin, _params, session, socket) do
+    socket = mount_current_scope(socket, session)
+
+    if socket.assigns.current_scope && socket.assigns.current_scope.user &&
+         Accounts.User.system_admin?(socket.assigns.current_scope.user) do
+      {:cont, socket}
+    else
+      socket =
+        socket
+        |> Phoenix.LiveView.put_flash(:error, gettext("Only system administrators can access this page."))
+        |> Phoenix.LiveView.redirect(to: ~p"/")
+
+      {:halt, socket}
+    end
+  end
+
   defp mount_current_scope(socket, session) do
     Phoenix.Component.assign_new(socket, :current_scope, fn ->
       {user, _} =
@@ -295,6 +311,21 @@ defmodule FusionFlowWeb.UserAuth do
         |> redirect(to: ~p"/setup")
         |> halt()
       end
+    end
+  end
+
+  @doc """
+  Plug that redirects to the signed-in path when the user is already authenticated.
+  Use this on routes that must only be accessible when logged out (e.g. login, register).
+  """
+  def redirect_if_user_is_authenticated(conn, _opts) do
+    if conn.assigns[:current_scope] && conn.assigns.current_scope.user do
+      conn
+      |> put_flash(:info, gettext("You are already logged in."))
+      |> redirect(to: ~p"/")
+      |> halt()
+    else
+      conn
     end
   end
 
