@@ -19,6 +19,10 @@ defmodule FusionFlowWeb.Router do
     plug :accepts, ["json"]
   end
 
+  pipeline :redirect_if_authenticated do
+    plug :redirect_if_user_is_authenticated
+  end
+
   # JSON API Scope
   scope "/api", FusionFlowWeb do
     pipe_through :api
@@ -51,6 +55,11 @@ defmodule FusionFlowWeb.Router do
       on_mount: [{FusionFlowWeb.UserAuth, :require_authenticated}] do
       live "/users/settings", UserLive.Settings, :edit
       live "/", DashboardLive
+    end
+
+    live_session :require_system_admin,
+      on_mount: [{FusionFlowWeb.UserAuth, :require_authenticated}, {FusionFlowWeb.UserAuth, :require_system_admin}] do
+      live "/users", UserLive.Index, :index
       live "/flows", FlowListLive
       live "/flows/new/ai", FlowAiCreatorLive
       live "/flows/:id", FlowLive
@@ -60,15 +69,21 @@ defmodule FusionFlowWeb.Router do
   end
 
   scope "/", FusionFlowWeb do
-    pipe_through [:browser]
+    pipe_through [:browser, :redirect_if_authenticated]
 
     live_session :current_user,
       on_mount: [{FusionFlowWeb.UserAuth, :mount_current_scope}] do
       live "/setup", UserLive.Setup, :new
       live "/users/log-in", UserLive.Login, :new
+      live "/users/register/:token", UserLive.Register, :new
     end
 
     post "/users/log-in", UserSessionController, :create
+  end
+
+  scope "/", FusionFlowWeb do
+    pipe_through [:browser]
+
     delete "/users/log-out", UserSessionController, :delete
   end
 end

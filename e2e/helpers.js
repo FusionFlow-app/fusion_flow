@@ -4,6 +4,9 @@ export async function waitForLiveView(page, timeout = 15000) {
   await page.waitForFunction(() => window.liveSocket?.isConnected(), { timeout });
 }
 
+const E2E_SETUP_HINT =
+  'Create the admin user first: MIX_ENV=test mix ecto.reset && MIX_ENV=test mix run priv/repo/seeds.exs. Then start the server with MIX_ENV=test mix phx.server and run E2E again.';
+
 export async function loginViaUI(page, username = 'admin', password = 'admin') {
   await page.goto('/users/log-in');
   await waitForLiveView(page);
@@ -14,10 +17,9 @@ export async function loginViaUI(page, username = 'admin', password = 'admin') {
   await page.getByRole('button', { name: 'Log in' }).click();
 
   try {
-    await expect(page).not.toHaveURL(/log-in/, { timeout: 10000 });
-  } catch {
-    await page.getByRole('button', { name: 'Log in' }).click({ timeout: 2000 }).catch(() => {});
     await expect(page).not.toHaveURL(/log-in/, { timeout: 15000 });
+  } catch {
+    throw new Error(`E2E login failed (still on log-in page). ${E2E_SETUP_HINT}`);
   }
 }
 

@@ -6,8 +6,8 @@ defmodule FusionFlowWeb.FlowLiveTest do
   import FusionFlow.AccountsFixtures
 
   setup %{conn: conn} do
-    user = user_fixture()
-    %{conn: log_in_user(conn, user), user: user}
+    admin = system_admin_fixture()
+    %{conn: log_in_user(conn, admin), user: admin}
   end
 
   describe "mount" do
@@ -18,6 +18,19 @@ defmodule FusionFlowWeb.FlowLiveTest do
       assert {:error, redirect} = live(conn, ~p"/flows/#{flow.id}")
       assert {:redirect, %{to: path}} = redirect
       assert path == ~p"/users/log-in"
+    end
+
+    test "redirects non-admin to root" do
+      user = user_fixture()
+      flow = flow_fixture()
+
+      conn =
+        Phoenix.ConnTest.build_conn()
+        |> Phoenix.ConnTest.init_test_session(%{})
+        |> log_in_user(user)
+
+      assert {:error, {:redirect, %{to: path}}} = live(conn, ~p"/flows/#{flow.id}")
+      assert path == ~p"/"
     end
 
     test "loads flow and displays its name", %{conn: conn} do

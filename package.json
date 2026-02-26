@@ -11,7 +11,8 @@
   "scripts": {
     "test:e2e": "playwright test",
     "test:e2e:headed": "playwright test --headed",
-    "test:e2e:signin:headed": "playwright test e2e/auth/sign_in.spec.js --headed --project=chromium"
+    "test:e2e:signin:headed": "playwright test e2e/auth/sign_in.spec.js --headed --project=chromium",
+    "test:e2e:setup": "node e2e/setup-db.js"
   },
   "repository": {
     "type": "git",

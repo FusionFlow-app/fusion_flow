@@ -3,6 +3,7 @@ defmodule FusionFlowWeb.FlowListLiveTest do
 
   import Phoenix.LiveViewTest
   import FusionFlow.FlowsFixtures
+  import FusionFlow.AccountsFixtures
 
   describe "mount" do
     test "requires authentication", %{conn: conn} do
@@ -11,12 +12,23 @@ defmodule FusionFlowWeb.FlowListLiveTest do
       assert path == ~p"/users/log-in"
     end
 
-    test "renders flow list", %{conn: conn} do
+    test "redirects non-admin to root", %{conn: conn} do
+      user = user_fixture()
+      assert {:error, {:redirect, %{to: path}}} =
+               conn
+               |> log_in_user(user)
+               |> live(~p"/flows")
+
+      assert path == ~p"/"
+    end
+
+    test "renders flow list for system admin", %{conn: conn} do
+      admin = system_admin_fixture()
       flow_fixture(%{name: "My Flow"})
 
       {:ok, _lv, html} =
         conn
-        |> log_in_user(FusionFlow.AccountsFixtures.user_fixture())
+        |> log_in_user(admin)
         |> live(~p"/flows")
 
       assert html =~ "My Flow"
@@ -24,9 +36,11 @@ defmodule FusionFlowWeb.FlowListLiveTest do
     end
 
     test "shows empty state when no flows", %{conn: conn} do
+      admin = system_admin_fixture()
+
       {:ok, _lv, html} =
         conn
-        |> log_in_user(FusionFlow.AccountsFixtures.user_fixture())
+        |> log_in_user(admin)
         |> live(~p"/flows")
 
       assert html =~ "No flows created yet"
@@ -34,13 +48,14 @@ defmodule FusionFlowWeb.FlowListLiveTest do
     end
 
     test "displays flow count", %{conn: conn} do
+      admin = system_admin_fixture()
       flow_fixture(%{name: "Flow 1"})
       flow_fixture(%{name: "Flow 2"})
       flow_fixture(%{name: "Flow 3"})
 
       {:ok, _lv, html} =
         conn
-        |> log_in_user(FusionFlow.AccountsFixtures.user_fixture())
+        |> log_in_user(admin)
         |> live(~p"/flows")
 
       assert html =~ "3 Flows available"
@@ -49,11 +64,11 @@ defmodule FusionFlowWeb.FlowListLiveTest do
 
   describe "create_flow" do
     test "creates a new flow when button is clicked", %{conn: conn} do
-      user = FusionFlow.AccountsFixtures.user_fixture()
+      admin = system_admin_fixture()
 
       {:ok, lv, _html} =
         conn
-        |> log_in_user(user)
+        |> log_in_user(admin)
         |> live(~p"/flows")
 
       lv
