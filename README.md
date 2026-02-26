@@ -2,28 +2,18 @@
   <img src="assets/img/logo.png" alt="FusionFlow" width="180" />
 </p>
 
-<h1 align="center">FusionFlow</h1>
+<h2 align="center">FusionFlow</h2>
 
 <p align="center">
   <em>The logic behind your business.</em>
 </p>
 
 <p align="center">
-  <a href="https://hex.pm/packages/fusion_flow">
-    <img src="https://img.shields.io/hexpm/v/fusion_flow?style=flat-square&color=6e4a7e&label=hex.pm" alt="Hex.pm" />
-  </a>
-  <a href="https://hexdocs.pm/fusion_flow">
-    <img src="https://img.shields.io/badge/docs-hexdocs-8b5cf6?style=flat-square&logo=elixir&logoColor=white" alt="Docs" />
-  </a>
-  <a href="https://github.com/FusionFlow-app/fusion_flow/blob/main/LICENSE">
-    <img src="https://img.shields.io/github/license/FusionFlow-app/fusion_flow?style=flat-square&color=blue" alt="License" />
-  </a>
-  <a href="https://github.com/FusionFlow-app/fusion_flow">
-    <img src="https://img.shields.io/github/stars/FusionFlow-app/fusion_flow?style=flat-square&color=f5a623&logo=github" alt="GitHub Stars" />
-  </a>
-  <a href="https://discord.gg/7zjnpna239">
-    <img src="https://img.shields.io/discord/1474594465225117740?style=flat-square&color=5865F2&logo=discord&logoColor=white&label=community" alt="Discord" />
-  </a>
+  <a href="https://hex.pm/packages/fusion_flow"><img src="https://img.shields.io/hexpm/v/fusion_flow?style=flat-square&color=6e4a7e&label=hex.pm" alt="Hex.pm" /></a>&nbsp;
+  <a href="https://hexdocs.pm/fusion_flow"><img src="https://img.shields.io/badge/docs-hexdocs-8b5cf6?style=flat-square&logo=elixir&logoColor=white" alt="Docs" /></a>&nbsp;
+  <a href="https://github.com/FusionFlow-app/fusion_flow/blob/main/LICENSE"><img src="https://img.shields.io/github/license/FusionFlow-app/fusion_flow?style=flat-square&color=blue" alt="License" /></a>&nbsp;
+  <a href="https://github.com/FusionFlow-app/fusion_flow"><img src="https://img.shields.io/github/stars/FusionFlow-app/fusion_flow?style=flat-square&color=f5a623&logo=github" alt="GitHub Stars" /></a>&nbsp;
+  <a href="https://discord.gg/7zjnpna239"><img src="https://img.shields.io/discord/1474594465225117740?style=flat-square&color=5865F2&logo=discord&logoColor=white&label=community" alt="Discord" /></a>
 </p>
 
 ---
