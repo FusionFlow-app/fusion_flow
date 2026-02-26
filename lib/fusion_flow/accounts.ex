@@ -107,6 +107,29 @@ defmodule FusionFlow.Accounts do
   end
 
   @doc """
+  Registers a new user and marks the invite as used in a single transaction.
+  Ensures that if marking the invite fails, the user is not created (rollback).
+  Returns `{:ok, user}` or `{:error, :invite_mark_failed}` or `{:error, changeset}`.
+  """
+  def register_user_with_invite(attrs, %Invite{} = invite) do
+    Repo.transaction(fn ->
+      case register_user(attrs) do
+        {:ok, user} ->
+          case mark_invite_used(invite) do
+            {:ok, _updated_invite} ->
+              user
+
+            {:error, _changeset} ->
+              Repo.rollback(:invite_mark_failed)
+          end
+
+        {:error, changeset} ->
+          Repo.rollback(changeset)
+      end
+    end)
+  end
+
+  @doc """
   Returns whether at least one user is a system admin.
   Used to decide whether to show the setup page or normal login.
   """

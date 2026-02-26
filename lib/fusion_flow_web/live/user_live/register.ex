@@ -116,14 +116,18 @@ defmodule FusionFlowWeb.UserLive.Register do
   def handle_event("save", %{"user" => user_params}, socket) do
     invite = socket.assigns.invite
 
-    case Accounts.register_user(user_params) do
+    case Accounts.register_user_with_invite(user_params, invite) do
       {:ok, _user} ->
-        Accounts.mark_invite_used(invite)
-
         {:noreply,
          socket
          |> put_flash(:info, gettext("Account created successfully. You can now log in."))
          |> redirect(to: ~p"/users/log-in")}
+
+      {:error, :invite_mark_failed} ->
+        {:noreply,
+         socket
+         |> put_flash(:error, gettext("Account was not created. Please try again or contact support."))
+         |> redirect(to: ~p"/users/register/#{invite.token}")}
 
       {:error, %Ecto.Changeset{} = changeset} ->
         form = to_form(changeset, as: "user")
