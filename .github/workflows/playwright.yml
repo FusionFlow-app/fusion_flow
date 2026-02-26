@@ -27,7 +27,7 @@ jobs:
           --health-retries 5
 
     env:
-      MIX_ENV: dev
+      MIX_ENV: test
 
     steps:
       - uses: actions/checkout@v4
@@ -50,7 +50,7 @@ jobs:
           path: |
             deps
             _build
-          key: ${{ runner.os }}-mix-dev-${{ hashFiles('**/mix.lock') }}
+          key: ${{ runner.os }}-mix-test-${{ hashFiles('**/mix.lock') }}
 
       - name: Install Elixir dependencies
         run: mix deps.get
@@ -73,6 +73,7 @@ jobs:
 
       - name: Setup database
         run: mix ecto.setup
+        # Creates test DB, runs migrations and seeds (admin user for E2E login)
 
       - name: Install Playwright browsers
         run: npx playwright install --with-deps
