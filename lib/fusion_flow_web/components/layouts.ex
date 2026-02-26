@@ -47,22 +47,11 @@ defmodule FusionFlowWeb.Layouts do
               navigate={~p"/"}
               class="flex items-center gap-2 group transition-opacity hover:opacity-80"
             >
-              <div class="p-2 lg:p-1.5 w-10 h-10 lg:w-8 lg:h-8 rounded-lg bg-gradient-to-br from-indigo-600 to-purple-600 flex items-center justify-center shadow-sm">
-                <svg
-                  class="w-6 h-6 lg:w-5 lg:h-5 text-white shadow-sm"
-                  fill="none"
-                  viewBox="0 0 24 24"
-                  stroke="currentColor"
-                >
-                  <path
-                    stroke-linecap="round"
-                    stroke-linejoin="round"
-                    stroke-width="2"
-                    d="M13 10V3L4 14h7v7l9-11h-7z"
-                  />
-                </svg>
-              </div>
-              
+              <img
+                src={~p"/images/logo.png"}
+                alt="FusionFlow"
+                class="w-10 h-10 lg:w-8 lg:h-8 object-contain"
+              />
               <span class="hidden lg:block text-xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-gray-900 to-gray-600 dark:from-white dark:to-gray-400 tracking-tight">
                 FusionFlow
               </span>

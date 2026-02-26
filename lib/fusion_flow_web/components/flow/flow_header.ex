@@ -13,17 +13,11 @@ defmodule FusionFlowWeb.Components.Flow.FlowHeader do
           navigate={~p"/"}
           class="flex items-center gap-2 group transition-opacity hover:opacity-80"
         >
-          <div class="p-2 bg-gradient-to-br from-indigo-500 to-purple-600 rounded-lg shadow-sm">
-            <svg class="w-5 h-5 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-              <path
-                stroke-linecap="round"
-                stroke-linejoin="round"
-                stroke-width="2"
-                d="M13 10V3L4 14h7v7l9-11h-7z"
-              />
-            </svg>
-          </div>
-          
+          <img
+            src={~p"/images/logo.png"}
+            alt="FusionFlow"
+            class="w-9 h-9 object-contain"
+          />
           <span class="text-lg font-bold bg-clip-text text-transparent bg-gradient-to-r from-gray-900 to-gray-600 dark:from-white dark:to-gray-400">
             FusionFlow
           </span>
