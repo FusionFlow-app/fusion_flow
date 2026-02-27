@@ -50,19 +50,25 @@ The application uses a specific color palette defined in `app.css`. You **MUST**
     -   Variable: `--color-primary`
     -   Tailwind: `primary`, `text-primary`, `bg-primary`
     -   Usage: Main actions, active states, highlights.
-    -   *Note*: In Dark mode, this is a Purple/Indigo shade (`oklch(58% 0.233 277.117)`). In Light mode, it is lighter.
+    -   *Note*: In Dark mode, this is a Purple/Indigo shade (`oklch(58% 0.233 277.117)`). In Light mode, it is Indigo 600 (`oklch(45% 0.24 277)`).
+
+-   **Dark Mode Implementation**:
+    -   Dark mode is driven by the `data-theme="dark"` attribute, **not** `prefers-color-scheme`. The `dark:` Tailwind variant is remapped via `@custom-variant dark (&:where([data-theme=dark], [data-theme=dark] *))` in `app.css`.
+    -   The slate scale is overridden in `app.css` to near-black values (e.g. `slate-950` = `oklch(3% 0 0)`, `slate-900` = `oklch(5% 0 0)`).
 
 -   **Backgrounds**:
     -   Variable: `--color-base-100` (Main bg), `--color-base-200` (Secondary/Card bg), `--color-base-300` (Borders/Dividers)
     -   Usage: Page backgrounds, card backgrounds, node backgrounds.
-    -   *Rule*: **Never** hardcode hex values like `#ffffff` or `#000000`. always use `bg-slate-50` for light mode or `bg-slate-900`/`bg-slate-950` for Ultra Dark mode. Layering should use `slate-800` for cards and components.
+    -   *Rule*: **Never** hardcode hex values like `#ffffff` or `#000000`. Use `bg-gray-50` for light mode and `bg-slate-950` for dark mode on the main page. Use `bg-white dark:bg-slate-900` for sidebar/cards. Layering should use `slate-800` for elevated components in dark mode.
 
 -   **Text**:
     -   Variable: `--color-base-content`
     -   Usage: Primary text color. Be careful with contrast. Dark mode uses `text-gray-400` for secondary and `text-white` for primary.
 
 -   **Node & Component Specifics**:
-    -   **Global Sidebar**: The app uses a global Sidebar layout (`app.html.heex`) which holds the main navigation and FusionFlow logo (lightning bolt SVG).
+    -   **Global Sidebar**: The app uses a global Sidebar layout (`layouts.ex`) which holds the main navigation and the FusionFlow logo (`/images/logo.png`).
+    -   **Page Background**: `bg-gray-50 dark:bg-slate-950` for the main page wrapper.
+    -   **Sidebar**: `bg-white dark:bg-slate-900` with `border-gray-200 dark:border-slate-800`.
     -   **Node Editor Background**: `bg-white dark:bg-slate-900` combined with custom `rete-bg-grid` for the dotted canvas.
     -   **Node Border**: `border-gray-200 dark:border-slate-700` or `border-base-300`.
     -   **Node Selected**: active ring using `ring-indigo-500/50`.
@@ -77,7 +83,7 @@ The application uses a specific color palette defined in `app.css`. You **MUST**
 
 - **Always use and maintain this import syntax** in the app.css file for projects generated with `phx.new`
 - **Never** use `@apply` when writing raw css
-- **Always** manually write your own tailwind-based components instead of using daisyUI for a unique, world-class design
+- The project uses **daisyUI only as a theming plugin** (via `@plugin "../vendor/daisyui-theme"` in `app.css`). **Never** use daisyUI component classes (e.g., `btn`, `card`, `modal`). **Always** manually write your own tailwind-based components for a unique, world-class design
 - Out of the box **only the app.js and app.css bundles are supported**
   - You cannot reference an external vendor'd script `src` or link `href` in the layouts
   - You must import the vendor deps into app.js and app.css to use them
@@ -647,7 +653,60 @@ And **never** do this:
 - You are FORBIDDEN from accessing the changeset in the template as it will cause errors
 - **Never** use `<.form let={f} ...>` in the template, instead **always use `<.form for={@form} ...>`**, then drive all form references from the form assign as in `@form[:field]`. The UI should **always** be driven by a `to_form/2` assigned in the LiveView module that is derived from a changeset
 <!-- phoenix:liveview-end -->
-<!-- phoenix:liveview-end -->
+
+<!-- e2e-start -->
+## E2E Testing Guidelines
+
+The project uses **Playwright** for end-to-end testing. E2E tests live in the `e2e/` directory.
+
+### When to write E2E tests
+
+- **Always** write or update E2E tests when making changes to **critical user flows**, especially:
+  - **Flow Editor** (`FlowLive`): node creation, deletion, copy/paste, context menu, connections, save/run — any change to the editor **must** include E2E coverage for the affected behavior.
+  - **Authentication**: login, logout, registration, protected routes.
+  - **Dashboard & Flow List**: creating, deleting, navigating to flows.
+- For non-critical UI changes (cosmetic tweaks, copy changes), E2E tests are optional.
+
+### Project structure
+
+    e2e/
+    ├── auth.setup.js          # Auth setup (runs before all tests)
+    ├── helpers.js             # Shared helpers (waitForLiveView, loginViaUI, etc.)
+    ├── auth/
+    │   └── sign_in.spec.js
+    ├── flows/
+    │   ├── flow_list.spec.js
+    │   └── flow_editor.spec.js   # Critical — most extensive coverage
+    ├── dashboard.spec.js
+    └── ...
+
+### Conventions
+
+- **Always** import and use `waitForLiveView(page)` from `helpers.js` after navigation to ensure the LiveView is connected before interacting with it.
+- **Always** use `clickAndWaitForNavigation(page, locator, urlPattern)` from `helpers.js` for navigation that changes the URL.
+- Use Playwright's built-in locators (`getByRole`, `getByText`, `locator`) — **avoid** fragile CSS selectors when possible.
+- For Rete.js canvas interactions, use `page.locator('#rete')` and `page.locator('custom-node')`.
+- Set appropriate timeouts for LiveView interactions (elements may take time to mount): `{ timeout: 5000 }` for element visibility, `{ timeout: 15000 }` for page loads.
+- Group related tests with `test.describe` blocks and use `test.beforeEach` for common setup.
+- Use `test.describe.configure({ timeout: 60000 })` for flow editor tests that involve multiple steps.
+
+### Running E2E tests
+
+    # 1. Setup: reset DB and seed the admin user
+    npm run test:e2e:setup
+
+    # 2. Start the server in test mode (in a separate terminal)
+    MIX_ENV=test mix phx.server
+
+    # 3. Run all E2E tests
+    npm run test:e2e
+
+    # Run a specific test file
+    npx playwright test e2e/flows/flow_editor.spec.js
+
+- `npm run test:e2e:setup` — reset the test DB and seed admin user (runs `mix ecto.reset` + seeds with `MIX_ENV=test`). **Always** run this before the first E2E run or after schema changes.
+- `npm run test:e2e` — run all E2E tests headless
+<!-- e2e-end -->
 
 <!-- i18n-start -->
 ## Internationalization (i18n) Guidelines
