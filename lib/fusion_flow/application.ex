@@ -26,6 +26,8 @@ defmodule FusionFlow.Application do
       {Oban, Application.fetch_env!(:fusion_flow, Oban)},
       {Phoenix.PubSub, name: FusionFlow.PubSub},
       {Finch, name: FusionFlow.Finch},
+      FusionFlow.Webhooks.Registry,
+      FusionFlow.Flows.Cache,
       FusionFlowWeb.Endpoint
     ]
 

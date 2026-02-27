@@ -48,6 +48,8 @@ defmodule FusionFlowWeb.Endpoint do
     pass: ["*/*"],
     json_decoder: Phoenix.json_library()
 
+  plug FusionFlowWeb.Plugs.WebhookPlug
+
   plug Plug.MethodOverride
   plug Plug.Head
   plug Plug.Session, @session_options

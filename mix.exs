@@ -87,7 +87,8 @@ defmodule FusionFlow.MixProject do
       {:bandit, "~> 1.5"},
       {:pythonx, "~> 0.3.0"},
       {:earmark, "~> 1.4"},
-      {:ex_doc, "~> 0.21", only: :dev, runtime: false}
+      {:fusion_kit, "~> 0.2.0"},
+      {:ex_doc, "~> 0.40", runtime: false}
     ]
   end
 
