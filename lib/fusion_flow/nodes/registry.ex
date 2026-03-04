@@ -5,28 +5,31 @@ defmodule FusionFlow.Nodes.Registry do
 
   alias FusionFlow.Nodes.{HttpRequest, Eval}
 
+  @all_nodes [
+    HttpRequest.definition(),
+    Eval.definition(),
+    FusionFlow.Nodes.Condition.definition(),
+    FusionFlow.Nodes.PatternMatch.definition(),
+    FusionFlow.Nodes.Logger.definition(),
+    FusionFlow.Nodes.Start.definition(),
+    FusionFlow.Nodes.Webhook.definition(),
+    FusionFlow.Nodes.Cron.definition(),
+    FusionFlow.Nodes.SplitInBatches.definition(),
+    FusionFlow.Nodes.Merge.definition(),
+    FusionFlow.Nodes.Set.definition(),
+    FusionFlow.Nodes.Variable.definition(),
+    FusionFlow.Nodes.Output.definition(),
+    FusionFlow.Nodes.Postgres.definition()
+  ]
+
+  @nodes_by_name Map.new(@all_nodes, fn n -> {n.name, n} end)
+
   def all_nodes do
-    [
-      HttpRequest.definition(),
-      Eval.definition(),
-      FusionFlow.Nodes.Condition.definition(),
-      FusionFlow.Nodes.PatternMatch.definition(),
-      FusionFlow.Nodes.Logger.definition(),
-      FusionFlow.Nodes.Start.definition(),
-      FusionFlow.Nodes.Webhook.definition(),
-      FusionFlow.Nodes.Cron.definition(),
-      FusionFlow.Nodes.SplitInBatches.definition(),
-      FusionFlow.Nodes.Merge.definition(),
-      FusionFlow.Nodes.Set.definition(),
-      FusionFlow.Nodes.Variable.definition(),
-      FusionFlow.Nodes.Output.definition(),
-      FusionFlow.Nodes.Postgres.definition()
-    ]
+    @all_nodes
   end
 
   def get_node(name) do
-    all_nodes()
-    |> Enum.find(&(&1.name == name))
+    Map.get(@nodes_by_name, name)
   end
 
   def nodes_by_category do

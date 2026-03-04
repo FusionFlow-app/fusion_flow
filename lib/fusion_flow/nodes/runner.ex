@@ -105,6 +105,30 @@ defmodule FusionFlow.Nodes.Runner do
     end)
   end
 
+  def run_from_webhook(flow, webhook_request) do
+    webhook_node =
+      Enum.find(flow.nodes, fn node ->
+        (node["type"] || node["label"]) == "Webhook"
+      end)
+
+    if webhook_node do
+      initial_context = %{
+        "flow_id" => flow.id,
+        "logs" => [],
+        "body" => webhook_request["body"],
+        "headers" => webhook_request["headers"],
+        "method" => webhook_request["method"],
+        "query_params" => webhook_request["query_params"],
+        "request_path" => webhook_request["path"]
+      }
+
+      execute_node(webhook_node, initial_context, flow)
+    else
+      {:error, "No Webhook node found in flow", nil}
+    end
+  end
+
+  defp get_node_module("Webhook"), do: FusionFlow.Nodes.Webhook
   defp get_node_module("Start"), do: FusionFlow.Nodes.Start
   defp get_node_module("Variable"), do: FusionFlow.Nodes.Variable
   defp get_node_module("Output"), do: FusionFlow.Nodes.Output

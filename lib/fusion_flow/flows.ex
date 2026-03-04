@@ -50,9 +50,19 @@ defmodule FusionFlow.Flows do
 
   """
   def create_flow(attrs \\ %{}) do
-    %Flow{}
-    |> Flow.changeset(attrs)
-    |> Repo.insert()
+    result =
+      %Flow{}
+      |> Flow.changeset(attrs)
+      |> Repo.insert()
+
+    case result do
+      {:ok, flow} ->
+        FusionFlow.Webhooks.register_flow(flow)
+        {:ok, flow}
+
+      error ->
+        error
+    end
   end
 
   @doc """
@@ -68,9 +78,20 @@ defmodule FusionFlow.Flows do
 
   """
   def update_flow(%Flow{} = flow, attrs) do
-    flow
-    |> Flow.changeset(attrs)
-    |> Repo.update()
+    result =
+      flow
+      |> Flow.changeset(attrs)
+      |> Repo.update()
+
+    case result do
+      {:ok, updated_flow} ->
+        FusionFlow.Flows.Cache.invalidate(updated_flow.id)
+        FusionFlow.Webhooks.register_flow(updated_flow)
+        {:ok, updated_flow}
+
+      error ->
+        error
+    end
   end
 
   @doc """
@@ -86,6 +107,8 @@ defmodule FusionFlow.Flows do
 
   """
   def delete_flow(%Flow{} = flow) do
+    FusionFlow.Flows.Cache.invalidate(flow.id)
+    FusionFlow.Webhooks.unregister_flow(flow)
     Repo.delete(flow)
   end
 

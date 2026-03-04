@@ -1,12 +1,15 @@
 defmodule FusionFlow.Nodes.Webhook do
-  def definition do
+  use FusionKit.Node
+
+  definition do
     %{
       name: "Webhook",
+      title: "Webhook",
       category: :trigger,
       icon: "hero-link",
       inputs: [],
-      outputs: ["exec"],
-      show: false,
+      outputs: [:exec],
+      show: true,
       ui_fields: [
         %{
           type: :select,
@@ -14,7 +17,9 @@ defmodule FusionFlow.Nodes.Webhook do
           label: "Method",
           options: [
             %{label: "GET", value: "GET"},
-            %{label: "POST", value: "POST"}
+            %{label: "POST", value: "POST"},
+            %{label: "PUT", value: "PUT"},
+            %{label: "DELETE", value: "DELETE"}
           ],
           default: "POST"
         },
@@ -22,13 +27,17 @@ defmodule FusionFlow.Nodes.Webhook do
           type: :text,
           name: :path,
           label: "Path",
-          default: "/webhook/uuid"
+          default: "/webhook"
         }
       ]
     }
   end
 
+  @impl true
   def handler(context, _input) do
-    {:ok, %{body: context["body"], headers: context["headers"]}}
+    {:ok, Map.merge(context, %{
+      "webhook_method" => context["method"] || "POST",
+      "webhook_path" => context["path"] || "/webhook"
+    }), :exec}
   end
 end
