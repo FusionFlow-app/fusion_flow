@@ -5,6 +5,7 @@ defmodule FusionFlow.Nodes.Output do
     %{
       name: "Output",
       category: :flow_control,
+      description: "Finishes the flow and stores the final execution context as a log entry.",
       icon: "hero-check-circle",
       inputs: [:exec],
       outputs: [],

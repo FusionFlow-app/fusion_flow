@@ -3,6 +3,7 @@ defmodule FusionFlow.Nodes.HttpRequest do
     %{
       name: "HTTP Request",
       category: :integration,
+      description: "Calls an external HTTP endpoint and routes success or error responses.",
       icon: "hero-globe-alt",
       inputs: [:exec],
       outputs: ["success", "error"],

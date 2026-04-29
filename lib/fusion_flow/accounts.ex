@@ -418,6 +418,7 @@ defmodule FusionFlow.Accounts do
         {:ok, Repo.preload(existing, :invited_by_user)}
       else
         token = generate_invite_token()
+
         %Invite{}
         |> Invite.changeset(%{
           token: token,

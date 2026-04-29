@@ -3,6 +3,7 @@ defmodule FusionFlow.Nodes.Postgres do
     %{
       name: "Postgres",
       category: :integration,
+      description: "Runs a parameterized SQL query against a PostgreSQL database.",
       icon: "hero-circle-stack",
       inputs: [:exec],
       outputs: ["success", "error"],

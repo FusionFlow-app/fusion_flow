@@ -55,6 +55,61 @@ defmodule FusionFlowWeb.FlowLiveTest do
       assert html =~ "Logger"
     end
 
+    test "shows node descriptions as hover titles", %{conn: conn} do
+      flow = flow_fixture()
+
+      {:ok, lv, _html} = live(conn, ~p"/flows/#{flow.id}")
+
+      assert has_element?(
+               lv,
+               ~s([data-node-name="Evaluate Code"][title="Runs Elixir or Python code with access to the current flow context."])
+             )
+
+      assert has_element?(
+               lv,
+               ~s([data-node-name=Logger][title="Writes a message to the application logs without changing the flow context."])
+             )
+    end
+
+    test "filters nodes in the sidebar", %{conn: conn} do
+      flow = flow_fixture()
+
+      {:ok, lv, _html} = live(conn, ~p"/flows/#{flow.id}")
+
+      lv
+      |> form("#node-sidebar-search-form", node_search: %{query: "Eval"})
+      |> render_change()
+
+      assert has_element?(lv, ~s([data-node-name="Evaluate Code"]))
+      refute has_element?(lv, ~s([data-node-name="Logger"]))
+    end
+
+    test "collapses and expands node categories", %{conn: conn} do
+      flow = flow_fixture()
+
+      {:ok, lv, _html} = live(conn, ~p"/flows/#{flow.id}")
+
+      assert has_element?(lv, "#node-category-code [data-node-name=\"Evaluate Code\"]")
+
+      render_click(lv, "toggle_node_category", %{"category" => "code"})
+      refute has_element?(lv, "#node-category-code [data-node-name=\"Evaluate Code\"]")
+
+      render_click(lv, "toggle_node_category", %{"category" => "code"})
+      assert has_element?(lv, "#node-category-code [data-node-name=\"Evaluate Code\"]")
+    end
+
+    test "shows recently used nodes after adding a node", %{conn: conn} do
+      flow = flow_fixture()
+
+      {:ok, lv, _html} = live(conn, ~p"/flows/#{flow.id}")
+
+      refute has_element?(lv, "#recent-node-group")
+
+      render_click(lv, "add_node", %{"name" => "Variable"})
+
+      assert has_element?(lv, "#recent-node-group [data-node-name=Variable]")
+    end
+
     test "renders the rete editor container", %{conn: conn} do
       flow = flow_fixture()
 

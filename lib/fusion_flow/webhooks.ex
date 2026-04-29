@@ -67,7 +67,9 @@ defmodule FusionFlow.Webhooks do
 
       :error ->
         case Repo.get_by(Webhook, flow_id: flow_id, token: slug) do
-          nil -> :error
+          nil ->
+            :error
+
           webhook ->
             Registry.register(webhook)
             {:ok, %{flow_id: webhook.flow_id, method: webhook.method, token: webhook.token}}

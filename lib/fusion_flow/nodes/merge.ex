@@ -3,6 +3,7 @@ defmodule FusionFlow.Nodes.Merge do
     %{
       name: "Merge",
       category: :flow_control,
+      description: "Combines multiple execution paths into a single output.",
       icon: "hero-arrows-pointing-in",
       inputs: [:in1, :in2, :in3],
       outputs: ["exec"],

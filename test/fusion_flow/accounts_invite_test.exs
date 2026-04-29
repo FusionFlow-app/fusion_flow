@@ -51,6 +51,7 @@ defmodule FusionFlow.AccountsInviteTest do
 
     test "creates new invite when previous is expired" do
       admin = system_admin_fixture()
+
       expired =
         invite_fixture(
           invited_by_user: admin,

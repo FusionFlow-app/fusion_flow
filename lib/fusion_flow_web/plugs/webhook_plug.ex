@@ -19,7 +19,10 @@ defmodule FusionFlowWeb.Plugs.WebhookPlug do
         else
           conn
           |> put_resp_content_type("application/json")
-          |> send_resp(405, Jason.encode!(%{error: "Method not allowed. Expected #{expected_method}"}))
+          |> send_resp(
+            405,
+            Jason.encode!(%{error: "Method not allowed. Expected #{expected_method}"})
+          )
           |> halt()
         end
 

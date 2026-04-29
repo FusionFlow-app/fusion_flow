@@ -6,6 +6,7 @@ defmodule FusionFlow.Nodes.Webhook do
       name: "Webhook",
       title: "Webhook",
       category: :trigger,
+      description: "Starts a flow from an incoming webhook request.",
       icon: "hero-link",
       inputs: [],
       outputs: [:exec],
@@ -35,9 +36,10 @@ defmodule FusionFlow.Nodes.Webhook do
 
   @impl true
   def handler(context, _input) do
-    {:ok, Map.merge(context, %{
-      "webhook_method" => context["method"] || "POST",
-      "webhook_path" => context["path"] || "/webhook"
-    }), :exec}
+    {:ok,
+     Map.merge(context, %{
+       "webhook_method" => context["method"] || "POST",
+       "webhook_path" => context["path"] || "/webhook"
+     }), :exec}
   end
 end

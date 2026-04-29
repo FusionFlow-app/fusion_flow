@@ -57,7 +57,7 @@ defmodule FusionFlowWeb.Layouts do
               </span>
             </.link>
           </div>
-          
+
           <nav class="flex-1 w-full px-3 lg:px-4 space-y-2">
             <.link
               navigate={~p"/"}
@@ -75,7 +75,8 @@ defmodule FusionFlowWeb.Layouts do
                   stroke-width="2"
                   d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6"
                 />
-              </svg> <span class="hidden lg:block font-medium text-sm">{gettext("Dashboard")}</span>
+              </svg>
+              <span class="hidden lg:block font-medium text-sm">{gettext("Dashboard")}</span>
             </.link>
             <%= if @current_scope && @current_scope.user && FusionFlow.Accounts.User.system_admin?(@current_scope.user) do %>
               <.link
@@ -94,7 +95,8 @@ defmodule FusionFlowWeb.Layouts do
                     stroke-width="2"
                     d="M4 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2V6zM14 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2V6zM4 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2v-2zM14 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2v-2z"
                   />
-                </svg> <span class="hidden lg:block font-medium text-sm">{gettext("My Flows")}</span>
+                </svg>
+                <span class="hidden lg:block font-medium text-sm">{gettext("My Flows")}</span>
               </.link>
               <.link
                 navigate={~p"/flows/new/ai"}
@@ -136,7 +138,7 @@ defmodule FusionFlowWeb.Layouts do
               </.link>
             <% end %>
           </nav>
-          
+
           <div class="px-3 lg:px-4 w-full mt-auto">
             <div class="hidden lg:block w-full text-xs text-gray-500 dark:text-gray-500 px-2 mt-4">
               <form id="locale-form" phx-change="change_locale" class="w-full">
@@ -148,16 +150,16 @@ defmodule FusionFlowWeb.Layouts do
                   onchange="window.location.href = '?locale=' + this.value"
                 >
                   <option value="en" selected={@locale == "en"}>English</option>
-                  
+
                   <option value="pt_BR" selected={@locale == "pt_BR"}>Português (BR)</option>
                 </select>
               </form>
             </div>
-            
+
             <div class="hidden lg:flex w-full mt-4 justify-between items-center text-xs text-gray-500 dark:text-gray-500 px-2">
               <span>{gettext("Theme")}</span> <.theme_toggle />
             </div>
-            
+
             <div class="mt-6 pt-6 border-t border-gray-100 dark:border-slate-800">
               <div class="relative group" id="user-menu-root">
                 <.button
@@ -183,17 +185,17 @@ defmodule FusionFlowWeb.Layouts do
                         |> String.upcase()}
                       </div>
                     </div>
-                    
+
                     <div class="hidden lg:block ml-3 text-left overflow-hidden">
                       <p class="text-sm font-semibold text-gray-900 dark:text-white truncate">
                         {@current_scope.user.username || "User"}
                       </p>
-                      
+
                       <p class="text-xs text-gray-500 dark:text-gray-400 truncate">
                         {@current_scope.user.email}
                       </p>
                     </div>
-                    
+
                     <div class="hidden lg:block ml-auto">
                       <.icon
                         name="hero-chevron-down-mini"
@@ -230,7 +232,7 @@ defmodule FusionFlowWeb.Layouts do
           </div>
         </aside>
       <% end %>
-      
+
       <main class="flex-1 overflow-auto relative flex flex-col">
         <%= if Map.has_key?(assigns, :inner_content) do %>
           {@inner_content}
@@ -238,7 +240,7 @@ defmodule FusionFlowWeb.Layouts do
           {render_slot(assigns[:inner_block])}
         <% end %>
       </main>
-       <.flash_group flash={@flash} />
+      <.flash_group flash={@flash} />
     </div>
     """
   end
@@ -268,7 +270,7 @@ defmodule FusionFlowWeb.Layouts do
         {gettext("Attempting to reconnect")}
         <.icon name="hero-arrow-path" class="ml-1 size-3 motion-safe:animate-spin" />
       </.flash>
-      
+
       <.flash
         id="server-error"
         kind={:error}

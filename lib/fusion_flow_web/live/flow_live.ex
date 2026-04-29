@@ -27,7 +27,10 @@ defmodule FusionFlowWeb.FlowLive do
        current_language: "elixir",
        config_modal_open: false,
        editing_node_data: nil,
-       nodes_by_category: FusionFlow.Nodes.Registry.nodes_by_category(),
+       nodes_by_category: nodes_by_category(""),
+       node_search_query: "",
+       collapsed_node_categories: MapSet.new(),
+       recent_nodes: [],
        current_flow: flow,
        execution_result: nil,
        show_result_modal: false,
@@ -45,7 +48,7 @@ defmodule FusionFlowWeb.FlowLive do
        selected_position: nil,
        available_nodes: FusionFlow.Nodes.Registry.visible_nodes(),
        filtered_nodes: FusionFlow.Nodes.Registry.visible_nodes(),
-       search_query: ""
+       node_modal_search_query: ""
      ), layout: false}
   end
 
@@ -75,8 +78,11 @@ defmodule FusionFlowWeb.FlowLive do
   end
 
   @impl true
-  def handle_event("node_added_internally", %{"name" => _name, "data" => _data}, socket) do
-    {:noreply, assign(socket, has_changes: true)}
+  def handle_event("node_added_internally", %{"name" => name, "data" => _data}, socket) do
+    {:noreply,
+     socket
+     |> assign(has_changes: true)
+     |> record_recent_node(name)}
   end
 
   @impl true
@@ -88,7 +94,11 @@ defmodule FusionFlowWeb.FlowLive do
   @impl true
   def handle_event("add_node", %{"name" => name} = _params, socket) do
     definition = FusionFlow.Nodes.Registry.get_node(name)
-    {:noreply, push_event(socket, "add_node", %{name: name, definition: definition})}
+
+    {:noreply,
+     socket
+     |> record_recent_node(name)
+     |> push_event("add_node", %{name: name, definition: definition})}
   end
 
   @impl true
@@ -559,7 +569,7 @@ defmodule FusionFlowWeb.FlowLive do
        create_node_modal_open: false,
        selected_position: nil,
        filtered_nodes: FusionFlow.Nodes.Registry.visible_nodes(),
-       search_query: ""
+       node_modal_search_query: ""
      )}
   end
 
@@ -578,8 +588,10 @@ defmodule FusionFlowWeb.FlowLive do
       |> assign(
         create_node_modal_open: false,
         selected_position: nil,
-        filtered_nodes: FusionFlow.Nodes.Registry.visible_nodes()
+        filtered_nodes: FusionFlow.Nodes.Registry.visible_nodes(),
+        node_modal_search_query: ""
       )
+      |> record_recent_node(name)
       |> push_event("add_node", %{
         name: name,
         definition: FusionFlow.Nodes.Registry.get_node(name),
@@ -591,25 +603,40 @@ defmodule FusionFlowWeb.FlowLive do
 
   @impl true
   def handle_event("filter_nodes", %{"value" => query}, socket) do
-    all_nodes = FusionFlow.Nodes.Registry.visible_nodes()
+    {:noreply,
+     assign(socket,
+       filtered_nodes: filter_nodes(query),
+       node_modal_search_query: query
+     )}
+  end
 
-    filtered_nodes =
-      if String.trim(query) == "" do
-        all_nodes
-      else
-        query_lower = String.downcase(query)
+  @impl true
+  def handle_event("filter_sidebar_nodes", %{"node_search" => %{"query" => query}}, socket) do
+    {:noreply,
+     assign(socket,
+       node_search_query: query,
+       nodes_by_category: nodes_by_category(query)
+     )}
+  end
 
-        Enum.filter(all_nodes, fn node ->
-          name_match = String.contains?(String.downcase(node.name), query_lower)
+  @impl true
+  def handle_event("toggle_node_category", %{"category" => category}, socket) do
+    case category_from_param(category) do
+      nil ->
+        {:noreply, socket}
 
-          category_match =
-            String.contains?(String.downcase(to_string(node.category)), query_lower)
+      category ->
+        collapsed_categories = socket.assigns.collapsed_node_categories
 
-          name_match || category_match
-        end)
-      end
+        collapsed_categories =
+          if MapSet.member?(collapsed_categories, category) do
+            MapSet.delete(collapsed_categories, category)
+          else
+            MapSet.put(collapsed_categories, category)
+          end
 
-    {:noreply, assign(socket, filtered_nodes: filtered_nodes, search_query: query)}
+        {:noreply, assign(socket, collapsed_node_categories: collapsed_categories)}
+    end
   end
 
   @impl true
@@ -817,7 +844,12 @@ defmodule FusionFlowWeb.FlowLive do
         renaming_flow={@renaming_flow}
       />
       <div class="flex-1 flex overflow-hidden">
-        <FusionFlowWeb.Components.Flow.NodeSidebar.node_sidebar nodes_by_category={@nodes_by_category} />
+        <FusionFlowWeb.Components.Flow.NodeSidebar.node_sidebar
+          nodes_by_category={@nodes_by_category}
+          search_query={@node_search_query}
+          collapsed_categories={@collapsed_node_categories}
+          recent_nodes={@recent_nodes}
+        />
         <script>
           window.Translations = {
             "Run": "<%= gettext("Run") %>",
@@ -838,7 +870,7 @@ defmodule FusionFlowWeb.FlowLive do
             "Delete connection": "<%= gettext("Delete connection") %>"
           };
         </script>
-        
+
         <div
           class="flex-1 relative bg-gray-100 dark:bg-slate-900"
           id="rete-container"
@@ -852,7 +884,7 @@ defmodule FusionFlowWeb.FlowLive do
           </div>
         </div>
       </div>
-      
+
       <FusionFlowWeb.Components.Modals.CodeEditorModal.code_editor_modal
         modal_open={@modal_open}
         current_code_tab={@current_code_tab}
@@ -888,7 +920,7 @@ defmodule FusionFlowWeb.FlowLive do
         create_node_modal_open={@create_node_modal_open}
         available_nodes={@filtered_nodes}
         selected_position={@selected_position}
-        search_query={@search_query}
+        search_query={@node_modal_search_query}
       />
       <.live_component
         module={FusionFlowWeb.Components.ChatComponent}
@@ -902,5 +934,63 @@ defmodule FusionFlowWeb.FlowLive do
       />
     </div>
     """
+  end
+
+  defp filter_nodes(query) do
+    all_nodes = FusionFlow.Nodes.Registry.visible_nodes()
+    normalized_query = String.trim(query || "")
+
+    if normalized_query == "" do
+      all_nodes
+    else
+      query_lower = String.downcase(normalized_query)
+
+      Enum.filter(all_nodes, fn node ->
+        name_match = String.contains?(String.downcase(node.name), query_lower)
+
+        category_match =
+          String.contains?(String.downcase(to_string(node.category)), query_lower)
+
+        name_match || category_match
+      end)
+    end
+  end
+
+  defp nodes_by_category(query) do
+    query
+    |> filter_nodes()
+    |> Enum.group_by(& &1.category)
+    |> Enum.sort_by(fn {category, _nodes} -> category_sort_index(category) end)
+  end
+
+  defp record_recent_node(socket, name) do
+    case FusionFlow.Nodes.Registry.get_node(name) do
+      nil ->
+        socket
+
+      node ->
+        recent_nodes =
+          socket.assigns.recent_nodes
+          |> Enum.reject(&(&1.name == name))
+          |> then(&[node | &1])
+          |> Enum.take(5)
+
+        assign(socket, recent_nodes: recent_nodes)
+    end
+  end
+
+  defp category_sort_index(:trigger), do: 0
+  defp category_sort_index(:flow_control), do: 1
+  defp category_sort_index(:data_manipulation), do: 2
+  defp category_sort_index(:code), do: 3
+  defp category_sort_index(:integration), do: 4
+  defp category_sort_index(:utility), do: 5
+  defp category_sort_index(_), do: 6
+
+  defp category_from_param(category) do
+    FusionFlow.Nodes.Registry.visible_nodes()
+    |> Enum.map(& &1.category)
+    |> Enum.uniq()
+    |> Enum.find(&(to_string(&1) == category))
   end
 end

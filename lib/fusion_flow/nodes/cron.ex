@@ -3,6 +3,7 @@ defmodule FusionFlow.Nodes.Cron do
     %{
       name: "Cron",
       category: :trigger,
+      description: "Starts a flow on a cron schedule.",
       icon: "hero-clock",
       inputs: [],
       outputs: ["exec"],
