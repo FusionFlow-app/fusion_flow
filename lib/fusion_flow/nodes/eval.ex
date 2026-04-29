@@ -7,6 +7,7 @@ defmodule FusionFlow.Nodes.Eval do
     %{
       name: "Evaluate Code",
       category: :code,
+      description: "Runs Elixir or Python code with access to the current flow context.",
       icon: "hero-code-bracket",
       inputs: [:exec],
       outputs: [:exec],

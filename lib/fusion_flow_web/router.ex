@@ -58,7 +58,10 @@ defmodule FusionFlowWeb.Router do
     end
 
     live_session :require_system_admin,
-      on_mount: [{FusionFlowWeb.UserAuth, :require_authenticated}, {FusionFlowWeb.UserAuth, :require_system_admin}] do
+      on_mount: [
+        {FusionFlowWeb.UserAuth, :require_authenticated},
+        {FusionFlowWeb.UserAuth, :require_system_admin}
+      ] do
       live "/users", UserLive.Index, :index
       live "/flows", FlowListLive
       live "/flows/new/ai", FlowAiCreatorLive

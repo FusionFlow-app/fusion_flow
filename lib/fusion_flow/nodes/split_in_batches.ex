@@ -3,6 +3,7 @@ defmodule FusionFlow.Nodes.SplitInBatches do
     %{
       name: "SplitInBatches",
       category: :flow_control,
+      description: "Splits a list input into smaller batches for downstream processing.",
       icon: "hero-arrows-pointing-out",
       inputs: [:exec],
       outputs: ["exec"],

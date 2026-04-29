@@ -3,6 +3,7 @@ defmodule FusionFlow.Nodes.Variable do
     %{
       name: "Variable",
       category: :data_manipulation,
+      description: "Stores a typed value in the flow context for later nodes.",
       icon: "hero-variable",
       inputs: [:exec],
       outputs: ["exec"],

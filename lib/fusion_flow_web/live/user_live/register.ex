@@ -126,7 +126,10 @@ defmodule FusionFlowWeb.UserLive.Register do
       {:error, :invite_mark_failed} ->
         {:noreply,
          socket
-         |> put_flash(:error, gettext("Account was not created. Please try again or contact support."))
+         |> put_flash(
+           :error,
+           gettext("Account was not created. Please try again or contact support.")
+         )
          |> redirect(to: ~p"/users/register/#{invite.token}")}
 
       {:error, %Ecto.Changeset{} = changeset} ->

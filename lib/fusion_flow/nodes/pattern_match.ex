@@ -3,6 +3,7 @@ defmodule FusionFlow.Nodes.PatternMatch do
     %{
       name: "Pattern Match",
       category: :flow_control,
+      description: "Routes execution based on whether the current value matches a pattern.",
       icon: "hero-magnifying-glass",
       inputs: [:exec],
       outputs: ["match", "no_match"],

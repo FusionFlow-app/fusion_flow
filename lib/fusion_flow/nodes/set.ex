@@ -3,6 +3,7 @@ defmodule FusionFlow.Nodes.Set do
     %{
       name: "Set",
       category: :data_manipulation,
+      description: "Adds or updates fields in the flow context.",
       icon: "hero-adjustments-horizontal",
       inputs: [:exec],
       outputs: ["exec"],

@@ -3,6 +3,7 @@ defmodule FusionFlow.Nodes.Logger do
     %{
       name: "Logger",
       category: :utility,
+      description: "Writes a message to the application logs without changing the flow context.",
       icon: "hero-chat-bubble-bottom-center-text",
       inputs: [:exec],
       outputs: ["exec"],

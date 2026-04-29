@@ -35,6 +35,7 @@ defmodule FusionFlowWeb.UserLive.RegisterTest do
 
     test "submitting form creates user and marks invite used", %{conn: conn} do
       invite = invite_fixture()
+
       attrs = %{
         username: "newuser",
         email: "newuser@example.com",

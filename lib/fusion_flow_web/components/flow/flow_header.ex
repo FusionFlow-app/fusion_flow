@@ -23,7 +23,7 @@ defmodule FusionFlowWeb.Components.Flow.FlowHeader do
           </span>
         </.link>
         <div class="h-8 w-px bg-gray-200 dark:bg-slate-700 hidden sm:block"></div>
-        
+
         <div class="hidden sm:block">
           <%= if @renaming_flow do %>
             <form
@@ -52,7 +52,7 @@ defmodule FusionFlowWeb.Components.Flow.FlowHeader do
               <h1 class="text-base font-bold text-gray-900 dark:text-white leading-tight">
                 {@flow.name}
               </h1>
-              
+
               <.button
                 phx-click="edit_flow_name"
                 variant="ghost"
@@ -65,7 +65,7 @@ defmodule FusionFlowWeb.Components.Flow.FlowHeader do
           <% end %>
         </div>
       </div>
-      
+
       <div class="flex items-center gap-3">
         <.button
           href={~p"/flows"}
@@ -77,7 +77,7 @@ defmodule FusionFlowWeb.Components.Flow.FlowHeader do
           <span class="hidden sm:inline">Flows</span>
         </.button>
         <div class="h-5 w-px bg-gray-200 dark:bg-slate-700 mx-1"></div>
-        
+
         <.button
           phx-click="open_dependencies_modal"
           variant="outline"

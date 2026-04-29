@@ -33,18 +33,30 @@ defmodule FusionFlowWeb.UserLive.Setup do
           <h1 class="text-3xl font-extrabold text-gray-900 dark:text-white tracking-tight">
             {gettext("Setup FusionFlow")}
           </h1>
-          
+
           <p class="mt-2 text-sm text-gray-500 dark:text-gray-400">
             {gettext("Create the first administrator account to get started.")}
           </p>
         </div>
-        
-        <.form
-          for={@form}
-          id="setup_form"
-          phx-submit="save"
-          class="space-y-5"
+
+        <div
+          id="setup-liveview-required"
+          role="alert"
+          phx-connected={JS.hide()}
+          phx-disconnected={JS.show()}
+          class="mb-5 rounded-lg border border-amber-200 bg-amber-50 px-4 py-3 text-sm text-amber-900 dark:border-amber-500/30 dark:bg-amber-500/10 dark:text-amber-100"
         >
+          <div class="flex gap-3">
+            <.icon name="hero-exclamation-triangle" class="mt-0.5 size-5 shrink-0" />
+            <p>
+              {gettext(
+                "LiveView is not connected yet. Check that JavaScript is enabled and that assets loaded correctly before creating the account."
+              )}
+            </p>
+          </div>
+        </div>
+
+        <.form for={@form} id="setup_form" phx-submit="save" class="space-y-5">
           <.input
             field={@form[:username]}
             type="text"
@@ -76,8 +88,12 @@ defmodule FusionFlowWeb.UserLive.Setup do
           />
           <div class="pt-2">
             <.button
+              id="setup-submit-button"
               type="submit"
               variant="primary"
+              disabled
+              phx-connected={JS.remove_attribute("disabled")}
+              phx-disconnected={JS.set_attribute({"disabled", ""})}
               class="w-full py-4 text-base font-bold shadow-lg shadow-indigo-500/25 transition-all hover:shadow-indigo-500/40 active:scale-[0.98]"
             >
               {gettext("Create account")}

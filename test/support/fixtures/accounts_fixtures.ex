@@ -110,8 +110,14 @@ defmodule FusionFlow.AccountsFixtures do
   def invite_fixture(attrs \\ %{}) do
     attrs = Enum.into(attrs, %{})
     admin = attrs[:invited_by_user] || attrs["invited_by_user"] || system_admin_fixture()
-    token = attrs[:token] || attrs["token"] || Base.url_encode64(:crypto.strong_rand_bytes(32), padding: false)
-    expires_at = attrs[:expires_at] || attrs["expires_at"] || DateTime.add(DateTime.utc_now(), 7, :day)
+
+    token =
+      attrs[:token] || attrs["token"] ||
+        Base.url_encode64(:crypto.strong_rand_bytes(32), padding: false)
+
+    expires_at =
+      attrs[:expires_at] || attrs["expires_at"] || DateTime.add(DateTime.utc_now(), 7, :day)
+
     used_at = attrs[:used_at] || attrs["used_at"]
 
     base = %{
@@ -119,6 +125,7 @@ defmodule FusionFlow.AccountsFixtures do
       expires_at: expires_at,
       invited_by_user_id: admin.id
     }
+
     base = if used_at, do: Map.put(base, :used_at, used_at), else: base
 
     %FusionFlow.Accounts.Invite{}

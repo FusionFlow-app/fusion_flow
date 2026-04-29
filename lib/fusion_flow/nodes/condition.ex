@@ -3,6 +3,8 @@ defmodule FusionFlow.Nodes.Condition do
     %{
       name: "Condition",
       category: :flow_control,
+      description:
+        "Routes execution through true or false outputs based on a variable comparison.",
       icon: "hero-arrows-right-left",
       inputs: [:exec],
       outputs: ["true", "false"],

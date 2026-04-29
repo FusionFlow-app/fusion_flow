@@ -13,6 +13,7 @@ defmodule FusionFlowWeb.FlowAiCreatorLiveTest do
 
     test "redirects non-admin to root", %{conn: conn} do
       user = user_fixture()
+
       assert {:error, {:redirect, %{to: path}}} =
                conn
                |> log_in_user(user)
