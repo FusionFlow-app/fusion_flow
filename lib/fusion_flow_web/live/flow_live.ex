@@ -46,8 +46,8 @@ defmodule FusionFlowWeb.FlowLive do
        inspecting_result: false,
        create_node_modal_open: false,
        selected_position: nil,
-       available_nodes: FusionFlow.Nodes.Registry.visible_nodes(),
-       filtered_nodes: FusionFlow.Nodes.Registry.visible_nodes(),
+       available_nodes: FusionFlow.Nodes.visible_nodes(),
+       filtered_nodes: FusionFlow.Nodes.visible_nodes(),
        node_modal_search_query: ""
      ), layout: false}
   end
@@ -64,7 +64,7 @@ defmodule FusionFlowWeb.FlowLive do
     connections = flow.connections || []
 
     all_definitions =
-      FusionFlow.Nodes.Registry.all_nodes()
+      FusionFlow.Nodes.all_nodes()
       |> Enum.reduce(%{}, fn node, acc ->
         Map.put(acc, node.name, node)
       end)
@@ -93,7 +93,7 @@ defmodule FusionFlowWeb.FlowLive do
 
   @impl true
   def handle_event("add_node", %{"name" => name} = _params, socket) do
-    definition = FusionFlow.Nodes.Registry.get_node(name)
+    definition = FusionFlow.Nodes.get_node(name)
 
     {:noreply,
      socket
@@ -110,7 +110,7 @@ defmodule FusionFlowWeb.FlowLive do
   def handle_event("save_and_run", %{"data" => data}, socket) do
     case FusionFlow.Flows.update_flow(socket.assigns.current_flow, data) do
       {:ok, updated_flow} ->
-        case FusionFlow.Nodes.Runner.run(updated_flow) do
+        case FusionFlow.Flows.Runner.run(updated_flow) do
           {:ok, result_context} ->
             {:noreply,
              socket
@@ -447,7 +447,7 @@ defmodule FusionFlowWeb.FlowLive do
 
   @impl true
   def handle_event("get_node_definition", %{"name" => name}, socket) do
-    definition = FusionFlow.Nodes.Registry.get_node(name)
+    definition = FusionFlow.Nodes.get_node(name)
     {:reply, %{definition: definition}, socket}
   end
 
@@ -568,7 +568,7 @@ defmodule FusionFlowWeb.FlowLive do
      assign(socket,
        create_node_modal_open: false,
        selected_position: nil,
-       filtered_nodes: FusionFlow.Nodes.Registry.visible_nodes(),
+       filtered_nodes: FusionFlow.Nodes.visible_nodes(),
        node_modal_search_query: ""
      )}
   end
@@ -588,13 +588,13 @@ defmodule FusionFlowWeb.FlowLive do
       |> assign(
         create_node_modal_open: false,
         selected_position: nil,
-        filtered_nodes: FusionFlow.Nodes.Registry.visible_nodes(),
+        filtered_nodes: FusionFlow.Nodes.visible_nodes(),
         node_modal_search_query: ""
       )
       |> record_recent_node(name)
       |> push_event("add_node", %{
         name: name,
-        definition: FusionFlow.Nodes.Registry.get_node(name),
+        definition: FusionFlow.Nodes.get_node(name),
         data: node_data
       })
 
@@ -720,7 +720,7 @@ defmodule FusionFlowWeb.FlowLive do
               end)
 
             all_definitions =
-              FusionFlow.Nodes.Registry.all_nodes()
+              FusionFlow.Nodes.all_nodes()
               |> Enum.reduce(%{}, fn node, acc ->
                 Map.put(acc, node.name, node)
               end)
@@ -937,7 +937,7 @@ defmodule FusionFlowWeb.FlowLive do
   end
 
   defp filter_nodes(query) do
-    all_nodes = FusionFlow.Nodes.Registry.visible_nodes()
+    all_nodes = FusionFlow.Nodes.visible_nodes()
     normalized_query = String.trim(query || "")
 
     if normalized_query == "" do
@@ -964,7 +964,7 @@ defmodule FusionFlowWeb.FlowLive do
   end
 
   defp record_recent_node(socket, name) do
-    case FusionFlow.Nodes.Registry.get_node(name) do
+    case FusionFlow.Nodes.get_node(name) do
       nil ->
         socket
 
@@ -988,7 +988,7 @@ defmodule FusionFlowWeb.FlowLive do
   defp category_sort_index(_), do: 6
 
   defp category_from_param(category) do
-    FusionFlow.Nodes.Registry.visible_nodes()
+    FusionFlow.Nodes.visible_nodes()
     |> Enum.map(& &1.category)
     |> Enum.uniq()
     |> Enum.find(&(to_string(&1) == category))

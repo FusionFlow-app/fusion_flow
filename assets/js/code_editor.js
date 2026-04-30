@@ -31,14 +31,21 @@ export const CodeEditorHook = {
                                             kind: monaco.languages.CompletionItemKind.Function,
                                             insertText: 'variable',
                                             documentation: 'Get a variable from context (returns nil if missing)',
-                                            detail: 'FusionFlow.Nodes.Eval.variable/1'
+                                            detail: 'FusionFlow.Runtime.Elixir.variable/1'
                                         },
                                         {
                                             label: 'variable!',
                                             kind: monaco.languages.CompletionItemKind.Function,
                                             insertText: 'variable!',
                                             documentation: 'Get a variable from context (raises if missing)',
-                                            detail: 'FusionFlow.Nodes.Eval.variable!/1'
+                                            detail: 'FusionFlow.Runtime.Elixir.variable!/1'
+                                        },
+                                        {
+                                            label: 'set_result',
+                                            kind: monaco.languages.CompletionItemKind.Function,
+                                            insertText: 'set_result',
+                                            documentation: 'Set the value passed to the next node (overrides last expression)',
+                                            detail: 'FusionFlow.Runtime.Elixir.set_result/1'
                                         }
                                     ];
 
@@ -58,7 +65,55 @@ export const CodeEditorHook = {
                             });
                             window.__elixirCompletionRegistered = true;
                         } catch (e) {
-                            console.error("Failed to register completion provider:", e);
+                            console.error("Failed to register Elixir completion provider:", e);
+                        }
+                    }
+
+                    if (!window.__pythonCompletionRegistered) {
+                        try {
+                            monaco.languages.registerCompletionItemProvider('python', {
+                                provideCompletionItems: (model, position) => {
+                                    const suggestions = [
+                                        {
+                                            label: 'variable',
+                                            kind: monaco.languages.CompletionItemKind.Function,
+                                            insertText: 'variable',
+                                            documentation: 'Get a variable from context (returns None if missing)',
+                                            detail: 'FusionFlow.Runtime.Python.variable(name, default=None)'
+                                        },
+                                        {
+                                            label: 'variable_required',
+                                            kind: monaco.languages.CompletionItemKind.Function,
+                                            insertText: 'variable_required',
+                                            documentation: 'Get a variable from context (raises KeyError if missing)',
+                                            detail: 'FusionFlow.Runtime.Python.variable_required(name)'
+                                        },
+                                        {
+                                            label: 'set_result',
+                                            kind: monaco.languages.CompletionItemKind.Function,
+                                            insertText: 'set_result',
+                                            documentation: 'Set the value passed to the next node (overrides last expression)',
+                                            detail: 'FusionFlow.Runtime.Python.set_result(value)'
+                                        }
+                                    ];
+
+                                    const availableVars = window.__fusionFlowCurrentVariables || [];
+                                    availableVars.forEach(varName => {
+                                        suggestions.push({
+                                            label: varName,
+                                            kind: monaco.languages.CompletionItemKind.Variable,
+                                            insertText: varName,
+                                            documentation: `Variable from flow: ${varName}`,
+                                            detail: 'Flow variable'
+                                        });
+                                    });
+
+                                    return { suggestions: suggestions };
+                                }
+                            });
+                            window.__pythonCompletionRegistered = true;
+                        } catch (e) {
+                            console.error("Failed to register Python completion provider:", e);
                         }
                     }
 

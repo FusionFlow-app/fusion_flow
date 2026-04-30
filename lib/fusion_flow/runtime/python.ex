@@ -2,9 +2,44 @@ defmodule FusionFlow.Runtime.Python do
   @behaviour FusionFlow.Runtime.Executor
   require Logger
 
+  def language, do: "python"
+
+  @preamble """
+  __ff_has_output__ = False
+  __ff_output__ = None
+
+  def variable(name, default=None):
+      return globals().get(str(name), default)
+
+  def variable_required(name):
+      key = str(name)
+      if key not in globals():
+          raise KeyError(f"Variable '{name}' not found in context")
+      return globals()[key]
+
+  def set_result(value):
+      globals()["__ff_output__"] = value
+      globals()["__ff_has_output__"] = True
+      return value
+  """
+
   def execute(code, context) do
     try do
-      {result, _globals} = Pythonx.eval(code, context)
+      {_, globals} = Pythonx.eval(@preamble, context)
+      {result, globals} = Pythonx.eval(code || "", globals)
+
+      result =
+        case globals["__ff_has_output__"] do
+          nil ->
+            result
+
+          flag_obj ->
+            if Pythonx.decode(flag_obj) do
+              globals["__ff_output__"]
+            else
+              result
+            end
+        end
 
       final_result =
         cond do
@@ -12,8 +47,7 @@ defmodule FusionFlow.Runtime.Python do
             nil
 
           is_struct(result, Pythonx.Object) ->
-            decoded = Pythonx.decode(result)
-            decoded
+            Pythonx.decode(result)
 
           true ->
             result

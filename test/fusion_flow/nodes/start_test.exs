@@ -15,7 +15,7 @@ defmodule FusionFlow.Nodes.StartTest do
   describe "handler/2" do
     test "returns :ok and the original context" do
       context = %{"foo" => "bar"}
-      assert Start.handler(context, nil) == {:ok, context}
+      assert Start.handler(context, nil) == {:ok, context, "exec"}
     end
   end
 end

@@ -3,6 +3,7 @@ defmodule FusionFlow.Runtime.Executor do
   Defines the behaviour for language executors in FusionFlow.
   """
 
+  @callback language() :: String.t()
   @callback execute(code :: String.t(), context :: map()) ::
               {:ok, map()} | {:result, any()} | {:error, any()}
 end

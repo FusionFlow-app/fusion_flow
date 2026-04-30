@@ -1,10 +1,33 @@
 defmodule FusionFlow.Runtime.Elixir do
   @behaviour FusionFlow.Runtime.Executor
 
+  def language, do: "elixir"
+
+  def variable(name) do
+    context = Process.get(:fusion_flow_eval_context, %{})
+    Map.get(context, to_string(name))
+  end
+
+  def variable!(name) do
+    context = Process.get(:fusion_flow_eval_context, %{})
+    key = to_string(name)
+
+    case Map.fetch(context, key) do
+      {:ok, val} -> val
+      :error -> raise "Variable '#{key}' not found in context"
+    end
+  end
+
+  def set_result(value) do
+    Process.put(:fusion_flow_eval_output, {:set, value})
+    value
+  end
+
   def execute(code, context) do
     Process.put(:fusion_flow_eval_context, context)
+    Process.delete(:fusion_flow_eval_output)
 
-    code_with_imports = "import FusionFlow.Nodes.Eval; " <> (code || "")
+    code_with_imports = "import FusionFlow.Runtime.Elixir; " <> (code || "")
 
     {result, diagnostics} =
       Code.with_diagnostics(fn ->
@@ -21,22 +44,36 @@ defmodule FusionFlow.Runtime.Elixir do
         end
       end)
 
+    explicit_output = Process.get(:fusion_flow_eval_output)
     Process.delete(:fusion_flow_eval_context)
+    Process.delete(:fusion_flow_eval_output)
 
     case result do
       {:ok, binding} ->
-        case binding do
-          {:ok, %{} = new_context} ->
+        value =
+          case explicit_output do
+            {:set, val} -> {:explicit, val}
+            _ -> {:auto, binding}
+          end
+
+        case value do
+          {:explicit, %{} = new_context} ->
             {:ok, new_context}
 
-          %{} = new_context ->
+          {:explicit, val} ->
+            {:result, val}
+
+          {:auto, {:ok, %{} = new_context}} ->
             {:ok, new_context}
 
-          {:ok, value} ->
-            {:result, value}
+          {:auto, %{} = new_context} ->
+            {:ok, new_context}
 
-          other_value ->
-            {:result, other_value}
+          {:auto, {:ok, val}} ->
+            {:result, val}
+
+          {:auto, val} ->
+            {:result, val}
         end
 
       {:error, exception_or_reason} ->

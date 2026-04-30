@@ -1,8 +1,12 @@
 defmodule FusionFlow.Nodes.Logger do
-  def definition do
+  use FusionKit.Node
+
+  definition do
     %{
       name: "Logger",
+      title: "Logger",
       category: :utility,
+      color: "bg-gray-100 text-gray-600",
       description: "Writes a message to the application logs without changing the flow context.",
       icon: "hero-chat-bubble-bottom-center-text",
       inputs: [:exec],
@@ -31,6 +35,7 @@ defmodule FusionFlow.Nodes.Logger do
     }
   end
 
+  @impl true
   def handler(context, _input) do
     require Logger
 
@@ -39,6 +44,6 @@ defmodule FusionFlow.Nodes.Logger do
 
     Logger.log(level, message)
 
-    {:ok, context}
+    {:ok, context, "exec"}
   end
 end

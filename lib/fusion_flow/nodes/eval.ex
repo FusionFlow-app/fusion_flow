@@ -1,12 +1,14 @@
 defmodule FusionFlow.Nodes.Eval do
-  @moduledoc """
-  Evaluate Code node definition.
-  """
+  use FusionKit.Node
 
-  def definition do
+  alias FusionFlow.Runtime
+
+  definition do
     %{
       name: "Evaluate Code",
+      title: "Evaluate Code",
       category: :code,
+      color: "bg-indigo-100 text-indigo-700",
       description: "Runs Elixir or Python code with access to the current flow context.",
       icon: "hero-code-bracket",
       inputs: [:exec],
@@ -17,8 +19,8 @@ defmodule FusionFlow.Nodes.Eval do
           type: :select,
           name: :language,
           label: "Language",
-          options: ["elixir", "python"],
-          default: "elixir"
+          options: Runtime.languages(),
+          default: Runtime.default_language()
         },
         %{
           type: :code,
@@ -32,47 +34,16 @@ defmodule FusionFlow.Nodes.Eval do
     }
   end
 
-  def variable(name) do
-    context = Process.get(:fusion_flow_eval_context, %{})
-    key = to_string(name)
-    Map.get(context, key)
-  end
-
-  def variable!(name) do
-    context = Process.get(:fusion_flow_eval_context, %{})
-    key = to_string(name)
-
-    case Map.fetch(context, key) do
-      {:ok, val} -> val
-      :error -> raise "Variable '#{key}' not found in context"
-    end
-  end
-
+  @impl true
   def handler(context, input) do
-    Process.put(:fusion_flow_eval_context, context)
-
-    # Use the selected language or default to elixir for backward compatibility
-    language = context["language"] || "elixir"
-
-    # Select the appropriate code field based on language
-    code =
-      case language do
-        "elixir" -> context["code_elixir"] || context["code"] || ""
-        "python" -> context["code_python"] || ""
-        _ -> ""
-      end
-
-    # Inject input into context for the executor if not already there
+    language = context["language"] || Runtime.default_language()
+    code = context[Runtime.code_field(language)] || context["code"] || ""
     context = Map.put(context, "input", input)
 
-    result =
-      case language do
-        "elixir" -> FusionFlow.Runtime.Elixir.execute(code, context)
-        "python" -> FusionFlow.Runtime.Python.execute(code, context)
-        _ -> {:error, "Unsupported language: #{language}"}
-      end
-
-    Process.delete(:fusion_flow_eval_context)
-    result
+    case Runtime.execute(language, code, context) do
+      {:ok, %{} = new_context} -> {:ok, new_context, :exec}
+      {:result, value} -> {:ok, Map.put(context, "result", value), :exec}
+      {:error, reason} -> {:error, reason}
+    end
   end
 end

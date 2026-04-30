@@ -1,8 +1,12 @@
 defmodule FusionFlow.Nodes.HttpRequest do
-  def definition do
+  use FusionKit.Node
+
+  definition do
     %{
       name: "HTTP Request",
+      title: "HTTP Request",
       category: :integration,
+      color: "bg-orange-100 text-orange-600",
       description: "Calls an external HTTP endpoint and routes success or error responses.",
       icon: "hero-globe-alt",
       inputs: [:exec],
@@ -44,6 +48,7 @@ defmodule FusionFlow.Nodes.HttpRequest do
     }
   end
 
+  @impl true
   def handler(context, input) do
     context = if is_map(input), do: Map.merge(context, input), else: context
 

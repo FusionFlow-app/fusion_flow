@@ -1,8 +1,12 @@
 defmodule FusionFlow.Nodes.Condition do
-  def definition do
+  use FusionKit.Node
+
+  definition do
     %{
       name: "Condition",
+      title: "Condition",
       category: :flow_control,
+      color: "bg-yellow-100 text-yellow-600",
       description:
         "Routes execution through true or false outputs based on a variable comparison.",
       icon: "hero-arrows-right-left",
@@ -39,6 +43,7 @@ defmodule FusionFlow.Nodes.Condition do
     }
   end
 
+  @impl true
   def handler(context, _input) do
     var_name = context["variable"]
     operator = context["operator"] || "=="
