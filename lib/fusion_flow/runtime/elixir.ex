@@ -5,14 +5,14 @@ defmodule FusionFlow.Runtime.Elixir do
 
   def variable(name) do
     context = Process.get(:fusion_flow_eval_context, %{})
-    Map.get(context, to_string(name))
+    get_variable(context, name)
   end
 
   def variable!(name) do
     context = Process.get(:fusion_flow_eval_context, %{})
     key = to_string(name)
 
-    case Map.fetch(context, key) do
+    case fetch_variable(context, key) do
       {:ok, val} -> val
       :error -> raise "Variable '#{key}' not found in context"
     end
@@ -97,5 +97,23 @@ defmodule FusionFlow.Runtime.Elixir do
       "Error on line #{diag.position}: #{diag.message}"
     end)
     |> Enum.join("\n")
+  end
+
+  defp get_variable(context, name) do
+    key = to_string(name)
+
+    case fetch_variable(context, key) do
+      {:ok, value} -> value
+      :error -> nil
+    end
+  end
+
+  defp fetch_variable(context, key) do
+    variables = Map.get(context, "variables", %{})
+
+    case Map.fetch(variables, key) do
+      {:ok, value} -> {:ok, value}
+      :error -> Map.fetch(context, key)
+    end
   end
 end
