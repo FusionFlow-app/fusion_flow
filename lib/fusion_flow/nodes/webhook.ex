@@ -6,6 +6,7 @@ defmodule FusionFlow.Nodes.Webhook do
       name: "Webhook",
       title: "Webhook",
       category: :trigger,
+      color: "bg-green-100 text-green-600",
       description: "Starts a flow from an incoming webhook request.",
       icon: "hero-link",
       inputs: [],

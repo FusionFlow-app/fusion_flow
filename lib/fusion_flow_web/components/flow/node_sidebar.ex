@@ -47,7 +47,6 @@ defmodule FusionFlowWeb.Components.Flow.NodeSidebar do
         </div>
 
         <%= for {category, nodes} <- @nodes_by_category do %>
-          <% {label, color_class} = category_meta(category) %>
           <% collapsed? = @search_query == "" && MapSet.member?(@collapsed_categories, category) %>
           <div id={"node-category-#{category}"}>
             <button
@@ -56,7 +55,7 @@ defmodule FusionFlowWeb.Components.Flow.NodeSidebar do
               phx-value-category={category}
               class="mb-2 flex w-full items-center justify-between px-4 text-left text-xs font-semibold uppercase tracking-wider text-gray-400 transition hover:text-gray-600 dark:text-slate-500 dark:hover:text-slate-300"
             >
-              <span>{label}</span>
+              <span>{FusionFlow.Nodes.category_label(category)}</span>
               <.icon
                 name={if(collapsed?, do: "hero-chevron-right", else: "hero-chevron-down")}
                 class="size-4"
@@ -65,7 +64,7 @@ defmodule FusionFlowWeb.Components.Flow.NodeSidebar do
 
             <div :if={!collapsed?} class="space-y-0.5">
               <%= for node <- nodes do %>
-                <.node_button node={node} color_class={color_class} />
+                <.node_button node={node} color_class={node.color} />
               <% end %>
             </div>
           </div>
@@ -111,12 +110,4 @@ defmodule FusionFlowWeb.Components.Flow.NodeSidebar do
     </button>
     """
   end
-
-  defp category_meta(:trigger), do: {"Triggers", "bg-green-100 text-green-600"}
-  defp category_meta(:flow_control), do: {"Flow Control", "bg-yellow-100 text-yellow-600"}
-  defp category_meta(:code), do: {"Code", "bg-indigo-100 text-indigo-700"}
-  defp category_meta(:integration), do: {"Integration", "bg-orange-100 text-orange-600"}
-  defp category_meta(:data_manipulation), do: {"Data", "bg-blue-100 text-blue-600"}
-  defp category_meta(:utility), do: {"Utility", "bg-gray-100 text-gray-600"}
-  defp category_meta(_), do: {"Other", "bg-gray-100 text-gray-600"}
 end

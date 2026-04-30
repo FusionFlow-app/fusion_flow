@@ -9,7 +9,7 @@ defmodule FusionFlow.Nodes.LoggerTest do
 
       log =
         capture_log(fn ->
-          assert Logger.handler(context, nil) == {:ok, context}
+          assert Logger.handler(context, nil) == {:ok, context, "exec"}
         end)
 
       assert log =~ "test log message"
@@ -21,7 +21,7 @@ defmodule FusionFlow.Nodes.LoggerTest do
 
       log =
         capture_log(fn ->
-          assert Logger.handler(context, nil) == {:ok, context}
+          assert Logger.handler(context, nil) == {:ok, context, "exec"}
         end)
 
       assert log =~ "test error message"
@@ -35,7 +35,7 @@ defmodule FusionFlow.Nodes.LoggerTest do
 
       log =
         capture_log(fn ->
-          assert Logger.handler(context, nil) == {:ok, context}
+          assert Logger.handler(context, nil) == {:ok, context, "exec"}
         end)
 
       assert log =~ "warning log label"

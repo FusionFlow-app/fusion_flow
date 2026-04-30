@@ -1,8 +1,8 @@
 defmodule FusionFlow.Agents.Shared do
-  alias FusionFlow.Nodes.Registry
+  alias FusionFlow.Nodes
 
   def nodes_description do
-    Registry.all_nodes()
+    Nodes.all_nodes()
     |> Enum.map(fn node ->
       """
       - Type: #{node.name}

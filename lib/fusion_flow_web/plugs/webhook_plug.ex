@@ -57,7 +57,7 @@ defmodule FusionFlowWeb.Plugs.WebhookPlug do
     }
 
     result =
-      case FusionFlow.Nodes.Runner.run_from_webhook(flow, webhook_request) do
+      case FusionFlow.Flows.Runner.run_from_webhook(flow, webhook_request) do
         {:ok, execution_result} -> %{status: "ok", result: sanitize(execution_result)}
         {:error, reason, _node_id} -> %{status: "error", error: sanitize(reason)}
       end

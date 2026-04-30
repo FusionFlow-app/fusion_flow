@@ -1,8 +1,12 @@
 defmodule FusionFlow.Nodes.Start do
-  def definition do
+  use FusionKit.Node
+
+  definition do
     %{
       name: "Start",
+      title: "Start",
       category: :flow_control,
+      color: "bg-yellow-100 text-yellow-600",
       description: "Starts manual flow execution and passes the initial context forward.",
       icon: "hero-play",
       inputs: [],
@@ -12,7 +16,8 @@ defmodule FusionFlow.Nodes.Start do
     }
   end
 
+  @impl true
   def handler(context, _input) do
-    {:ok, context}
+    {:ok, context, "exec"}
   end
 end

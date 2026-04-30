@@ -1,5 +1,5 @@
-defmodule FusionFlow.Nodes.Runner do
-  alias FusionFlow.Nodes.Registry
+defmodule FusionFlow.Flows.Runner do
+  alias FusionFlow.Nodes
 
   def run(flow) do
     start_node =
@@ -22,7 +22,7 @@ defmodule FusionFlow.Nodes.Runner do
 
   defp execute_node(node, context, flow) do
     node_type = node["type"] || node["label"]
-    definition = Registry.get_node(node_type)
+    definition = Nodes.get_node(node_type)
 
     if definition do
       module = get_node_module(node_type)
@@ -128,10 +128,6 @@ defmodule FusionFlow.Nodes.Runner do
     end
   end
 
-  defp get_node_module("Webhook"), do: FusionFlow.Nodes.Webhook
-  defp get_node_module("Start"), do: FusionFlow.Nodes.Start
-  defp get_node_module("Variable"), do: FusionFlow.Nodes.Variable
-  defp get_node_module("Output"), do: FusionFlow.Nodes.Output
   defp get_node_module("Evaluate Code"), do: FusionFlow.Nodes.Eval
   defp get_node_module("HTTP Request"), do: FusionFlow.Nodes.HttpRequest
 

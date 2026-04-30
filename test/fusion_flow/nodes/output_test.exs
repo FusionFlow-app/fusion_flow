@@ -15,7 +15,7 @@ defmodule FusionFlow.Nodes.OutputTest do
         "data" => "some result"
       }
 
-      assert {:ok, result_context} = Output.handler(context, nil)
+      assert {:ok, result_context, "exec"} = Output.handler(context, nil)
       assert result_context == context
 
       # Verify log was created
@@ -30,7 +30,7 @@ defmodule FusionFlow.Nodes.OutputTest do
       {:ok, flow} = Flows.create_flow(%{name: "Test Flow", nodes: [], connections: []})
       context = %{"flow_id" => flow.id}
 
-      assert {:ok, _} = Output.handler(context, nil)
+      assert {:ok, _, "exec"} = Output.handler(context, nil)
 
       [log] = Repo.all(ExecutionLog)
       assert log.status == "success"

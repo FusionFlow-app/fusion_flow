@@ -1,8 +1,12 @@
 defmodule FusionFlow.Nodes.Variable do
-  def definition do
+  use FusionKit.Node
+
+  definition do
     %{
       name: "Variable",
+      title: "Variable",
       category: :data_manipulation,
+      color: "bg-blue-100 text-blue-600",
       description: "Stores a typed value in the flow context for later nodes.",
       icon: "hero-variable",
       inputs: [:exec],
@@ -32,6 +36,7 @@ defmodule FusionFlow.Nodes.Variable do
     }
   end
 
+  @impl true
   def handler(context, _input) do
     var_name = context["var_name"]
     var_value = context["var_value"]
@@ -55,10 +60,13 @@ defmodule FusionFlow.Nodes.Variable do
           var_value
       end
 
-    if var_name && var_name != "" do
-      {:ok, Map.put(context, var_name, parsed_value)}
-    else
-      {:ok, context}
-    end
+    new_context =
+      if var_name && var_name != "" do
+        Map.put(context, var_name, parsed_value)
+      else
+        context
+      end
+
+    {:ok, new_context, "exec"}
   end
 end

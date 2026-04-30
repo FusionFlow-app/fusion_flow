@@ -1,4 +1,4 @@
-defmodule FusionFlow.Nodes.Registry do
+defmodule FusionFlow.Nodes do
   @moduledoc """
   Central registry for all node definitions.
   """
@@ -9,17 +9,11 @@ defmodule FusionFlow.Nodes.Registry do
     HttpRequest.definition(),
     Eval.definition(),
     FusionFlow.Nodes.Condition.definition(),
-    FusionFlow.Nodes.PatternMatch.definition(),
     FusionFlow.Nodes.Logger.definition(),
     FusionFlow.Nodes.Start.definition(),
     FusionFlow.Nodes.Webhook.definition(),
-    FusionFlow.Nodes.Cron.definition(),
-    FusionFlow.Nodes.SplitInBatches.definition(),
-    FusionFlow.Nodes.Merge.definition(),
-    FusionFlow.Nodes.Set.definition(),
     FusionFlow.Nodes.Variable.definition(),
-    FusionFlow.Nodes.Output.definition(),
-    FusionFlow.Nodes.Postgres.definition()
+    FusionFlow.Nodes.Output.definition()
   ]
 
   @nodes_by_name Map.new(@all_nodes, fn n -> {n.name, n} end)
@@ -41,5 +35,12 @@ defmodule FusionFlow.Nodes.Registry do
   def visible_nodes do
     all_nodes()
     |> Enum.filter(fn node -> Map.get(node, :show, true) end)
+  end
+
+  def category_label(category) do
+    category
+    |> to_string()
+    |> String.split("_")
+    |> Enum.map_join(" ", &String.capitalize/1)
   end
 end

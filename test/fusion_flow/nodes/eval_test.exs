@@ -22,7 +22,7 @@ defmodule FusionFlow.Nodes.EvalTest do
         "b" => 20
       }
 
-      assert {:result, 30} = Eval.handler(context, nil)
+      assert {:ok, %{"result" => 30}, :exec} = Eval.handler(context, nil)
     end
 
     test "executes Python code correctly" do
@@ -36,7 +36,7 @@ defmodule FusionFlow.Nodes.EvalTest do
       # For Python, we use an expression to get the result
       # Python execution depends on pythonx
       # We'll test if it returns the expected result
-      assert {:result, 30} = Eval.handler(context, nil)
+      assert {:ok, %{"result" => 30}, :exec} = Eval.handler(context, nil)
     end
 
     test "handles Elixir errors gracefully" do
