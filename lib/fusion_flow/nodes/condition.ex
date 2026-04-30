@@ -49,7 +49,10 @@ defmodule FusionFlow.Nodes.Condition do
     operator = context["operator"] || "=="
     compare_value = context["value"] || ""
 
-    actual_value = Map.get(context, var_name) || Map.get(context, String.to_atom(var_name))
+    actual_value =
+      context
+      |> Map.get("variables", %{})
+      |> Map.get(var_name, Map.get(context, var_name))
 
     result = evaluate_condition(actual_value, operator, compare_value)
 

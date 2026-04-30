@@ -95,8 +95,14 @@ defmodule FusionFlow.Nodes.HttpRequest do
   defp interpolate(string, context) do
     Regex.replace(~r/\{\{(.*?)\}\}/, string, fn _, key ->
       trimmed_key = String.trim(key)
-      val = Map.get(context, trimmed_key) || Map.get(context, String.to_atom(trimmed_key))
+      val = get_context_value(context, trimmed_key)
       to_string(val || "")
     end)
+  end
+
+  defp get_context_value(context, key) do
+    context
+    |> Map.get("variables", %{})
+    |> Map.get(key, Map.get(context, key))
   end
 end

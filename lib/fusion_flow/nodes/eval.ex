@@ -37,13 +37,46 @@ defmodule FusionFlow.Nodes.Eval do
   @impl true
   def handler(context, input) do
     language = context["language"] || Runtime.default_language()
-    code = context[Runtime.code_field(language)] || context["code"] || ""
-    context = Map.put(context, "input", input)
+    code = code_for_language(context, language)
+    context = put_input(context, input)
+    runtime_context = expose_variables(context)
 
-    case Runtime.execute(language, code, context) do
-      {:ok, %{} = new_context} -> {:ok, new_context, :exec}
+    case Runtime.execute(language, code, runtime_context) do
+      {:ok, %{} = new_context} -> {:ok, collapse_exposed_variables(new_context), :exec}
       {:result, value} -> {:ok, Map.put(context, "result", value), :exec}
       {:error, reason} -> {:error, reason}
     end
+  end
+
+  defp code_for_language(context, language) do
+    language_code = Map.get(context, Runtime.code_field(language))
+    legacy_code = Map.get(context, "code")
+
+    cond do
+      is_binary(language_code) && String.trim(language_code) != "" -> language_code
+      is_binary(legacy_code) -> legacy_code
+      true -> ""
+    end
+  end
+
+  defp put_input(context, nil), do: context
+  defp put_input(context, input), do: Map.put(context, "input", input)
+
+  defp expose_variables(context) do
+    variables = Map.get(context, "variables", %{})
+
+    Map.merge(variables, context)
+  end
+
+  defp collapse_exposed_variables(context) do
+    variables = Map.get(context, "variables", %{})
+
+    Enum.reduce(variables, context, fn {key, value}, acc ->
+      if Map.get(acc, key) == value do
+        Map.delete(acc, key)
+      else
+        acc
+      end
+    end)
   end
 end

@@ -1,6 +1,8 @@
 defmodule FusionFlow.Flows.Runner do
   alias FusionFlow.Nodes
 
+  @internal_keys ["flow_id", "logs"]
+
   def run(flow) do
     start_node =
       Enum.find(flow.nodes, fn node -> node["type"] == "Start" || node["label"] == "Start" end)
@@ -28,11 +30,15 @@ defmodule FusionFlow.Flows.Runner do
       module = get_node_module(node_type)
 
       context = if is_map(context), do: context, else: %{"result" => context}
+      control_keys = Map.keys(node["controls"] || %{}) -- preserved_control_keys(node_type)
       node_context = Map.merge(context, node["controls"] || %{})
 
       try do
         case apply(module, :handler, [node_context, nil]) do
           {:ok, result, output_name} ->
+            result =
+              finish_node(result, context, control_keys, node, node_type, output_name, :success)
+
             connections =
               flow.connections
               |> Enum.filter(fn c ->
@@ -43,6 +49,9 @@ defmodule FusionFlow.Flows.Runner do
 
           {:ok, result} ->
             output_name = List.first(definition[:outputs]) || "exec"
+
+            result =
+              finish_node(result, context, control_keys, node, node_type, output_name, :success)
 
             connections =
               flow.connections
@@ -56,6 +65,17 @@ defmodule FusionFlow.Flows.Runner do
             output_name = List.first(definition[:outputs]) || "exec"
             new_context = Map.put(context, "result", value)
 
+            new_context =
+              finish_node(
+                new_context,
+                context,
+                control_keys,
+                node,
+                node_type,
+                output_name,
+                :success
+              )
+
             connections =
               flow.connections
               |> Enum.filter(fn c ->
@@ -65,6 +85,18 @@ defmodule FusionFlow.Flows.Runner do
             process_connections(connections, new_context, flow)
 
           {:error, reason} ->
+            error_context =
+              finish_node(
+                Map.put(context, "result", reason),
+                context,
+                control_keys,
+                node,
+                node_type,
+                "error",
+                :error,
+                format_reason(reason)
+              )
+
             if "error" in (definition[:outputs] || []) do
               connections =
                 flow.connections
@@ -72,7 +104,7 @@ defmodule FusionFlow.Flows.Runner do
                   c["source"] == node["id"] && c["sourceOutput"] == "error"
                 end)
 
-              process_connections(connections, reason, flow)
+              process_connections(connections, error_context, flow)
             else
               {:error, reason, to_string(node["id"])}
             end
@@ -89,6 +121,63 @@ defmodule FusionFlow.Flows.Runner do
       {:ok, context}
     end
   end
+
+  defp finish_node(result, previous_context, control_keys, node, node_type, output_name, status) do
+    finish_node(result, previous_context, control_keys, node, node_type, output_name, status, nil)
+  end
+
+  defp finish_node(
+         result,
+         previous_context,
+         control_keys,
+         node,
+         node_type,
+         output_name,
+         status,
+         error
+       ) do
+    result
+    |> normalize_context()
+    |> remove_node_controls(previous_context, control_keys)
+    |> append_execution_log(node, node_type, output_name, status, error)
+  end
+
+  defp normalize_context(%{} = context), do: context
+  defp normalize_context(value), do: %{"result" => value}
+
+  defp remove_node_controls(context, previous_context, control_keys) do
+    Enum.reduce(control_keys, context, fn key, acc ->
+      if Map.has_key?(previous_context, key) do
+        Map.put(acc, key, previous_context[key])
+      else
+        Map.delete(acc, key)
+      end
+    end)
+  end
+
+  defp append_execution_log(context, node, node_type, output_name, status, error) do
+    log_entry =
+      %{
+        "node_id" => to_string(node["id"]),
+        "node_type" => node_type,
+        "status" => Atom.to_string(status),
+        "output" => to_string(output_name),
+        "context_keys" => context |> Map.drop(@internal_keys) |> Map.keys() |> Enum.sort()
+      }
+      |> maybe_put_error(error)
+
+    logs = Map.get(context, "logs", [])
+    Map.put(context, "logs", logs ++ [log_entry])
+  end
+
+  defp maybe_put_error(log_entry, nil), do: log_entry
+  defp maybe_put_error(log_entry, error), do: Map.put(log_entry, "error", error)
+
+  defp format_reason(reason) when is_binary(reason), do: reason
+  defp format_reason(reason), do: inspect(reason)
+
+  defp preserved_control_keys("Output"), do: ["status"]
+  defp preserved_control_keys(_node_type), do: []
 
   defp process_connections(connections, context, flow) do
     Enum.reduce_while(connections, {:ok, context}, fn conn, {:ok, acc_context} ->
