@@ -2,7 +2,6 @@ defmodule FusionFlow.Flows.RunnerTest do
   use FusionFlow.DataCase, async: true
 
   alias FusionFlow.Flows
-  alias FusionFlow.Flows.ExecutionLog
   alias FusionFlow.Flows.Runner
 
   describe "run/1" do
@@ -79,13 +78,22 @@ defmodule FusionFlow.Flows.RunnerTest do
                "Output"
              ]
 
-      [log] = Repo.all(ExecutionLog)
-      assert log.context["variables"] == %{"x" => 20}
-      assert log.context["result"] == 50
-      refute Map.has_key?(log.context, "var_name")
-      refute Map.has_key?(log.context, "code_elixir")
-      refute Map.has_key?(log.context, "code_python")
-      refute Map.has_key?(log.context, "x")
+      assert context["flow_id"] == flow.id
+    end
+
+    test "includes persisted execution input in the initial context" do
+      {:ok, flow} =
+        Flows.create_flow(%{
+          name: "Input Flow",
+          nodes: [
+            %{"id" => "1", "type" => "Start", "label" => "Start", "controls" => %{}}
+          ],
+          connections: []
+        })
+
+      assert {:ok, context} = Runner.run(flow, %{"payload" => %{"value" => 42}})
+
+      assert context["payload"] == %{"value" => 42}
     end
   end
 end

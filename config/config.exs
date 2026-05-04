@@ -23,7 +23,7 @@ config :fusion_flow, :scopes,
 config :fusion_flow, Oban,
   engine: Oban.Engines.Basic,
   notifier: Oban.Notifiers.Postgres,
-  queues: [default: 10],
+  queues: [default: 10, executions: 10],
   repo: FusionFlow.Repo
 
 config :fusion_flow,

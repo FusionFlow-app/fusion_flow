@@ -3,15 +3,18 @@ defmodule FusionFlow.Flows.Runner do
 
   @internal_keys ["flow_id", "logs"]
 
-  def run(flow) do
+  def run(flow, input \\ %{}) do
     start_node =
       Enum.find(flow.nodes, fn node -> node["type"] == "Start" || node["label"] == "Start" end)
 
     if start_node do
-      initial_context = %{
-        "flow_id" => flow.id,
-        "logs" => []
-      }
+      initial_context =
+        input
+        |> normalize_input()
+        |> Map.merge(%{
+          "flow_id" => flow.id,
+          "logs" => []
+        })
 
       case execute_node(start_node, initial_context, flow) do
         {:ok, execution_result} -> {:ok, execution_result}
@@ -216,6 +219,12 @@ defmodule FusionFlow.Flows.Runner do
       {:error, "No Webhook node found in flow", nil}
     end
   end
+
+  defp normalize_input(input) when is_map(input) do
+    Map.new(input, fn {key, value} -> {to_string(key), value} end)
+  end
+
+  defp normalize_input(_input), do: %{}
 
   defp get_node_module("Evaluate Code"), do: FusionFlow.Nodes.Eval
   defp get_node_module("HTTP Request"), do: FusionFlow.Nodes.HttpRequest
