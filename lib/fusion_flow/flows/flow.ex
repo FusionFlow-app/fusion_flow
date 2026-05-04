@@ -7,6 +7,8 @@ defmodule FusionFlow.Flows.Flow do
     field :nodes, {:array, :map}
     field :connections, {:array, :map}
 
+    has_many :executions, FusionFlow.Executions.Execution
+
     timestamps(type: :utc_datetime)
   end
 

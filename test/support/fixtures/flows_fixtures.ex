@@ -13,4 +13,20 @@ defmodule FusionFlow.FlowsFixtures do
 
     flow
   end
+
+  def execution_fixture(attrs \\ %{}) do
+    flow = Map.get_lazy(attrs, :flow, fn -> flow_fixture() end)
+
+    attrs =
+      attrs
+      |> Map.delete(:flow)
+      |> Enum.into(%{
+        flow_id: flow.id,
+        input: %{"source" => "test"}
+      })
+
+    {:ok, execution} = FusionFlow.Executions.create_execution(attrs)
+
+    execution
+  end
 end
