@@ -66,6 +66,8 @@ defmodule FusionFlowWeb.Router do
       live "/flows", FlowListLive
       live "/flows/new/ai", FlowAiCreatorLive
       live "/flows/:id", FlowLive
+      live "/executions", ExecutionLive, :index
+      live "/executions/:public_id", ExecutionLive, :show
     end
 
     post "/users/update-password", UserSessionController, :update_password

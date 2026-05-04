@@ -1,9 +1,13 @@
 defmodule FusionFlowWeb.FlowLiveTest do
   use FusionFlowWeb.ConnCase, async: true
+  use Oban.Testing, repo: FusionFlow.Repo
 
   import Phoenix.LiveViewTest
   import FusionFlow.FlowsFixtures
   import FusionFlow.AccountsFixtures
+
+  alias FusionFlow.Executions
+  alias FusionFlowWorker.FlowExecutionWorker
 
   setup %{conn: conn} do
     admin = system_admin_fixture()
@@ -583,8 +587,8 @@ defmodule FusionFlowWeb.FlowLiveTest do
     end
   end
 
-  describe "execution_result_modal" do
-    test "shows and closes result modal after execution", %{conn: conn} do
+  describe "save_and_run queueing" do
+    test "creates a manual execution and enqueues the Oban worker", %{conn: conn} do
       flow =
         flow_fixture(%{
           nodes: [
@@ -611,46 +615,28 @@ defmodule FusionFlowWeb.FlowLiveTest do
           }
         })
 
-      assert html =~ "Execution Output"
-      assert html =~ "done"
-      assert html =~ "Inspect Full Context"
-
-      html = render_click(lv, "close_result_modal")
+      assert html =~ "Execution queued"
+      assert has_element?(lv, "#execution-queue-notice")
       refute html =~ "Execution Output"
+
+      assert [execution] = Executions.list_executions_for_flow(flow)
+      assert execution.status == "queued"
+      assert execution.input == %{"trigger" => "manual"}
+      assert html =~ execution.public_id
+      assert has_element?(lv, "a[href=\"/executions/#{execution.public_id}\"]", "View execution")
+
+      assert_enqueued(
+        worker: FlowExecutionWorker,
+        queue: :executions,
+        args: %{execution_id: execution.id}
+      )
+
+      render_click(lv, "dismiss_execution_notice")
+      refute has_element?(lv, "#execution-queue-notice")
     end
 
-    test "toggles inspect mode in result modal", %{conn: conn} do
-      flow =
-        flow_fixture(%{
-          nodes: [
-            %{"id" => "1", "type" => "Start", "label" => "Start", "controls" => %{}},
-            %{
-              "id" => "2",
-              "type" => "Variable",
-              "label" => "Variable",
-              "controls" => %{
-                "var_name" => "greeting",
-                "var_value" => "Hello!",
-                "var_type" => "String"
-              }
-            },
-            %{
-              "id" => "3",
-              "type" => "Output",
-              "label" => "Output",
-              "controls" => %{"status" => "success"}
-            }
-          ],
-          connections: [
-            %{
-              "source" => "1",
-              "sourceOutput" => "exec",
-              "target" => "2",
-              "targetInput" => "exec"
-            },
-            %{"source" => "2", "sourceOutput" => "exec", "target" => "3", "targetInput" => "exec"}
-          ]
-        })
+    test "automatically dismisses the queued execution notice", %{conn: conn} do
+      flow = flow_fixture()
 
       {:ok, lv, _html} = live(conn, ~p"/flows/#{flow.id}")
 
@@ -658,17 +644,60 @@ defmodule FusionFlowWeb.FlowLiveTest do
         "data" => %{"nodes" => flow.nodes, "connections" => flow.connections}
       })
 
-      html = render_click(lv, "toggle_inspect_result")
-      assert html =~ "Full Context JSON"
-      assert html =~ "greeting"
+      assert [execution] = Executions.list_executions_for_flow(flow)
+      assert has_element?(lv, "#execution-queue-notice")
 
-      html = render_click(lv, "toggle_inspect_result")
-      assert html =~ "Output"
+      send(lv.pid, {:dismiss_execution_notice, execution.id})
+
+      refute has_element?(lv, "#execution-queue-notice")
     end
-  end
 
-  describe "save_and_run with errors" do
-    test "does not show result modal when execution fails", %{conn: conn} do
+    test "replaces the queued notice when execution finishes", %{conn: conn} do
+      flow = flow_fixture()
+
+      {:ok, lv, _html} = live(conn, ~p"/flows/#{flow.id}")
+
+      html =
+        render_hook(lv, "save_and_run", %{
+          "data" => %{"nodes" => flow.nodes, "connections" => flow.connections}
+        })
+
+      assert html =~ "Execution queued"
+      assert [execution] = Executions.list_executions_for_flow(flow)
+
+      {:ok, execution} =
+        Executions.mark_succeeded(execution, %{
+          "result" => 999,
+          "status" => "success",
+          "trigger" => "manual",
+          "variables" => %{"x" => 999}
+        })
+
+      send(lv.pid, {:execution_updated, execution})
+
+      html = render(lv)
+      assert html =~ "Execution finished"
+      refute html =~ "Execution queued"
+      refute has_element?(lv, "a[href=\"/executions/#{execution.public_id}\"]", "View execution")
+      assert has_element?(lv, "#open-execution-result", "View result")
+
+      html =
+        lv
+        |> element("#open-execution-result")
+        |> render_click()
+
+      assert html =~ "Execution Output"
+      assert html =~ "variables"
+      assert html =~ "999"
+      refute html =~ "%{"
+      refute has_element?(lv, "#execution-queue-notice")
+
+      send(lv.pid, {:dismiss_execution_notice, execution.id})
+
+      refute has_element?(lv, "#execution-queue-notice")
+    end
+
+    test "queues execution without running runtime errors inside the LiveView", %{conn: conn} do
       flow =
         flow_fixture(%{
           nodes: [
@@ -684,7 +713,12 @@ defmodule FusionFlowWeb.FlowLiveTest do
             }
           ],
           connections: [
-            %{"source" => "1", "sourceOutput" => "exec", "target" => "2", "targetInput" => "exec"}
+            %{
+              "source" => "1",
+              "sourceOutput" => "exec",
+              "target" => "2",
+              "targetInput" => "exec"
+            }
           ]
         })
 
@@ -695,10 +729,22 @@ defmodule FusionFlowWeb.FlowLiveTest do
           "data" => %{"nodes" => flow.nodes, "connections" => flow.connections}
         })
 
+      assert html =~ "Execution queued"
+      assert has_element?(lv, "#execution-queue-notice")
       refute html =~ "Execution Output"
-    end
 
-    test "does not show result modal when no Start node", %{conn: conn} do
+      assert [execution] = Executions.list_executions_for_flow(flow)
+
+      assert_enqueued(
+        worker: FlowExecutionWorker,
+        queue: :executions,
+        args: %{execution_id: execution.id}
+      )
+    end
+  end
+
+  describe "save_and_run with errors" do
+    test "queues execution even when the flow has no Start node", %{conn: conn} do
       flow =
         flow_fixture(%{
           nodes: [
@@ -719,12 +765,22 @@ defmodule FusionFlowWeb.FlowLiveTest do
           "data" => %{"nodes" => flow.nodes, "connections" => flow.connections}
         })
 
+      assert html =~ "Execution queued"
+      assert has_element?(lv, "#execution-queue-notice")
       refute html =~ "Execution Output"
+
+      assert [execution] = Executions.list_executions_for_flow(flow)
+
+      assert_enqueued(
+        worker: FlowExecutionWorker,
+        queue: :executions,
+        args: %{execution_id: execution.id}
+      )
     end
   end
 
   describe "save_and_run full pipeline" do
-    test "executes Start -> Variable -> Output flow and shows result modal", %{conn: conn} do
+    test "queues Start -> Variable -> Output flow", %{conn: conn} do
       flow =
         flow_fixture(%{
           nodes: [
@@ -764,11 +820,20 @@ defmodule FusionFlowWeb.FlowLiveTest do
           "data" => %{"nodes" => flow.nodes, "connections" => flow.connections}
         })
 
-      assert html =~ "Execution Output"
-      assert html =~ "complete"
+      assert html =~ "Execution queued"
+      assert has_element?(lv, "#execution-queue-notice")
+      refute html =~ "Execution Output"
+
+      assert [execution] = Executions.list_executions_for_flow(flow)
+
+      assert_enqueued(
+        worker: FlowExecutionWorker,
+        queue: :executions,
+        args: %{execution_id: execution.id}
+      )
     end
 
-    test "executes Start -> Evaluate Code -> Output flow and shows result", %{conn: conn} do
+    test "queues Start -> Evaluate Code -> Output flow", %{conn: conn} do
       flow =
         flow_fixture(%{
           nodes: [
@@ -807,8 +872,17 @@ defmodule FusionFlowWeb.FlowLiveTest do
           "data" => %{"nodes" => flow.nodes, "connections" => flow.connections}
         })
 
-      assert html =~ "Execution Output"
-      assert html =~ "42"
+      assert html =~ "Execution queued"
+      assert has_element?(lv, "#execution-queue-notice")
+      refute html =~ "Execution Output"
+
+      assert [execution] = Executions.list_executions_for_flow(flow)
+
+      assert_enqueued(
+        worker: FlowExecutionWorker,
+        queue: :executions,
+        args: %{execution_id: execution.id}
+      )
     end
   end
 

@@ -33,6 +33,7 @@ defmodule FusionFlowWeb.FlowLive do
        recent_nodes: [],
        current_flow: flow,
        execution_result: nil,
+       execution_notice: nil,
        show_result_modal: false,
        error_modal_open: false,
        current_error_message: nil,
@@ -110,38 +111,74 @@ defmodule FusionFlowWeb.FlowLive do
   def handle_event("save_and_run", %{"data" => data}, socket) do
     case FusionFlow.Flows.update_flow(socket.assigns.current_flow, data) do
       {:ok, updated_flow} ->
-        case FusionFlow.Flows.Runner.run(updated_flow) do
-          {:ok, result_context} ->
+        case FusionFlow.Executions.create_execution(%{
+               flow_id: updated_flow.id,
+               input: %{"trigger" => "manual"}
+             }) do
+          {:ok, execution} ->
+            case FusionFlow.Executions.enqueue_execution(execution) do
+              {:ok, _job} ->
+                {:noreply,
+                 socket
+                 |> assign(
+                   current_flow: updated_flow,
+                   has_changes: false,
+                   execution_result: nil,
+                   execution_notice: execution_notice(:queued, execution),
+                   show_result_modal: false,
+                   inspecting_result: false
+                 )
+                 |> subscribe_to_execution(execution)
+                 |> schedule_execution_notice_dismiss(execution.id)
+                 |> put_flash(:info, "Flow saved and execution queued.")
+                 |> push_event("clear_node_errors", %{})}
+
+              {:error, _reason} ->
+                {:noreply,
+                 socket
+                 |> assign(current_flow: updated_flow, has_changes: false)
+                 |> assign(
+                   execution_notice: %{
+                     kind: :error,
+                     status: "failed",
+                     title: "Execution was not queued",
+                     message: "The flow was saved, but the execution job could not be created.",
+                     execution_id: execution.id,
+                     public_id: execution.public_id
+                   }
+                 )
+                 |> put_flash(:error, "Flow saved, but execution could not be queued.")}
+            end
+
+          {:error, _changeset} ->
             {:noreply,
              socket
              |> assign(current_flow: updated_flow, has_changes: false)
-             |> put_flash(:info, "Flow saved and executed successfully!")
-             |> push_event("clear_node_errors", %{})
-             |> assign(execution_result: result_context, show_result_modal: true)}
-
-          {:error, reason, node_id} ->
-            error_msg = if is_binary(reason), do: reason, else: inspect(reason)
-
-            socket =
-              socket
-              |> assign(current_flow: updated_flow, has_changes: false)
-              |> put_flash(:error, "Flow saved, but execution failed: #{error_msg}")
-
-            socket =
-              if node_id do
-                push_event(socket, "highlight_node_error", %{
-                  nodeId: to_string(node_id),
-                  message: error_msg
-                })
-              else
-                socket
-              end
-
-            {:noreply, socket}
+             |> assign(
+               execution_notice: %{
+                 kind: :error,
+                 status: "failed",
+                 title: "Execution was not created",
+                 message: "The flow was saved, but the execution record could not be created.",
+                 execution_id: nil
+               }
+             )
+             |> put_flash(:error, "Flow saved, but execution could not be created.")}
         end
 
       {:error, _changeset} ->
-        {:noreply, put_flash(socket, :error, "Failed to save flow before running.")}
+        {:noreply,
+         socket
+         |> assign(
+           execution_notice: %{
+             kind: :error,
+             status: "failed",
+             title: "Flow was not saved",
+             message: "The execution was not queued because the graph could not be saved.",
+             execution_id: nil
+           }
+         )
+         |> put_flash(:error, "Failed to save flow before running.")}
     end
   end
 
@@ -549,6 +586,24 @@ defmodule FusionFlowWeb.FlowLive do
   end
 
   @impl true
+  def handle_event("dismiss_execution_notice", _params, socket) do
+    {:noreply, assign(socket, execution_notice: nil)}
+  end
+
+  @impl true
+  def handle_event("open_execution_result", %{"id" => execution_id}, socket) do
+    execution = FusionFlow.Executions.get_execution!(execution_id)
+
+    {:noreply,
+     assign(socket,
+       execution_notice: nil,
+       execution_result: execution_modal_result(execution),
+       show_result_modal: true,
+       inspecting_result: false
+     )}
+  end
+
+  @impl true
   def handle_event("toggle_inspect_result", _params, socket) do
     {:noreply, assign(socket, inspecting_result: !socket.assigns.inspecting_result)}
   end
@@ -760,6 +815,36 @@ defmodule FusionFlowWeb.FlowLive do
   end
 
   @impl true
+  def handle_info({:dismiss_execution_notice, execution_id, dismiss_ref}, socket) do
+    notice = socket.assigns.execution_notice
+
+    socket =
+      if notice && notice.execution_id == execution_id && notice.dismiss_ref == dismiss_ref do
+        assign(socket, execution_notice: nil)
+      else
+        socket
+      end
+
+    {:noreply, socket}
+  end
+
+  def handle_info({:dismiss_execution_notice, execution_id}, socket) do
+    notice = socket.assigns.execution_notice
+
+    socket =
+      if notice && notice.execution_id == execution_id && notice.status == "queued" do
+        assign(socket, execution_notice: nil)
+      else
+        socket
+      end
+
+    {:noreply, socket}
+  end
+
+  def handle_info({:execution_updated, execution}, socket) do
+    {:noreply, assign(socket, execution_notice: execution_notice(execution.status, execution))}
+  end
+
   def handle_info({:dep_log, message}, socket) do
     current_logs = socket.assigns.terminal_logs
     full_log_check = Enum.join(current_logs ++ [message])
@@ -850,6 +935,69 @@ defmodule FusionFlowWeb.FlowLive do
           collapsed_categories={@collapsed_node_categories}
           recent_nodes={@recent_nodes}
         />
+        <%= if @execution_notice do %>
+          <div
+            id="execution-queue-notice"
+            class={[
+              "absolute right-5 top-20 z-40 w-[min(28rem,calc(100vw-2.5rem))] rounded-lg border bg-white px-4 py-3 shadow-xl shadow-gray-900/10 transition dark:bg-slate-900 dark:shadow-black/40",
+              notice_border_class(@execution_notice.kind)
+            ]}
+          >
+            <div class="flex items-start gap-3">
+              <div class={[
+                "mt-0.5 flex h-8 w-8 shrink-0 items-center justify-center rounded-full",
+                notice_icon_class(@execution_notice.kind)
+              ]}>
+                <.icon name={notice_icon(@execution_notice.kind)} class="h-5 w-5" />
+              </div>
+              <div class="min-w-0 flex-1">
+                <div class="flex items-center gap-2">
+                  <p class="text-sm font-semibold text-gray-900 dark:text-white">
+                    {@execution_notice.title}
+                  </p>
+                  <span class="rounded-full bg-gray-100 px-2 py-0.5 text-[11px] font-medium uppercase tracking-normal text-gray-600 dark:bg-slate-800 dark:text-gray-300">
+                    {@execution_notice.status}
+                  </span>
+                </div>
+                <p class="mt-1 text-sm leading-5 text-gray-600 dark:text-gray-400">
+                  {@execution_notice.message}
+                </p>
+                <%= if @execution_notice.execution_id do %>
+                  <p class="mt-2 truncate font-mono text-xs text-gray-500 dark:text-gray-500">
+                    execution: {@execution_notice.public_id || @execution_notice.execution_id}
+                  </p>
+                  <%= if execution_notice_ready?(@execution_notice) do %>
+                    <button
+                      id="open-execution-result"
+                      type="button"
+                      phx-click="open_execution_result"
+                      phx-value-id={@execution_notice.execution_id}
+                      class="mt-3 inline-flex h-8 items-center gap-2 rounded-md bg-primary px-3 text-xs font-semibold text-white transition hover:opacity-90"
+                    >
+                      <.icon name="hero-magnifying-glass-plus" class="h-4 w-4" /> View result
+                    </button>
+                  <% else %>
+                    <.link
+                      navigate={~p"/executions/#{@execution_notice.public_id}"}
+                      class="mt-3 inline-flex h-8 items-center gap-2 rounded-md bg-primary px-3 text-xs font-semibold text-white transition hover:opacity-90"
+                    >
+                      <.icon name="hero-arrow-top-right-on-square" class="h-4 w-4" /> View execution
+                    </.link>
+                  <% end %>
+                <% end %>
+              </div>
+              <button
+                id="dismiss-execution-notice"
+                type="button"
+                phx-click="dismiss_execution_notice"
+                class="rounded-md p-1 text-gray-400 transition hover:bg-gray-100 hover:text-gray-600 dark:hover:bg-slate-800 dark:hover:text-gray-200"
+                aria-label="Dismiss execution notice"
+              >
+                <.icon name="hero-x-mark" class="h-5 w-5" />
+              </button>
+            </div>
+          </div>
+        <% end %>
         <script>
           window.Translations = {
             "Run": "<%= gettext("Run") %>",
@@ -978,6 +1126,107 @@ defmodule FusionFlowWeb.FlowLive do
         assign(socket, recent_nodes: recent_nodes)
     end
   end
+
+  defp subscribe_to_execution(socket, execution) do
+    if connected?(socket) do
+      FusionFlow.Executions.subscribe_to_execution(execution)
+    end
+
+    socket
+  end
+
+  defp schedule_execution_notice_dismiss(socket, execution_id) do
+    dismiss_ref = System.unique_integer([:positive])
+    notice = socket.assigns.execution_notice
+    Process.send_after(self(), {:dismiss_execution_notice, execution_id, dismiss_ref}, 6_000)
+
+    if notice && notice.execution_id == execution_id do
+      assign(socket, execution_notice: Map.put(notice, :dismiss_ref, dismiss_ref))
+    else
+      socket
+    end
+  end
+
+  defp execution_notice(:queued, execution) do
+    %{
+      kind: :info,
+      status: "queued",
+      title: "Execution queued",
+      message: "The flow was saved and is waiting for the worker to run.",
+      execution_id: execution.id,
+      public_id: execution.public_id,
+      dismiss_ref: nil
+    }
+  end
+
+  defp execution_notice("succeeded", execution) do
+    %{
+      kind: :success,
+      status: "succeeded",
+      title: "Execution finished",
+      message: "The flow run is ready to inspect.",
+      execution_id: execution.id,
+      public_id: execution.public_id,
+      dismiss_ref: nil
+    }
+  end
+
+  defp execution_notice("failed", execution) do
+    %{
+      kind: :error,
+      status: "failed",
+      title: "Execution failed",
+      message: "The flow run finished with an error. Open it to inspect the details.",
+      execution_id: execution.id,
+      public_id: execution.public_id,
+      dismiss_ref: nil
+    }
+  end
+
+  defp execution_notice(_status, execution) do
+    %{
+      kind: :info,
+      status: "running",
+      title: "Execution running",
+      message: "The worker is processing this flow run.",
+      execution_id: execution.id,
+      public_id: execution.public_id,
+      dismiss_ref: nil
+    }
+  end
+
+  defp execution_notice_ready?(%{status: status}) when status in ["succeeded", "failed"], do: true
+  defp execution_notice_ready?(_notice), do: false
+
+  defp execution_modal_result(execution) do
+    %{
+      "execution_id" => execution.id,
+      "public_id" => execution.public_id,
+      "status" => execution.status,
+      "result" => execution.result,
+      "error" => execution.error,
+      "logs" => execution.logs
+    }
+  end
+
+  defp notice_border_class(:error), do: "border-red-200 dark:border-red-900/60"
+  defp notice_border_class(:success), do: "border-emerald-200 dark:border-emerald-900/60"
+  defp notice_border_class(_kind), do: "border-indigo-200 dark:border-indigo-900/60"
+
+  defp notice_icon_class(:error),
+    do: "bg-red-50 text-red-600 dark:bg-red-950/60 dark:text-red-300"
+
+  defp notice_icon_class(:success) do
+    "bg-emerald-50 text-emerald-600 dark:bg-emerald-950/60 dark:text-emerald-300"
+  end
+
+  defp notice_icon_class(_kind) do
+    "bg-indigo-50 text-primary dark:bg-indigo-950/60 dark:text-indigo-300"
+  end
+
+  defp notice_icon(:error), do: "hero-exclamation-triangle"
+  defp notice_icon(:success), do: "hero-check-circle"
+  defp notice_icon(_kind), do: "hero-queue-list"
 
   defp category_sort_index(:trigger), do: 0
   defp category_sort_index(:flow_control), do: 1

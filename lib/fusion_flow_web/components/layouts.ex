@@ -99,6 +99,16 @@ defmodule FusionFlowWeb.Layouts do
                 <span class="hidden lg:block font-medium text-sm">{gettext("My Flows")}</span>
               </.link>
               <.link
+                navigate={~p"/executions"}
+                class="flex items-center justify-center lg:justify-start gap-3 px-3 py-2.5 rounded-lg text-gray-600 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-slate-800 hover:text-gray-900 dark:hover:text-white transition-all group"
+              >
+                <.icon
+                  name="hero-queue-list"
+                  class="w-6 h-6 lg:w-5 lg:h-5 text-gray-500 dark:text-gray-500 group-hover:text-indigo-600 dark:group-hover:text-indigo-400"
+                />
+                <span class="hidden lg:block font-medium text-sm">{gettext("Executions")}</span>
+              </.link>
+              <.link
                 navigate={~p"/flows/new/ai"}
                 class="flex items-center justify-center lg:justify-start gap-3 px-3 py-2.5 rounded-lg text-gray-600 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-slate-800 hover:text-gray-900 dark:hover:text-white transition-all group"
               >

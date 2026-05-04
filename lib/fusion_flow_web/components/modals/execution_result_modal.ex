@@ -46,7 +46,7 @@ defmodule FusionFlowWeb.Components.Modals.ExecutionResultModal do
                     <span class="text-xs font-bold text-gray-400 dark:text-slate-500 uppercase tracking-[0.2em] block mb-2">
                       Output
                     </span>
-                    <div class="text-xl font-mono text-gray-900 dark:text-slate-100 break-words line-clamp-10 selection:bg-indigo-100 dark:selection:bg-indigo-900">
+                    <div class="max-h-80 overflow-auto rounded-lg border border-gray-200 bg-gray-50 p-4 font-mono text-sm leading-6 text-gray-900 selection:bg-indigo-100 dark:border-slate-800 dark:bg-slate-950 dark:text-slate-100 dark:selection:bg-indigo-900">
                       <% # Try result, then fallback to status as the user manually changed to that
                       output_val =
                         Map.get(@execution_result, "result") || Map.get(@execution_result, "status") %>
@@ -58,7 +58,7 @@ defmodule FusionFlowWeb.Components.Modals.ExecutionResultModal do
                         <%= if is_binary(output_val) do %>
                           {output_val}
                         <% else %>
-                          {inspect(output_val, pretty: true)}
+                          <pre class="whitespace-pre-wrap break-words">{Jason.encode!(output_val, pretty: true)}</pre>
                         <% end %>
                       <% end %>
                     </div>
