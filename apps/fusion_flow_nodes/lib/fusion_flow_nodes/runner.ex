@@ -230,12 +230,6 @@ defmodule FusionFlowNodes.Runner do
   defp get_node_module("HTTP Request"), do: FusionFlowNodes.Nodes.HttpRequest
 
   defp get_node_module(name) do
-    module_name = "Elixir.FusionFlowNodes.Nodes.#{String.replace(name, " ", "")}"
-
-    try do
-      String.to_existing_atom(module_name)
-    rescue
-      _ -> nil
-    end
+    Nodes.get_node_module(name)
   end
 end

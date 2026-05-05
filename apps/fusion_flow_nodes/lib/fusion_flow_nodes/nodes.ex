@@ -3,27 +3,16 @@ defmodule FusionFlowNodes.Nodes do
   Central registry for all node definitions.
   """
 
-  alias FusionFlowNodes.Nodes.{HttpRequest, Eval}
-
-  @all_nodes [
-    HttpRequest.definition(),
-    Eval.definition(),
-    FusionFlowNodes.Nodes.Condition.definition(),
-    FusionFlowNodes.Nodes.Logger.definition(),
-    FusionFlowNodes.Nodes.Start.definition(),
-    FusionFlowNodes.Nodes.Webhook.definition(),
-    FusionFlowNodes.Nodes.Variable.definition(),
-    FusionFlowNodes.Nodes.Output.definition()
-  ]
-
-  @nodes_by_name Map.new(@all_nodes, fn n -> {n.name, n} end)
-
   def all_nodes do
-    @all_nodes
+    FusionFlowNodes.get_definitions()
   end
 
   def get_node(name) do
-    Map.get(@nodes_by_name, name)
+    Enum.find(all_nodes(), fn node -> node.name == name end)
+  end
+
+  def get_node_module(name) do
+    FusionFlowNodes.get_node_module(name)
   end
 
   def nodes_by_category do
