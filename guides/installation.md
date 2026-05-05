@@ -29,12 +29,39 @@ This command will install Hex and NPM dependencies, create the database, and run
 mix setup
 ```
 
-### 3. Start the server
+### 3. Start UI and worker together
+Open two terminals.
+
+In the first terminal:
 ```bash
+cd apps/fusion_flow_ui
 mix phx.server
 ```
 
+In the second terminal:
+```bash
+cd apps/fusion_flow_worker
+mix run --no-halt
+```
+
 Now you can visit [`localhost:4000`](http://localhost:4000) from your browser.
+
+This is the recommended local setup. The UI can render without the worker, but asynchronous executions and webhooks need the worker running.
+
+### 4. Start only one service
+If you need to isolate a process during development:
+
+Start only the UI:
+```bash
+cd apps/fusion_flow_ui
+mix phx.server
+```
+
+Start only the worker:
+```bash
+cd apps/fusion_flow_worker
+mix run --no-halt
+```
 
 ---
 
@@ -48,18 +75,65 @@ git clone https://github.com/FusionFlow-app/fusion_flow.git
 cd fusion_flow
 ```
 
-### 2. Start with Docker Compose
+### 2. Build the image
 ```bash
-docker compose up -d --build
+docker build -t fusion_flow .
 ```
-This command will automatically:
-- Build the application image.
-- Start the database (Postgres).
-- Run necessary migrations and seeds.
-- Start the server.
 
-### 3. Access the application
+### 3. Run the full stack in one container
+```bash
+docker run --rm -p 4000:4000 \
+  --env-file .env \
+  -e DATABASE_URL=ecto://postgres:postgres@host.docker.internal/fusion_flow \
+  -e SECRET_KEY_BASE=replace-me \
+  fusion_flow
+```
+
+No mode argument means `all`, which starts UI and worker in the same container.
+
+### 4. Run with Docker Compose
+```bash
+docker compose up -d --build db ui worker
+```
+
+This is the recommended Docker setup for development because it keeps UI and worker split while starting both together.
+
+To run everything in a single service:
+```bash
+docker compose --profile all up -d --build db all
+```
+
+### 5. Run only the UI
+```bash
+docker run --rm -p 4000:4000 \
+  --env-file .env \
+  -e DATABASE_URL=ecto://postgres:postgres@host.docker.internal/fusion_flow \
+  -e SECRET_KEY_BASE=replace-me \
+  fusion_flow ui
+```
+
+### 6. Run only the worker
+```bash
+docker run --rm \
+  --env-file .env \
+  -e DATABASE_URL=ecto://postgres:postgres@host.docker.internal/fusion_flow \
+  -e SECRET_KEY_BASE=replace-me \
+  fusion_flow worker
+```
+
+### 7. Access the application
 Visit [`localhost:4000`](http://localhost:4000).
+
+### 8. Concurrency and pool tuning
+
+The default Docker setup now separates the main scaling knobs:
+
+- `UI_POOL_SIZE=10`
+- `WORKER_POOL_SIZE=3`
+- `OBAN_EXECUTIONS_CONCURRENCY=5`
+- `OBAN_DEFAULT_CONCURRENCY=2`
+
+Increase worker replicas carefully and tune these values together with your Postgres limits.
 
 ---
 
@@ -69,3 +143,5 @@ To ensure everything is working correctly, you can run the test suite:
 ```bash
 mix test
 ```
+
+For multi-instance deployment and worker scaling, see [guides/scaling.md](./scaling.md).

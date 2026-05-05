@@ -11,7 +11,7 @@ if File.exists?(".env") do
 end
 
 # Configure your database
-config :fusion_flow, FusionFlow.Repo,
+config :fusion_flow_core, FusionFlowCore.Repo,
   username: "postgres",
   password: "postgres",
   hostname: "127.0.0.1",
@@ -26,7 +26,7 @@ config :fusion_flow, FusionFlow.Repo,
 # The watchers configuration can be used to run external
 # watchers to your application. For example, we can use it
 # to bundle .js and .css sources.
-config :fusion_flow, FusionFlowWeb.Endpoint,
+config :fusion_flow_ui, FusionFlowUI.Endpoint,
   # Binding to loopback ipv4 address prevents access from other machines.
   # Change to `ip: {0, 0, 0, 0}` to allow access from other machines.
   http: [ip: {127, 0, 0, 1}],
@@ -35,8 +35,8 @@ config :fusion_flow, FusionFlowWeb.Endpoint,
   debug_errors: true,
   secret_key_base: "AZ3KigCa8WUKEQjfZ0mc80AMlfXk73i2q7UGer9VQ26IrlLFOzZRuWqumGhKY2oR",
   watchers: [
-    esbuild: {Esbuild, :install_and_run, [:fusion_flow, ~w(--sourcemap=inline --watch)]},
-    tailwind: {Tailwind, :install_and_run, [:fusion_flow, ~w(--watch)]}
+    esbuild: {Esbuild, :install_and_run, [:fusion_flow_ui, ~w(--sourcemap=inline --watch)]},
+    tailwind: {Tailwind, :install_and_run, [:fusion_flow_ui, ~w(--watch)]}
   ]
 
 # ## SSL Support
@@ -63,22 +63,22 @@ config :fusion_flow, FusionFlowWeb.Endpoint,
 # different ports.
 
 # Reload browser tabs when matching files change.
-config :fusion_flow, FusionFlowWeb.Endpoint,
+config :fusion_flow_ui, FusionFlowUI.Endpoint,
   live_reload: [
     web_console_logger: true,
     patterns: [
       # Static assets, except user uploads
-      ~r"priv/static/(?!uploads/).*\.(js|css|png|jpeg|jpg|gif|svg)$",
+      ~r"apps/fusion_flow_ui/priv/static/(?!uploads/).*\.(js|css|png|jpeg|jpg|gif|svg)$",
       # Gettext translations
-      ~r"priv/gettext/.*\.po$",
+      ~r"apps/fusion_flow_ui/priv/gettext/.*\.po$",
       # Router, Controllers, LiveViews and LiveComponents
-      ~r"lib/fusion_flow_web/router\.ex$",
-      ~r"lib/fusion_flow_web/(controllers|live|components)/.*\.(ex|heex)$"
+      ~r"apps/fusion_flow_ui/lib/fusion_flow_ui/router\.ex$",
+      ~r"apps/fusion_flow_ui/lib/fusion_flow_ui/(controllers|live|components)/.*\.(ex|heex)$"
     ]
   ]
 
 # Enable dev routes for dashboard and mailbox
-config :fusion_flow, dev_routes: true
+config :fusion_flow_ui, dev_routes: true
 
 # Do not include metadata nor timestamps in development logs
 config :logger, :default_formatter, format: "[$level] $message\n"

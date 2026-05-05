@@ -1,0 +1,7 @@
+FROM scratch
+
+# DEPRECATED
+# Use the root Dockerfile instead:
+#
+#   docker build -t fusion_flow .
+#   docker run fusion_flow ui
