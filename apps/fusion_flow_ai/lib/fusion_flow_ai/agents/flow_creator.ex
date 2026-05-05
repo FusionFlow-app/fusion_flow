@@ -1,14 +1,14 @@
-defmodule FusionFlowUI.Agents.FlowCreator do
+defmodule FusionFlowAI.Agents.FlowCreator do
   @moduledoc """
   Agent responsible for helping users create flows in FusionFlowCore.
   It can answer questions about the system or generate Rete.js JSON for flow creation.
   """
 
-  alias FusionFlowUI.Agents.Shared
+  alias FusionFlowAI.Agents.Shared
 
   def chat(messages, current_flow \\ nil) do
     system = system_prompt(current_flow)
-    FusionFlowUI.AI.stream_text(messages, system: system)
+    FusionFlowAI.AI.stream_text(messages, system: system)
   end
 
   defp system_prompt(current_flow) do

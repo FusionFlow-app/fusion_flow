@@ -2,7 +2,7 @@ defmodule FusionFlowUI.FlowAiCreatorLive do
   use FusionFlowUI, :live_view
 
   alias FusionFlowCore.Flows
-  alias FusionFlowUI.Agents.FlowPlanner
+  alias FusionFlowAI.Agents.FlowPlanner
 
   @impl true
   def mount(_params, _session, socket) do

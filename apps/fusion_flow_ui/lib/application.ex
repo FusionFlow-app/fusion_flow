@@ -8,7 +8,6 @@ defmodule FusionFlowUI.Application do
     children = [
       FusionFlowUI.Telemetry,
       {DNSCluster, query: Application.get_env(:fusion_flow_ui, :dns_cluster_query) || :ignore},
-      {Finch, name: FusionFlowUI.Finch},
       {Oban, Application.fetch_env!(:fusion_flow_core, Oban)},
       FusionFlowUI.Endpoint
     ]

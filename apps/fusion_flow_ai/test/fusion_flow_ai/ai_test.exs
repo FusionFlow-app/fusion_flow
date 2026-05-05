@@ -1,10 +1,10 @@
-defmodule FusionFlowUI.AITest do
+defmodule FusionFlowAI.AITest do
   use ExUnit.Case, async: true
 
   describe "stream_text/2" do
     test "returns ok tuple with stream" do
       messages = [%{role: "user", content: "hello"}]
-      result = FusionFlowUI.AI.stream_text(messages, system: "you are a assistant")
+      result = FusionFlowAI.AI.stream_text(messages, system: "you are a assistant")
 
       assert {:ok, %{stream: _stream}} = result
     end
@@ -13,19 +13,19 @@ defmodule FusionFlowUI.AITest do
       messages = [%{role: "user", content: "hello"}]
       system = "you are helpful"
 
-      result = FusionFlowUI.AI.stream_text(messages, system: system)
+      result = FusionFlowAI.AI.stream_text(messages, system: system)
       assert {:ok, %{stream: _stream}} = result
     end
 
     test "uses custom model when provided" do
       messages = [%{role: "user", content: "hello"}]
 
-      result = FusionFlowUI.AI.stream_text(messages, system: "test", model: "gpt-4")
+      result = FusionFlowAI.AI.stream_text(messages, system: "test", model: "gpt-4")
       assert {:ok, %{stream: _stream}} = result
     end
 
     test "handles empty messages" do
-      result = FusionFlowUI.AI.stream_text([], system: "test")
+      result = FusionFlowAI.AI.stream_text([], system: "test")
       assert {:ok, %{stream: _stream}} = result
     end
   end

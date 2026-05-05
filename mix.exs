@@ -30,6 +30,7 @@ defmodule FusionFlow.Umbrella.MixProject do
           fusion_flow_core: :permanent,
           fusion_flow_runtime: :permanent,
           fusion_flow_nodes: :permanent,
+          fusion_flow_ai: :permanent,
           fusion_flow_ui: :permanent
         ]
       ],
@@ -38,6 +39,7 @@ defmodule FusionFlow.Umbrella.MixProject do
           fusion_flow_core: :permanent,
           fusion_flow_runtime: :permanent,
           fusion_flow_nodes: :permanent,
+          fusion_flow_ai: :permanent,
           fusion_flow_worker: :permanent
         ]
       ]

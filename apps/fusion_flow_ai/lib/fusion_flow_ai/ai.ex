@@ -1,4 +1,12 @@
-defmodule FusionFlowUI.AI do
+defmodule FusionFlowAI.AI do
+  @moduledoc """
+  LLM streaming entrypoint.
+
+  This currently targets OpenAI directly, but this boundary is intentionally
+  kept in `fusion_flow_ai` so future providers can be added without leaking
+  provider-specific code into UI, core, nodes or worker apps.
+  """
+
   def stream_text(messages, opts \\ []) do
     model = Keyword.get(opts, :model, System.get_env("OPENAI_MODEL") || "gpt-4o-mini")
     system = Keyword.get(opts, :system)
@@ -32,7 +40,7 @@ defmodule FusionFlowUI.AI do
               "https://api.openai.com/v1/chat/completions",
               auth: {:bearer, System.get_env("OPENAI_API_KEY")},
               json: payload,
-              finch: FusionFlowUI.Finch,
+              finch: FusionFlowAI.Finch,
               into: fn {:data, chunk}, acc ->
                 send(parent, {:chunk, ref, chunk})
                 {:cont, acc}

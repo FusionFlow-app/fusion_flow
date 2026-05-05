@@ -280,7 +280,7 @@ defmodule FusionFlowUI.FlowLive do
 
       socket =
         start_async(socket, :ai_stream, fn ->
-          {:ok, result} = FusionFlowUI.Agents.FlowCreator.chat(ai_messages, current_flow)
+          {:ok, result} = FusionFlowAI.Agents.FlowCreator.chat(ai_messages, current_flow)
 
           Enum.reduce_while(result.stream, :ok, fn event, _acc ->
             case event do

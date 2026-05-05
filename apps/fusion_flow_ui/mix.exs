@@ -33,6 +33,7 @@ defmodule FusionFlowUI.MixProject do
       {:fusion_flow_core, in_umbrella: true},
       {:fusion_flow_nodes, in_umbrella: true},
       {:fusion_flow_runtime, in_umbrella: true},
+      {:fusion_flow_ai, in_umbrella: true},
       {:phoenix, "~> 1.8.3"},
       {:phoenix_ecto, "~> 4.5"},
       {:phoenix_html, "~> 4.1"},
@@ -49,8 +50,6 @@ defmodule FusionFlowUI.MixProject do
       {:dns_cluster, "~> 0.2.0"},
       {:bandit, "~> 1.5"},
       {:oban, "~> 2.0"},
-      {:req, "~> 0.5"},
-      {:finch, "~> 0.21"},
       {:earmark, "~> 1.4"}
     ]
   end

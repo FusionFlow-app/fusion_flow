@@ -1,8 +1,6 @@
-defmodule FusionFlowUI.Agents.Shared do
-  alias FusionFlowNodes.Nodes
-
+defmodule FusionFlowAI.Agents.Shared do
   def nodes_description do
-    Nodes.all_nodes()
+    node_definitions()
     |> Enum.map(fn node ->
       """
       - Type: #{node.name}
@@ -13,6 +11,16 @@ defmodule FusionFlowUI.Agents.Shared do
       """
     end)
     |> Enum.join("\n")
+  end
+
+  defp node_definitions do
+    module = Module.concat([FusionFlowNodes, Nodes])
+
+    if Code.ensure_loaded?(module) do
+      apply(module, :all_nodes, [])
+    else
+      []
+    end
   end
 
   def current_flow_description(nil), do: ""

@@ -1,14 +1,14 @@
-defmodule FusionFlowUI.Agents.FlowPlanner do
+defmodule FusionFlowAI.Agents.FlowPlanner do
   @moduledoc """
   Agent responsible for interacting with users in a dedicated chat to create new flows.
   Uses a two-step process to first propose an implementation plan, then generate JSON upon approval.
   """
 
-  alias FusionFlowUI.Agents.Shared
+  alias FusionFlowAI.Agents.Shared
 
   def chat(messages, current_flow \\ nil, locale \\ "en") do
     system = system_prompt(current_flow, locale)
-    FusionFlowUI.AI.stream_text(messages, system: system)
+    FusionFlowAI.AI.stream_text(messages, system: system)
   end
 
   defp system_prompt(current_flow, locale) do
