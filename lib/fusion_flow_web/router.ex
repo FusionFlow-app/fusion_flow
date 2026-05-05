@@ -27,6 +27,7 @@ defmodule FusionFlowWeb.Router do
   scope "/api", FusionFlowWeb do
     pipe_through :api
 
+    get "/flows/:flow_id/executions/:public_id", ExecutionController, :show
     resources "/flows", FlowController, except: [:new, :edit]
   end
 

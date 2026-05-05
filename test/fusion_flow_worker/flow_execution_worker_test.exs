@@ -95,7 +95,7 @@ defmodule FusionFlowWorker.FlowExecutionWorkerTest do
               "headers" => %{"content-type" => "application/json"},
               "method" => "POST",
               "query_params" => %{"source" => "api"},
-              "path" => "/flows/#{flow.id}/webhook/orders"
+              "path" => "/api/flows/#{flow.id}/webhook/orders"
             }
           }
         })
@@ -109,7 +109,7 @@ defmodule FusionFlowWorker.FlowExecutionWorkerTest do
       assert persisted_execution.result["body"] == %{"value" => 999}
       assert persisted_execution.result["method"] == "POST"
       assert persisted_execution.result["query_params"] == %{"source" => "api"}
-      assert persisted_execution.result["request_path"] == "/flows/#{flow.id}/webhook/orders"
+      assert persisted_execution.result["request_path"] == "/api/flows/#{flow.id}/webhook/orders"
       assert length(persisted_execution.logs) == 2
       assert_receive {:execution_updated, %{id: execution_id, status: "succeeded"}}
       assert execution_id == execution.id

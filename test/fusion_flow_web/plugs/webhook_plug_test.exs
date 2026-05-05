@@ -17,7 +17,7 @@ defmodule FusionFlowWeb.Plugs.WebhookPlugTest do
       :ok = Webhooks.register_flow(flow)
 
       conn =
-        post(conn, "/flows/#{flow.id}/webhook/#{slug}?source=api", %{
+        post(conn, "/api/flows/#{flow.id}/webhook/#{slug}?source=api", %{
           "value" => 999
         })
 
@@ -34,7 +34,9 @@ defmodule FusionFlowWeb.Plugs.WebhookPlugTest do
       assert get_in(execution.input, ["request", "body"]) == %{"value" => 999}
       assert get_in(execution.input, ["request", "method"]) == "POST"
       assert get_in(execution.input, ["request", "query_params"]) == %{"source" => "api"}
-      assert get_in(execution.input, ["request", "path"]) == "/flows/#{flow.id}/webhook/#{slug}"
+
+      assert get_in(execution.input, ["request", "path"]) ==
+               "/api/flows/#{flow.id}/webhook/#{slug}"
 
       assert_enqueued(
         worker: FlowExecutionWorker,
@@ -50,7 +52,7 @@ defmodule FusionFlowWeb.Plugs.WebhookPlugTest do
 
       :ok = Webhooks.register_flow(flow)
 
-      conn = get(conn, "/flows/#{flow.id}/webhook/#{slug}")
+      conn = get(conn, "/api/flows/#{flow.id}/webhook/#{slug}")
 
       assert %{"error" => "Method not allowed. Expected POST"} = json_response(conn, 405)
       assert [] = Executions.list_executions_for_flow(flow)
@@ -59,7 +61,7 @@ defmodule FusionFlowWeb.Plugs.WebhookPlugTest do
     test "returns not found for unknown webhooks", %{conn: conn} do
       flow = flow_fixture()
 
-      conn = post(conn, "/flows/#{flow.id}/webhook/missing", %{})
+      conn = post(conn, "/api/flows/#{flow.id}/webhook/missing", %{})
 
       assert %{"error" => "Webhook not found"} = json_response(conn, 404)
     end

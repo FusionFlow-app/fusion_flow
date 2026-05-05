@@ -31,6 +31,25 @@ defmodule FusionFlow.ExecutionsTest do
       assert found_execution.id == execution.id
     end
 
+    test "get_execution_by_flow_and_public_id/2 returns execution for flow and public id" do
+      flow = flow_fixture()
+      execution = execution_fixture(%{flow: flow})
+
+      assert found_execution =
+               Executions.get_execution_by_flow_and_public_id(flow.id, execution.public_id)
+
+      assert found_execution.id == execution.id
+    end
+
+    test "get_execution_by_flow_and_public_id/2 returns nil for mismatched flow" do
+      flow = flow_fixture()
+      other_flow = flow_fixture(%{name: "Other Flow"})
+      execution = execution_fixture(%{flow: flow})
+
+      assert Executions.get_execution_by_flow_and_public_id(other_flow.id, execution.public_id) ==
+               nil
+    end
+
     test "create_execution/1 rejects unknown states" do
       flow = flow_fixture()
 

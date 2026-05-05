@@ -5,7 +5,7 @@ defmodule FusionFlow.Webhooks do
 
   The user's configured path (e.g. `/webhook/teste`) is normalized to a slug
   (e.g. `teste`). The webhook URL is:
-  `http://host:port/flows/:flow_id/webhook/teste`
+  `http://host:port/api/flows/:flow_id/webhook/teste`
   """
 
   import Ecto.Query

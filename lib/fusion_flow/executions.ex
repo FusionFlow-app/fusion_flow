@@ -43,6 +43,12 @@ defmodule FusionFlow.Executions do
     |> Repo.preload(:flow)
   end
 
+  def get_execution_by_flow_and_public_id(flow_id, public_id) do
+    Execution
+    |> Repo.get_by(flow_id: flow_id, public_id: public_id)
+    |> Repo.preload(:flow)
+  end
+
   def subscribe_to_execution(%Execution{id: execution_id}) do
     subscribe_to_execution(execution_id)
   end

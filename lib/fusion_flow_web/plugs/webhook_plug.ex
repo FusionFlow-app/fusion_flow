@@ -1,6 +1,6 @@
 defmodule FusionFlowWeb.Plugs.WebhookPlug do
   @moduledoc """
-  Plug that intercepts incoming HTTP requests matching `/flows/:id/webhook/*` paths
+  Plug that intercepts incoming HTTP requests matching `/api/flows/:id/webhook/*` paths
   and routes them to the appropriate flow execution.
   """
 
@@ -8,7 +8,7 @@ defmodule FusionFlowWeb.Plugs.WebhookPlug do
 
   def init(opts), do: opts
 
-  def call(%Plug.Conn{path_info: ["flows", flow_id, "webhook" | rest]} = conn, _opts)
+  def call(%Plug.Conn{path_info: ["api", "flows", flow_id, "webhook" | rest]} = conn, _opts)
       when rest != [] do
     slug = Enum.join(rest, "/")
 
