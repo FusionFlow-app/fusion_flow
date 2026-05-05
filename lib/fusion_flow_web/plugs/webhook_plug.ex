@@ -48,24 +48,26 @@ defmodule FusionFlowWeb.Plugs.WebhookPlug do
           cached
       end
 
-    webhook_request = %{
-      "body" => conn.body_params,
-      "headers" => Enum.into(conn.req_headers, %{}),
-      "method" => conn.method,
-      "query_params" => conn.query_params,
-      "path" => conn.request_path
-    }
-
-    result =
-      case FusionFlow.Flows.Runner.run_from_webhook(flow, webhook_request) do
-        {:ok, execution_result} -> %{status: "ok", result: sanitize(execution_result)}
-        {:error, reason, _node_id} -> %{status: "error", error: sanitize(reason)}
-      end
-
-    conn
-    |> put_resp_content_type("application/json")
-    |> send_resp(200, Jason.encode!(result))
-    |> halt()
+    with {:ok, execution} <- create_webhook_execution(flow, conn),
+         {:ok, _job} <- FusionFlow.Executions.enqueue_execution(execution) do
+      conn
+      |> put_resp_content_type("application/json")
+      |> send_resp(
+        202,
+        Jason.encode!(%{
+          status: "accepted",
+          execution_id: execution.public_id,
+          execution_status: execution.status
+        })
+      )
+      |> halt()
+    else
+      {:error, _reason} ->
+        conn
+        |> put_resp_content_type("application/json")
+        |> send_resp(500, Jason.encode!(%{error: "Execution could not be queued"}))
+        |> halt()
+    end
   rescue
     Ecto.NoResultsError ->
       conn
@@ -74,13 +76,19 @@ defmodule FusionFlowWeb.Plugs.WebhookPlug do
       |> halt()
   end
 
-  defp sanitize(value) when is_map(value) do
-    value
-    |> Map.drop(["logs"])
-    |> Map.new(fn {k, v} -> {to_string(k), sanitize(v)} end)
+  defp create_webhook_execution(flow, conn) do
+    FusionFlow.Executions.create_execution(%{
+      flow_id: flow.id,
+      input: %{
+        "trigger" => "webhook",
+        "request" => %{
+          "body" => conn.body_params,
+          "headers" => Enum.into(conn.req_headers, %{}),
+          "method" => conn.method,
+          "query_params" => conn.query_params,
+          "path" => conn.request_path
+        }
+      }
+    })
   end
-
-  defp sanitize(value) when is_list(value), do: Enum.map(value, &sanitize/1)
-  defp sanitize(value) when is_atom(value), do: to_string(value)
-  defp sanitize(value), do: value
 end
