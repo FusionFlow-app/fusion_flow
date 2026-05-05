@@ -21,6 +21,7 @@ COPY mix.exs mix.lock ./
 COPY apps/fusion_flow_core/mix.exs apps/fusion_flow_core/mix.exs
 COPY apps/fusion_flow_nodes/mix.exs apps/fusion_flow_nodes/mix.exs
 COPY apps/fusion_flow_runtime/mix.exs apps/fusion_flow_runtime/mix.exs
+COPY apps/fusion_flow_ai/mix.exs apps/fusion_flow_ai/mix.exs
 COPY apps/fusion_flow_ui/mix.exs apps/fusion_flow_ui/mix.exs
 COPY apps/fusion_flow_worker/mix.exs apps/fusion_flow_worker/mix.exs
 
