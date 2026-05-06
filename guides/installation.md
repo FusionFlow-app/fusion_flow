@@ -135,6 +135,33 @@ The default Docker setup now separates the main scaling knobs:
 
 Increase worker replicas carefully and tune these values together with your Postgres limits.
 
+### 9. API-only UI mode
+
+The UI release can run as an HTTP API gateway without the visual interface:
+
+```bash
+FUSION_FLOW_UI_MODE=api
+```
+
+In this mode FusionFlow starts the API endpoint only:
+
+- `/api/*` routes stay available
+- webhook execution endpoints stay available
+- LiveView routes are disabled
+- static visual assets are not served
+- `/live` is not registered
+
+Docker example:
+
+```bash
+docker run --rm -p 4000:4000 \
+  --env-file .env \
+  -e DATABASE_URL=ecto://postgres:postgres@host.docker.internal/fusion_flow \
+  -e SECRET_KEY_BASE=replace-me \
+  -e FUSION_FLOW_UI_MODE=api \
+  fusion_flow ui
+```
+
 ---
 
 ## 🧪 Verification

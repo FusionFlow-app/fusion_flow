@@ -42,7 +42,7 @@ prepare_ui() {
 }
 
 start_ui() {
-  echo "Starting UI application..."
+  echo "Starting UI application in ${FUSION_FLOW_UI_MODE:-full} mode..."
   exec /app/ui/bin/fusion_flow_ui start "$@"
 }
 
