@@ -27,6 +27,11 @@ config :fusion_flow_ui, FusionFlowUI.Endpoint,
   secret_key_base: "RGDMKwy9wtqfdYXUnhZUPhKjpRZJaZAjQKUtup44jrU3NmYZNqepUEc/l3pEtpP4",
   server: false
 
+config :fusion_flow_ui, FusionFlowUI.ApiEndpoint,
+  http: [ip: {127, 0, 0, 1}, port: 4003],
+  secret_key_base: "RGDMKwy9wtqfdYXUnhZUPhKjpRZJaZAjQKUtup44jrU3NmYZNqepUEc/l3pEtpP4",
+  server: false
+
 # Print only warnings and errors during test
 config :logger, level: :warning
 

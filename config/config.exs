@@ -50,6 +50,15 @@ config :fusion_flow_ui, FusionFlowUI.Endpoint,
   pubsub_server: FusionFlowCore.PubSub,
   live_view: [signing_salt: "41Etxq0i"]
 
+config :fusion_flow_ui, FusionFlowUI.ApiEndpoint,
+  url: [host: "localhost"],
+  adapter: Bandit.PhoenixAdapter,
+  render_errors: [
+    formats: [json: FusionFlowUI.ErrorJSON],
+    layout: false
+  ],
+  pubsub_server: FusionFlowCore.PubSub
+
 # Configure esbuild (the version is required)
 config :esbuild,
   version: "0.25.4",
