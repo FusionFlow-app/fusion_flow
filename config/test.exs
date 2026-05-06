@@ -2,14 +2,17 @@ import Config
 
 # Only in tests, remove the complexity from the password hashing algorithm
 config :pbkdf2_elixir, :rounds, 1
-config :fusion_flow, Oban, testing: :manual
+config :fusion_flow_core, Oban, testing: :manual
+config :fusion_flow_worker, Oban, testing: :manual
+config :fusion_flow_core, :log_email_notifications?, false
+config :fusion_flow_runtime, :log_python_execution_errors?, false
 
 # Configure your database
 #
 # The MIX_TEST_PARTITION environment variable can be used
 # to provide built-in test partitioning in CI environment.
 # Run `mix help test` for more information.
-config :fusion_flow, FusionFlow.Repo,
+config :fusion_flow_core, FusionFlowCore.Repo,
   username: "postgres",
   password: "postgres",
   hostname: "localhost",
@@ -19,7 +22,7 @@ config :fusion_flow, FusionFlow.Repo,
 
 # We don't run a server during test. If one is required,
 # you can enable the server option below.
-config :fusion_flow, FusionFlowWeb.Endpoint,
+config :fusion_flow_ui, FusionFlowUI.Endpoint,
   http: [ip: {127, 0, 0, 1}, port: 4002],
   secret_key_base: "RGDMKwy9wtqfdYXUnhZUPhKjpRZJaZAjQKUtup44jrU3NmYZNqepUEc/l3pEtpP4",
   server: false

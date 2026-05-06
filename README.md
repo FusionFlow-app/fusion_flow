@@ -1,5 +1,5 @@
 <p align="center">
-  <img src="assets/img/logo.png" alt="FusionFlow" width="180" />
+  <img src="apps/fusion_flow_ui/assets/img/logo.png" alt="FusionFlow" width="180" />
 </p>
 
 <h2 align="center">FusionFlow</h2>
@@ -26,11 +26,31 @@ Whether you are automating simple tasks or orchestrating complex microservices, 
 
 To get **FusionFlow** up and running, please refer to our full **[Installation Guide](https://hexdocs.pm/fusion_flow/installation.html)**.
 
+For deployment topology and worker scaling, see [guides/scaling.md](guides/scaling.md).
+
+Quick local start with Docker Compose:
+
+```bash
+docker compose up -d --build db ui worker
+```
+
+Quick local start from source requires two terminals:
+
+```bash
+cd apps/fusion_flow_ui
+mix phx.server
+```
+
+```bash
+cd apps/fusion_flow_worker
+mix run --no-halt
+```
+
 ## ✨ Showcase
 
 | Dashboard | Create Flow with AI | Flow Editor |
 | :---: | :---: | :---: |
-| ![Dashboard](assets/screenshots/dashboard.png) | ![AI Creator](assets/screenshots/ai_creator.png) | ![Flow Editor](assets/screenshots/flow_editor.png) |
+| ![Dashboard](apps/fusion_flow_ui/assets/screenshots/dashboard.png) | ![AI Creator](apps/fusion_flow_ui/assets/screenshots/ai_creator.png) | ![Flow Editor](apps/fusion_flow_ui/assets/screenshots/flow_editor.png) |
 | *System overview* | *Describe your logic, AI builds it* | *Visual orchestration* |
 
 ## 🤝 Community & Contributing
