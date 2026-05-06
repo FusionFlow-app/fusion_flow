@@ -8,4 +8,4 @@ function run(name, ...args) {
 }
 
 run('mix', 'ecto.reset');
-run('mix', 'run', 'priv/repo/seeds.exs');
+run('mix', 'run', 'apps/fusion_flow_core/priv/repo/seeds.exs');
