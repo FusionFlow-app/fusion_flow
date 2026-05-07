@@ -24,7 +24,9 @@ cd fusion_flow
 ```
 
 ### 2. Install dependencies and setup
-This command will install Hex and NPM dependencies, create the database, and run migrations.
+This command will install Elixir dependencies, install the UI JavaScript dependencies in
+`apps/fusion_flow_ui/assets` including Rete.js, preferring `npm` and falling back to `bun`,
+create the database, and run migrations.
 ```bash
 mix setup
 ```

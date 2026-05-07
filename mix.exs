@@ -56,7 +56,11 @@ defmodule FusionFlow.Umbrella.MixProject do
       ],
       "ecto.reset": ["ecto.drop", "ecto.setup"],
       test: ["ecto.create --quiet", "ecto.migrate --quiet", "test"],
-      "assets.setup": ["tailwind.install --if-missing", "esbuild.install --if-missing"],
+      "assets.setup": [
+        &install_ui_assets/1,
+        "tailwind.install --if-missing",
+        "esbuild.install --if-missing"
+      ],
       "assets.build": ["compile", "tailwind fusion_flow_ui", "esbuild fusion_flow_ui"],
       "assets.deploy": [
         "tailwind fusion_flow_ui --minify",
@@ -65,5 +69,41 @@ defmodule FusionFlow.Umbrella.MixProject do
       ],
       precommit: ["compile --warnings-as-errors", "deps.unlock --unused", "format", "test"]
     ]
+  end
+
+  defp install_ui_assets(_args) do
+    assets_path = Path.expand("apps/fusion_flow_ui/assets", File.cwd!())
+
+    cond do
+      executable = System.find_executable("npm") ->
+        run_installer(executable, ["install"], assets_path, "npm")
+
+      executable = System.find_executable("bun") ->
+        run_installer(executable, ["install"], assets_path, "bun")
+
+      true ->
+        Mix.raise("""
+        Could not install UI asset dependencies.
+
+        Neither `npm` nor `bun` was found in PATH.
+        Install one of them and run `mix setup` again.
+        """)
+    end
+  end
+
+  defp run_installer(executable, args, assets_path, label) do
+    Mix.shell().info("Installing UI asset dependencies with #{label} in #{assets_path}")
+
+    case System.cmd(executable, args,
+           cd: assets_path,
+           into: IO.stream(:stdio, :line),
+           stderr_to_stdout: true
+         ) do
+      {_output, 0} ->
+        :ok
+
+      {_output, status} ->
+        Mix.raise("#{label} install failed in #{assets_path} with exit status #{status}")
+    end
   end
 end
