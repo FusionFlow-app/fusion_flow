@@ -1,4 +1,4 @@
-defmodule FusionFlowUI.PublicAPI.ExecutionController do
+defmodule FusionFlowUI.PublicAPI.V1.ExecutionController do
   use FusionFlowUI, :controller
 
   alias FusionFlowCore.Executions

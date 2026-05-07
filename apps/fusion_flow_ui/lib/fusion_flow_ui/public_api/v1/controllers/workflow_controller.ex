@@ -1,4 +1,4 @@
-defmodule FusionFlowUI.PublicAPI.WorkflowController do
+defmodule FusionFlowUI.PublicAPI.V1.WorkflowController do
   use FusionFlowUI, :controller
 
   alias FusionFlowCore.Flows

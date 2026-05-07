@@ -1,4 +1,4 @@
-defmodule FusionFlowUI.PublicAPI.HealthControllerTest do
+defmodule FusionFlowUI.PublicAPI.V1.HealthControllerTest do
   use FusionFlowUI.ConnCase, async: true
 
   test "returns ok without API key", %{conn: conn} do

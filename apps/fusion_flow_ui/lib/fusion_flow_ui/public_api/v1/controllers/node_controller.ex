@@ -1,4 +1,4 @@
-defmodule FusionFlowUI.PublicAPI.NodeController do
+defmodule FusionFlowUI.PublicAPI.V1.NodeController do
   use FusionFlowUI, :controller
 
   alias FusionFlowCore.Pagination, as: PaginationContract
