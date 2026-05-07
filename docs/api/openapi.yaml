@@ -1,0 +1,852 @@
+openapi: 3.1.0
+info:
+  title: FusionFlow Public API
+  version: 1.0.0
+  description: |
+    Public API for managing FusionFlow workflows, node definitions, and workflow executions.
+
+    Authentication is performed per request with a FusionFlow API key. Use the
+    `Authorization: Bearer <api-key>` header. The `X-FusionFlow-API-Key` header is
+    also accepted for integrations that cannot set `Authorization`.
+
+    API keys are scoped. Each endpoint documents the required scope.
+servers:
+  - url: http://localhost:4000
+    description: Local development
+tags:
+  - name: Health
+    description: Basic unauthenticated health check.
+  - name: Nodes
+    description: Node definitions available for building workflow graphs.
+  - name: Workflows
+    description: Workflow CRUD operations.
+  - name: Executions
+    description: Queue and inspect workflow executions.
+security:
+  - bearerApiKey: []
+paths:
+  /api/v1/health:
+    get:
+      operationId: getHealth
+      tags:
+        - Health
+      summary: Health check
+      description: Returns a simple liveness payload without requiring an API key.
+      security: []
+      responses:
+        "200":
+          description: API is reachable.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/HealthResponse"
+  /api/v1/nodes:
+    get:
+      operationId: listNodes
+      tags:
+        - Nodes
+      summary: List node definitions
+      description: Requires `nodes:read`.
+      security:
+        - bearerApiKey: []
+      responses:
+        "200":
+          description: Node definitions.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/NodeListResponse"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "403":
+          $ref: "#/components/responses/Forbidden"
+  /api/v1/nodes/{type}:
+    get:
+      operationId: getNode
+      tags:
+        - Nodes
+      summary: Get one node definition
+      description: |
+        Requires `nodes:read`.
+
+        The `type` path parameter is a slug-like version of the node `name` or `title`.
+        Example: `Evaluate Code` can be requested as `evaluate-code`.
+      security:
+        - bearerApiKey: []
+      parameters:
+        - $ref: "#/components/parameters/NodeType"
+      responses:
+        "200":
+          description: Node definition.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/NodeResponse"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "403":
+          $ref: "#/components/responses/Forbidden"
+        "404":
+          $ref: "#/components/responses/NotFound"
+  /api/v1/workflows:
+    get:
+      operationId: listWorkflows
+      tags:
+        - Workflows
+      summary: List workflows
+      description: Requires `workflows:read`.
+      security:
+        - bearerApiKey: []
+      responses:
+        "200":
+          description: Workflows.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/WorkflowListResponse"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "403":
+          $ref: "#/components/responses/Forbidden"
+    post:
+      operationId: createWorkflow
+      tags:
+        - Workflows
+      summary: Create workflow
+      description: Requires `workflows:write`.
+      security:
+        - bearerApiKey: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/WorkflowRequest"
+            examples:
+              minimal:
+                value:
+                  workflow:
+                    name: My workflow
+                    nodes: []
+                    connections: []
+      responses:
+        "201":
+          description: Created workflow.
+          headers:
+            location:
+              description: URL of the created workflow.
+              schema:
+                type: string
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/WorkflowResponse"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "403":
+          $ref: "#/components/responses/Forbidden"
+        "422":
+          $ref: "#/components/responses/ValidationError"
+  /api/v1/workflows/{id}:
+    get:
+      operationId: getWorkflow
+      tags:
+        - Workflows
+      summary: Get workflow
+      description: Requires `workflows:read`.
+      security:
+        - bearerApiKey: []
+      parameters:
+        - $ref: "#/components/parameters/WorkflowId"
+      responses:
+        "200":
+          description: Workflow.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/WorkflowResponse"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "403":
+          $ref: "#/components/responses/Forbidden"
+        "404":
+          $ref: "#/components/responses/NotFound"
+    put:
+      operationId: replaceWorkflow
+      tags:
+        - Workflows
+      summary: Replace workflow fields
+      description: Requires `workflows:write`.
+      security:
+        - bearerApiKey: []
+      parameters:
+        - $ref: "#/components/parameters/WorkflowId"
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/WorkflowRequest"
+      responses:
+        "200":
+          description: Updated workflow.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/WorkflowResponse"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "403":
+          $ref: "#/components/responses/Forbidden"
+        "404":
+          $ref: "#/components/responses/NotFound"
+        "422":
+          $ref: "#/components/responses/ValidationError"
+    patch:
+      operationId: updateWorkflow
+      tags:
+        - Workflows
+      summary: Update workflow fields
+      description: Requires `workflows:write`.
+      security:
+        - bearerApiKey: []
+      parameters:
+        - $ref: "#/components/parameters/WorkflowId"
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/WorkflowRequest"
+      responses:
+        "200":
+          description: Updated workflow.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/WorkflowResponse"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "403":
+          $ref: "#/components/responses/Forbidden"
+        "404":
+          $ref: "#/components/responses/NotFound"
+        "422":
+          $ref: "#/components/responses/ValidationError"
+    delete:
+      operationId: deleteWorkflow
+      tags:
+        - Workflows
+      summary: Delete workflow
+      description: Requires `workflows:delete`.
+      security:
+        - bearerApiKey: []
+      parameters:
+        - $ref: "#/components/parameters/WorkflowId"
+      responses:
+        "204":
+          description: Workflow deleted.
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "403":
+          $ref: "#/components/responses/Forbidden"
+        "404":
+          $ref: "#/components/responses/NotFound"
+  /api/v1/workflows/{workflow_id}/executions:
+    get:
+      operationId: listWorkflowExecutions
+      tags:
+        - Executions
+      summary: List workflow executions
+      description: |
+        Requires `executions:read`.
+
+        Supports pagination with `page` and `per_page`, plus filters
+        `status`, `inserted_after` and `inserted_before`.
+      security:
+        - bearerApiKey: []
+      parameters:
+        - $ref: "#/components/parameters/WorkflowIdByWorkflowId"
+        - $ref: "#/components/parameters/Page"
+        - $ref: "#/components/parameters/PerPage"
+        - $ref: "#/components/parameters/ExecutionStatus"
+        - $ref: "#/components/parameters/InsertedAfter"
+        - $ref: "#/components/parameters/InsertedBefore"
+      responses:
+        "200":
+          description: Workflow executions.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ExecutionListResponse"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "403":
+          $ref: "#/components/responses/Forbidden"
+        "404":
+          $ref: "#/components/responses/NotFound"
+    post:
+      operationId: createWorkflowExecution
+      tags:
+        - Executions
+      summary: Queue workflow execution
+      description: |
+        Requires `executions:write`.
+
+        Creates a queued execution and enqueues an Oban job. The API currently
+        returns `202 Accepted` with the execution status.
+      security:
+        - bearerApiKey: []
+      parameters:
+        - $ref: "#/components/parameters/WorkflowIdByWorkflowId"
+      requestBody:
+        required: false
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/ExecutionRequest"
+            examples:
+              variables:
+                value:
+                  input:
+                    variables:
+                      x: 10
+      responses:
+        "202":
+          description: Execution queued.
+          headers:
+            location:
+              description: URL of the queued execution.
+              schema:
+                type: string
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ExecutionResponse"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "403":
+          $ref: "#/components/responses/Forbidden"
+        "404":
+          $ref: "#/components/responses/NotFound"
+        "422":
+          $ref: "#/components/responses/ValidationError"
+  /api/v1/workflows/{workflow_id}/executions/{public_id}:
+    get:
+      operationId: getWorkflowExecution
+      tags:
+        - Executions
+      summary: Get workflow execution
+      description: Requires `executions:read`.
+      security:
+        - bearerApiKey: []
+      parameters:
+        - $ref: "#/components/parameters/WorkflowIdByWorkflowId"
+        - $ref: "#/components/parameters/ExecutionPublicId"
+      responses:
+        "200":
+          description: Workflow execution.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ExecutionResponse"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "403":
+          $ref: "#/components/responses/Forbidden"
+        "404":
+          $ref: "#/components/responses/NotFound"
+components:
+  securitySchemes:
+    bearerApiKey:
+      type: http
+      scheme: bearer
+      bearerFormat: FusionFlow API key
+      description: API key in the format `ff_live_<prefix>_<secret>`.
+    fusionFlowApiKeyHeader:
+      type: apiKey
+      in: header
+      name: X-FusionFlow-API-Key
+      description: Alternative API key header.
+  parameters:
+    WorkflowId:
+      name: id
+      in: path
+      required: true
+      schema:
+        type: integer
+      description: Workflow numeric ID.
+    WorkflowIdByWorkflowId:
+      name: workflow_id
+      in: path
+      required: true
+      schema:
+        type: integer
+      description: Workflow numeric ID.
+    ExecutionPublicId:
+      name: public_id
+      in: path
+      required: true
+      schema:
+        type: string
+        pattern: "^[a-z0-9]+(?:-[a-z0-9]+)*$"
+      description: Human-readable execution public ID.
+    NodeType:
+      name: type
+      in: path
+      required: true
+      schema:
+        type: string
+      description: Slug-like node type, for example `start` or `evaluate-code`.
+    Page:
+      name: page
+      in: query
+      required: false
+      schema:
+        type: integer
+        minimum: 1
+        default: 1
+    PerPage:
+      name: per_page
+      in: query
+      required: false
+      schema:
+        type: integer
+        minimum: 1
+        maximum: 100
+        default: 20
+    ExecutionStatus:
+      name: status
+      in: query
+      required: false
+      schema:
+        type: string
+        enum:
+          - queued
+          - running
+          - succeeded
+          - failed
+      description: Filter executions by status.
+    InsertedAfter:
+      name: inserted_after
+      in: query
+      required: false
+      schema:
+        type: string
+        format: date-time
+      description: Return executions inserted at or after this UTC timestamp.
+    InsertedBefore:
+      name: inserted_before
+      in: query
+      required: false
+      schema:
+        type: string
+        format: date-time
+      description: Return executions inserted at or before this UTC timestamp.
+  responses:
+    Unauthorized:
+      description: Missing or invalid API key.
+      content:
+        application/json:
+          schema:
+            $ref: "#/components/schemas/ErrorResponse"
+          examples:
+            unauthorized:
+              value:
+                error:
+                  code: unauthorized
+                  message: Unauthorized
+    Forbidden:
+      description: API key does not have the required scope.
+      content:
+        application/json:
+          schema:
+            $ref: "#/components/schemas/ErrorResponse"
+          examples:
+            forbidden:
+              value:
+                error:
+                  code: forbidden
+                  message: Forbidden
+    NotFound:
+      description: Resource not found.
+      content:
+        application/json:
+          schema:
+            $ref: "#/components/schemas/ErrorResponse"
+          examples:
+            notFound:
+              value:
+                error:
+                  code: not_found
+                  message: Not Found
+    ValidationError:
+      description: Request payload failed validation.
+      content:
+        application/json:
+          schema:
+            $ref: "#/components/schemas/ErrorResponse"
+  schemas:
+    HealthResponse:
+      type: object
+      required:
+        - status
+      properties:
+        status:
+          type: string
+          example: ok
+    ErrorResponse:
+      type: object
+      required:
+        - error
+      properties:
+        error:
+          type: object
+          required:
+            - code
+            - message
+          properties:
+            code:
+              type: string
+            message:
+              type: string
+            details:
+              type:
+                - object
+                - "null"
+              additionalProperties: true
+    WorkflowRequest:
+      type: object
+      required:
+        - workflow
+      properties:
+        workflow:
+          type: object
+          required:
+            - name
+          properties:
+            name:
+              type: string
+            nodes:
+              type: array
+              items:
+                $ref: "#/components/schemas/ReteNode"
+              default: []
+            connections:
+              type: array
+              items:
+                $ref: "#/components/schemas/ReteConnection"
+              default: []
+    WorkflowListResponse:
+      type: object
+      required:
+        - data
+        - meta
+      properties:
+        data:
+          type: array
+          items:
+            $ref: "#/components/schemas/Workflow"
+        meta:
+          $ref: "#/components/schemas/PaginationMeta"
+    WorkflowResponse:
+      type: object
+      required:
+        - data
+      properties:
+        data:
+          $ref: "#/components/schemas/Workflow"
+    Workflow:
+      type: object
+      required:
+        - id
+        - name
+        - nodes
+        - connections
+      properties:
+        id:
+          type: integer
+        name:
+          type: string
+        nodes:
+          type: array
+          items:
+            $ref: "#/components/schemas/ReteNode"
+        connections:
+          type: array
+          items:
+            $ref: "#/components/schemas/ReteConnection"
+        inserted_at:
+          type: string
+          format: date-time
+        updated_at:
+          type: string
+          format: date-time
+    ReteNode:
+      type: object
+      additionalProperties: false
+      description: Rete node payload stored by FusionFlow.
+      required:
+        - id
+        - type
+        - controls
+        - position
+      properties:
+        id:
+          oneOf:
+            - type: string
+            - type: integer
+        type:
+          type: string
+        label:
+          type: string
+        position:
+          type: object
+          additionalProperties: false
+          required:
+            - x
+            - y
+          properties:
+            x:
+              type: number
+            y:
+              type: number
+        controls:
+          type: object
+          additionalProperties: true
+    ReteConnection:
+      type: object
+      additionalProperties: false
+      description: Rete connection payload stored by FusionFlow.
+      required:
+        - source
+        - sourceOutput
+        - target
+        - targetInput
+      properties:
+        source:
+          oneOf:
+            - type: string
+            - type: integer
+        sourceOutput:
+          type: string
+        target:
+          oneOf:
+            - type: string
+            - type: integer
+        targetInput:
+          type: string
+    NodeListResponse:
+      type: object
+      required:
+        - data
+      properties:
+        data:
+          type: array
+          items:
+            $ref: "#/components/schemas/NodeDefinition"
+    NodeResponse:
+      type: object
+      required:
+        - data
+      properties:
+        data:
+          $ref: "#/components/schemas/NodeDefinition"
+    NodeDefinition:
+      type: object
+      required:
+        - type
+        - title
+        - inputs
+        - outputs
+        - ui_fields
+        - rete
+      properties:
+        type:
+          type: string
+        title:
+          type: string
+        description:
+          type:
+            - string
+            - "null"
+        category:
+          type:
+            - string
+            - "null"
+        color:
+          type:
+            - string
+            - "null"
+        icon:
+          type:
+            - string
+            - "null"
+        show:
+          type: boolean
+        inputs:
+          type: array
+          items:
+            oneOf:
+              - type: string
+              - type: object
+                additionalProperties: true
+        outputs:
+          type: array
+          items:
+            oneOf:
+              - type: string
+              - type: object
+                additionalProperties: true
+        ui_fields:
+          type: array
+          items:
+            type: object
+            additionalProperties: true
+        rete:
+          $ref: "#/components/schemas/ReteNodeDefinition"
+    ReteNodeDefinition:
+      type: object
+      additionalProperties: true
+      required:
+        - id
+        - label
+        - inputs
+        - outputs
+      properties:
+        id:
+          type: string
+        label:
+          type: string
+        category:
+          type: string
+        color:
+          type: string
+        icon:
+          type: string
+        inputs:
+          type: array
+          items:
+            $ref: "#/components/schemas/RetePort"
+        outputs:
+          type: array
+          items:
+            $ref: "#/components/schemas/RetePort"
+    RetePort:
+      type: object
+      additionalProperties: true
+      required:
+        - id
+        - label
+      properties:
+        id:
+          type: string
+        label:
+          type: string
+    ExecutionRequest:
+      type: object
+      properties:
+        input:
+          type: object
+          additionalProperties: true
+          default: {}
+          description: Execution input. The API sets `trigger` to `api` when absent.
+    ExecutionListResponse:
+      type: object
+      required:
+        - data
+        - meta
+      properties:
+        data:
+          type: array
+          items:
+            $ref: "#/components/schemas/Execution"
+        meta:
+          $ref: "#/components/schemas/PaginationMeta"
+    PaginationMeta:
+      type: object
+      required:
+        - page
+        - per_page
+        - total
+        - total_pages
+      properties:
+        page:
+          type: integer
+          minimum: 1
+        per_page:
+          type: integer
+          minimum: 1
+        total:
+          type: integer
+          minimum: 0
+        total_pages:
+          type: integer
+          minimum: 1
+    ExecutionResponse:
+      type: object
+      required:
+        - data
+      properties:
+        data:
+          $ref: "#/components/schemas/Execution"
+    Execution:
+      type: object
+      required:
+        - id
+        - internal_id
+        - workflow_id
+        - status
+        - input
+        - logs
+      properties:
+        id:
+          type: string
+          description: Human-readable execution public ID.
+          example: blue-orbit-route
+        internal_id:
+          type: string
+          format: uuid
+        workflow_id:
+          type: integer
+        status:
+          type: string
+          enum:
+            - queued
+            - running
+            - succeeded
+            - failed
+        input:
+          type: object
+          additionalProperties: true
+        result:
+          type:
+            - object
+            - "null"
+          additionalProperties: true
+        error:
+          type:
+            - object
+            - "null"
+          additionalProperties: true
+        logs:
+          type: array
+          items:
+            type: object
+            additionalProperties: true
+        started_at:
+          type:
+            - string
+            - "null"
+          format: date-time
+        finished_at:
+          type:
+            - string
+            - "null"
+          format: date-time
+        inserted_at:
+          type: string
+          format: date-time
+        updated_at:
+          type: string
+          format: date-time

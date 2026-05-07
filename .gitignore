@@ -41,6 +41,7 @@ npm-debug.log
 
 # Environment variables
 /.env
+/.codex
 
 # Playwright
 node_modules/

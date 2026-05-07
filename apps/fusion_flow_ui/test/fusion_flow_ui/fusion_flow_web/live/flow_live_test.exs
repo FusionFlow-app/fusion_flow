@@ -12,6 +12,7 @@ defmodule FusionFlowUI.FlowLiveTest do
 
   setup %{conn: conn} do
     admin = system_admin_fixture()
+    Process.put(:fusion_flow_owner, admin)
     %{conn: log_in_user(conn, admin), user: admin}
   end
 
@@ -280,7 +281,13 @@ defmodule FusionFlowUI.FlowLiveTest do
         render_hook(lv, "save_graph_data", %{
           "data" => %{
             "nodes" => [
-              %{"id" => "n1", "type" => "Start", "label" => "Start", "controls" => %{}}
+              %{
+                "id" => "n1",
+                "type" => "Start",
+                "label" => "Start",
+                "controls" => %{},
+                "position" => %{"x" => 0, "y" => 0}
+              }
             ],
             "connections" => []
           }

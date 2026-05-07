@@ -3,7 +3,7 @@ defmodule FusionFlowUI.FlowLive do
 
   @impl true
   def mount(%{"id" => id}, _session, socket) do
-    flow = FusionFlowCore.Flows.get_flow!(id)
+    flow = FusionFlowCore.Flows.get_flow!(socket.assigns.current_scope, id)
 
     {:ok,
      socket
@@ -109,7 +109,11 @@ defmodule FusionFlowUI.FlowLive do
 
   @impl true
   def handle_event("save_and_run", %{"data" => data}, socket) do
-    case FusionFlowCore.Flows.update_flow(socket.assigns.current_flow, data) do
+    case FusionFlowCore.Flows.update_flow(
+           socket.assigns.current_scope,
+           socket.assigns.current_flow,
+           data
+         ) do
       {:ok, updated_flow} ->
         case FusionFlowCore.Executions.create_execution(%{
                flow_id: updated_flow.id,
@@ -413,7 +417,11 @@ defmodule FusionFlowUI.FlowLive do
   @impl true
   def handle_event("save_flow_name", %{"name" => new_name}, socket) do
     if String.trim(new_name) != "" do
-      case FusionFlowCore.Flows.update_flow(socket.assigns.current_flow, %{name: new_name}) do
+      case FusionFlowCore.Flows.update_flow(
+             socket.assigns.current_scope,
+             socket.assigns.current_flow,
+             %{name: new_name}
+           ) do
         {:ok, updated_flow} ->
           {:noreply, assign(socket, current_flow: updated_flow, renaming_flow: false)}
 
@@ -501,7 +509,11 @@ defmodule FusionFlowUI.FlowLive do
 
   @impl true
   def handle_event("save_graph_data", %{"data" => data}, socket) do
-    case FusionFlowCore.Flows.update_flow(socket.assigns.current_flow, data) do
+    case FusionFlowCore.Flows.update_flow(
+           socket.assigns.current_scope,
+           socket.assigns.current_flow,
+           data
+         ) do
       {:ok, updated_flow} ->
         {:noreply, assign(socket, current_flow: updated_flow, has_changes: false)}
 

@@ -14,7 +14,7 @@ defmodule FusionFlowUI.DashboardLiveTest do
 
     test "renders dashboard with flows for system admin", %{conn: conn} do
       admin = system_admin_fixture()
-      flow_fixture(%{name: "Test Flow"})
+      flow_fixture(%{name: "Test Flow", user_id: admin.id})
 
       {:ok, _lv, html} =
         conn
@@ -56,8 +56,8 @@ defmodule FusionFlowUI.DashboardLiveTest do
 
     test "displays flow count for admin", %{conn: conn} do
       admin = system_admin_fixture()
-      flow_fixture(%{name: "Flow 1"})
-      flow_fixture(%{name: "Flow 2"})
+      flow_fixture(%{name: "Flow 1", user_id: admin.id})
+      flow_fixture(%{name: "Flow 2", user_id: admin.id})
 
       {:ok, _lv, html} =
         conn

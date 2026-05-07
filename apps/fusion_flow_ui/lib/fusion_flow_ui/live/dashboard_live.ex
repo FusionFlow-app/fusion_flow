@@ -7,7 +7,7 @@ defmodule FusionFlowUI.DashboardLive do
   def mount(_params, _session, socket) do
     user = socket.assigns.current_scope.user
     admin? = user && FusionFlowCore.Accounts.User.system_admin?(user)
-    flows = if admin?, do: Flows.list_flows(), else: []
+    flows = if admin?, do: Flows.list_flows(socket.assigns.current_scope), else: []
     active_count = length(flows)
 
     {:ok,

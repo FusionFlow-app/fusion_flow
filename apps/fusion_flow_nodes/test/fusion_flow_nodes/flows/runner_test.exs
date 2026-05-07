@@ -3,18 +3,27 @@ defmodule FusionFlowNodes.RunnerTest do
 
   alias FusionFlowCore.Flows
   alias FusionFlowNodes.Runner
+  import FusionFlowCore.AccountsFixtures
 
   describe "run/1" do
     test "keeps node controls scoped and records execution history" do
       {:ok, flow} =
         Flows.create_flow(%{
           name: "Scoped Context Flow",
+          user_id: user_fixture().id,
           nodes: [
-            %{"id" => "1", "type" => "Start", "label" => "Start", "controls" => %{}},
+            %{
+              "id" => "1",
+              "type" => "Start",
+              "label" => "Start",
+              "controls" => %{},
+              "position" => %{"x" => 0, "y" => 0}
+            },
             %{
               "id" => "2",
               "type" => "Variable",
               "label" => "Variable",
+              "position" => %{"x" => 200, "y" => 0},
               "controls" => %{
                 "var_name" => "x",
                 "var_value" => "20",
@@ -25,6 +34,7 @@ defmodule FusionFlowNodes.RunnerTest do
               "id" => "3",
               "type" => "Evaluate Code",
               "label" => "Evaluate Code",
+              "position" => %{"x" => 400, "y" => 0},
               "controls" => %{
                 "language" => "elixir",
                 "code_elixir" => "set_result(variable!(:x) + 30)",
@@ -35,6 +45,7 @@ defmodule FusionFlowNodes.RunnerTest do
               "id" => "4",
               "type" => "Output",
               "label" => "Output",
+              "position" => %{"x" => 600, "y" => 0},
               "controls" => %{"status" => "success"}
             }
           ],
@@ -85,8 +96,15 @@ defmodule FusionFlowNodes.RunnerTest do
       {:ok, flow} =
         Flows.create_flow(%{
           name: "Input Flow",
+          user_id: user_fixture().id,
           nodes: [
-            %{"id" => "1", "type" => "Start", "label" => "Start", "controls" => %{}}
+            %{
+              "id" => "1",
+              "type" => "Start",
+              "label" => "Start",
+              "controls" => %{},
+              "position" => %{"x" => 0, "y" => 0}
+            }
           ],
           connections: []
         })

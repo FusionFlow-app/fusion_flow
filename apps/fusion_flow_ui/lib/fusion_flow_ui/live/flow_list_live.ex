@@ -5,12 +5,16 @@ defmodule FusionFlowUI.FlowListLive do
 
   @impl true
   def mount(_params, _session, socket) do
-    {:ok, assign(socket, flows: Flows.list_flows(), page_title: gettext("My Flows"))}
+    {:ok,
+     assign(socket,
+       flows: Flows.list_flows(socket.assigns.current_scope),
+       page_title: gettext("My Flows")
+     )}
   end
 
   @impl true
   def handle_event("create_flow", _params, socket) do
-    case Flows.create_flow(%{
+    case Flows.create_flow(socket.assigns.current_scope, %{
            name: "New Flow #{System.unique_integer([:positive])}",
            nodes: [],
            connections: []

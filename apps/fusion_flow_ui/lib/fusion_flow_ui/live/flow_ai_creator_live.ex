@@ -202,7 +202,7 @@ defmodule FusionFlowUI.FlowAiCreatorLive do
               connections: Map.get(json_data, "connections", [])
             }
 
-            case Flows.create_flow(create_attrs) do
+            case Flows.create_flow(socket.assigns.current_scope, create_attrs) do
               {:ok, new_flow} ->
                 socket
                 |> put_flash(:info, gettext("Flow built successfully!"))
@@ -237,8 +237,6 @@ defmodule FusionFlowUI.FlowAiCreatorLive do
       assign(socket, loading: false, ai_awaiting_approval: false)
     end
   end
-
-  defp markdown(nil), do: ""
 
   defp markdown(content) do
     content

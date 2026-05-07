@@ -17,8 +17,9 @@ defmodule FusionFlowCore.Accounts.Scope do
   """
 
   alias FusionFlowCore.Accounts.User
+  alias FusionFlowCore.ApiKeys.ApiKey
 
-  defstruct user: nil
+  defstruct user: nil, api_key: nil, api_scopes: []
 
   @doc """
   Creates a scope for the given user.
@@ -30,4 +31,8 @@ defmodule FusionFlowCore.Accounts.Scope do
   end
 
   def for_user(nil), do: nil
+
+  def for_api_key(%ApiKey{user: %User{} = user, scopes: scopes} = api_key) do
+    %__MODULE__{user: user, api_key: api_key, api_scopes: scopes || []}
+  end
 end
