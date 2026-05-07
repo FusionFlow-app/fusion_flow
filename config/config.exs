@@ -50,6 +50,15 @@ config :fusion_flow_ui, FusionFlowUI.Endpoint,
   pubsub_server: FusionFlowCore.PubSub,
   live_view: [signing_salt: "41Etxq0i"]
 
+config :fusion_flow_ui, FusionFlowUI.ApiEndpoint,
+  url: [host: "localhost"],
+  adapter: Bandit.PhoenixAdapter,
+  render_errors: [
+    formats: [json: FusionFlowUI.ErrorJSON],
+    layout: false
+  ],
+  pubsub_server: FusionFlowCore.PubSub
+
 # Configure esbuild (the version is required)
 config :esbuild,
   version: "0.25.4",
@@ -78,6 +87,9 @@ config :logger, :default_formatter,
 
 # Use Jason for JSON parsing in Phoenix
 config :phoenix, :json_library, Jason
+
+# Filter sensitive parameters from logs
+config :phoenix, :filter_parameters, ["password", "secret", "token", "authorization", "x-fusionflow-api-key"]
 
 # Import environment specific config. This must remain at the bottom
 # of this file so it overrides the configuration defined above.

@@ -25,6 +25,7 @@ defmodule FusionFlowUI.FlowListLiveTest do
 
     test "renders flow list for system admin", %{conn: conn} do
       admin = system_admin_fixture()
+      Process.put(:fusion_flow_owner, admin)
       flow_fixture(%{name: "My Flow"})
 
       {:ok, _lv, html} =
@@ -50,6 +51,7 @@ defmodule FusionFlowUI.FlowListLiveTest do
 
     test "displays flow count", %{conn: conn} do
       admin = system_admin_fixture()
+      Process.put(:fusion_flow_owner, admin)
       flow_fixture(%{name: "Flow 1"})
       flow_fixture(%{name: "Flow 2"})
       flow_fixture(%{name: "Flow 3"})

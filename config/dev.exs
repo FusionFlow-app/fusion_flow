@@ -39,6 +39,13 @@ config :fusion_flow_ui, FusionFlowUI.Endpoint,
     tailwind: {Tailwind, :install_and_run, [:fusion_flow_ui, ~w(--watch)]}
   ]
 
+config :fusion_flow_ui, FusionFlowUI.ApiEndpoint,
+  http: [ip: {127, 0, 0, 1}],
+  check_origin: false,
+  code_reloader: true,
+  debug_errors: true,
+  secret_key_base: "AZ3KigCa8WUKEQjfZ0mc80AMlfXk73i2q7UGer9VQ26IrlLFOzZRuWqumGhKY2oR"
+
 # ## SSL Support
 #
 # In order to use HTTPS in development, a self-signed

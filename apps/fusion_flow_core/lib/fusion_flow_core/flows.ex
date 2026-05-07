@@ -6,7 +6,9 @@ defmodule FusionFlowCore.Flows do
   import Ecto.Query, warn: false
   alias FusionFlowCore.Repo
 
+  alias FusionFlowCore.Accounts.Scope
   alias FusionFlowCore.Flows.Flow
+  alias FusionFlowCore.Pagination
 
   @doc """
   Returns the list of flows.
@@ -19,6 +21,19 @@ defmodule FusionFlowCore.Flows do
   """
   def list_flows do
     Repo.all(Flow)
+  end
+
+  def list_flows(%Scope{} = scope) do
+    scope
+    |> scope_query()
+    |> Repo.all()
+  end
+
+  def list_flows_page(%Scope{} = scope, opts \\ %{}) do
+    scope
+    |> scope_query()
+    |> order_by([f], desc: f.inserted_at)
+    |> Pagination.paginate(Repo, opts)
   end
 
   @doc """
@@ -36,6 +51,20 @@ defmodule FusionFlowCore.Flows do
 
   """
   def get_flow!(id), do: Repo.get!(Flow, id)
+
+  def get_flow!(%Scope{} = scope, id) do
+    scope
+    |> scope_query()
+    |> Repo.get!(id)
+  end
+
+  def get_flow(id), do: Repo.get(Flow, id)
+
+  def get_flow(%Scope{} = scope, id) do
+    scope
+    |> scope_query()
+    |> Repo.get(id)
+  end
 
   @doc """
   Creates a flow.
@@ -63,6 +92,16 @@ defmodule FusionFlowCore.Flows do
       error ->
         error
     end
+  end
+
+  def create_flow(%Scope{user: %{id: user_id}}, attrs) do
+    attrs =
+      attrs
+      |> Map.new()
+      |> Map.drop([:user_id, "user_id"])
+      |> put_owner_id(user_id)
+
+    create_flow(attrs)
   end
 
   @doc """
@@ -94,6 +133,17 @@ defmodule FusionFlowCore.Flows do
     end
   end
 
+  def update_flow(%Scope{} = scope, %Flow{} = flow, attrs) do
+    flow = get_flow!(scope, flow.id)
+
+    attrs =
+      attrs
+      |> Map.new()
+      |> Map.drop([:user_id, "user_id"])
+
+    update_flow(flow, attrs)
+  end
+
   @doc """
   Deletes a flow.
 
@@ -110,6 +160,11 @@ defmodule FusionFlowCore.Flows do
     FusionFlowCore.Flows.Cache.invalidate(flow.id)
     FusionFlowCore.Webhooks.unregister_flow(flow)
     Repo.delete(flow)
+  end
+
+  def delete_flow(%Scope{} = scope, %Flow{} = flow) do
+    flow = get_flow!(scope, flow.id)
+    delete_flow(flow)
   end
 
   @doc """
@@ -130,9 +185,48 @@ defmodule FusionFlowCore.Flows do
   """
   def get_first_or_create_default_flow do
     case Repo.one(from f in Flow, limit: 1) do
-      nil -> create_flow(%{name: "My First Flow", nodes: [], connections: []})
-      flow -> {:ok, flow}
+      nil ->
+        case default_owner_id() do
+          nil ->
+            {:error,
+             Flow.changeset(%Flow{}, %{name: "My First Flow", nodes: [], connections: []})}
+
+          user_id ->
+            create_flow(%{
+              name: "My First Flow",
+              nodes: [],
+              connections: [],
+              user_id: user_id
+            })
+        end
+
+      flow ->
+        {:ok, flow}
     end
+  end
+
+  defp scope_query(%Scope{user: %{id: user_id}}) do
+    from f in Flow, where: f.user_id == ^user_id
+  end
+
+  defp default_owner_id do
+    Repo.one(
+      from u in FusionFlowCore.Accounts.User,
+        order_by: [desc: u.is_system_admin, asc: u.inserted_at, asc: u.id],
+        select: u.id,
+        limit: 1
+    )
+  end
+
+  defp put_owner_id(attrs, user_id) do
+    key =
+      if attrs |> Map.keys() |> Enum.any?(&is_binary/1) do
+        "user_id"
+      else
+        :user_id
+      end
+
+    Map.put(attrs, key, user_id)
   end
 
   alias FusionFlowCore.Flows.ExecutionLog

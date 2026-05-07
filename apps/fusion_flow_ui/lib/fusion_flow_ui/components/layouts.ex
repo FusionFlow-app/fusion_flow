@@ -128,6 +128,16 @@ defmodule FusionFlowUI.Layouts do
                 <span class="hidden lg:block font-medium text-sm">{gettext("Create with AI")}</span>
               </.link>
               <.link
+                navigate={~p"/api-keys"}
+                class="flex items-center justify-center lg:justify-start gap-3 px-3 py-2.5 rounded-lg text-gray-600 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-slate-800 hover:text-gray-900 dark:hover:text-white transition-all group"
+              >
+                <.icon
+                  name="hero-key"
+                  class="w-6 h-6 lg:w-5 lg:h-5 text-gray-500 dark:text-gray-500 group-hover:text-indigo-600 dark:group-hover:text-indigo-400"
+                />
+                <span class="hidden lg:block font-medium text-sm">{gettext("API keys")}</span>
+              </.link>
+              <.link
                 navigate={~p"/users"}
                 class="flex items-center justify-center lg:justify-start gap-3 px-3 py-2.5 rounded-lg text-gray-600 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-slate-800 hover:text-gray-900 dark:hover:text-white transition-all group"
               >

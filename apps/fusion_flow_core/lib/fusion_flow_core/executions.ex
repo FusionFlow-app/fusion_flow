@@ -7,6 +7,7 @@ defmodule FusionFlowCore.Executions do
 
   alias FusionFlowCore.Executions.Execution
   alias FusionFlowCore.Flows.Flow
+  alias FusionFlowCore.Pagination
   alias FusionFlowCore.Repo
 
   @flow_execution_worker "FusionFlowWorker.FlowExecutionWorker"
@@ -29,6 +30,28 @@ defmodule FusionFlowCore.Executions do
         order_by: [desc: e.inserted_at],
         preload: [:flow]
     )
+  end
+
+  def list_executions_for_flow_page(flow_or_id, opts \\ %{})
+
+  def list_executions_for_flow_page(%Flow{id: flow_id}, opts), do: list_executions_for_flow_page(flow_id, opts)
+
+  def list_executions_for_flow_page(flow_id, opts) do
+    opts
+    |> Map.new()
+    |> Map.put(:workflow_id, flow_id)
+    |> list_executions_page()
+  end
+
+  def list_executions_page(opts \\ %{}) do
+    Execution
+    |> filter_by_workflow_id(opts)
+    |> filter_by_status(opts)
+    |> filter_by_inserted_after(opts)
+    |> filter_by_inserted_before(opts)
+    |> order_by([e], desc: e.inserted_at)
+    |> preload([:flow])
+    |> Pagination.paginate(Repo, opts)
   end
 
   def get_execution!(id) do
@@ -233,6 +256,66 @@ defmodule FusionFlowCore.Executions do
   end
 
   defp execution_topic(execution_id), do: "executions:#{execution_id}"
+
+  defp filter_by_workflow_id(query, opts) do
+    case Map.get(opts, :workflow_id) || Map.get(opts, "workflow_id") do
+      nil ->
+        query
+
+      workflow_id when is_integer(workflow_id) ->
+        where(query, [e], e.flow_id == ^workflow_id)
+
+      workflow_id when is_binary(workflow_id) ->
+        case Integer.parse(workflow_id) do
+          {id, ""} -> where(query, [e], e.flow_id == ^id)
+          _ -> query
+        end
+
+      _ ->
+        query
+    end
+  end
+
+  defp filter_by_status(query, opts) do
+    case Map.get(opts, :status) || Map.get(opts, "status") do
+      status when is_binary(status) ->
+        if status in Execution.statuses() do
+          where(query, [e], e.status == ^status)
+        else
+          query
+        end
+
+      _ ->
+        query
+    end
+  end
+
+  defp filter_by_inserted_after(query, opts) do
+    case parse_datetime(Map.get(opts, :inserted_after) || Map.get(opts, "inserted_after")) do
+      {:ok, datetime} -> where(query, [e], e.inserted_at >= ^datetime)
+      :error -> query
+    end
+  end
+
+  defp filter_by_inserted_before(query, opts) do
+    case parse_datetime(Map.get(opts, :inserted_before) || Map.get(opts, "inserted_before")) do
+      {:ok, datetime} -> where(query, [e], e.inserted_at <= ^datetime)
+      :error -> query
+    end
+  end
+
+  defp parse_datetime(nil), do: :error
+
+  defp parse_datetime(%DateTime{} = datetime), do: {:ok, datetime}
+
+  defp parse_datetime(value) when is_binary(value) do
+    case DateTime.from_iso8601(value) do
+      {:ok, datetime, _offset} -> {:ok, datetime}
+      _ -> :error
+    end
+  end
+
+  defp parse_datetime(_value), do: :error
 
   defp normalize_map(%{} = value), do: value
   defp normalize_map(value), do: %{"result" => value}
