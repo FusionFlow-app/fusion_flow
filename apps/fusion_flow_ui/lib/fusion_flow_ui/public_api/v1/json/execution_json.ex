@@ -1,4 +1,4 @@
-defmodule FusionFlowUI.PublicAPI.ExecutionJSON do
+defmodule FusionFlowUI.PublicAPI.V1.ExecutionJSON do
   alias FusionFlowCore.Executions.Execution
 
   def index(%{executions: executions, meta: meta}) do

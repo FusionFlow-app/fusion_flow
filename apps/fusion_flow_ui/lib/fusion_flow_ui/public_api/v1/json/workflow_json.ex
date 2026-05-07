@@ -1,4 +1,4 @@
-defmodule FusionFlowUI.PublicAPI.WorkflowJSON do
+defmodule FusionFlowUI.PublicAPI.V1.WorkflowJSON do
   alias FusionFlowCore.Flows.Flow
 
   def index(%{workflows: workflows, meta: meta}) do

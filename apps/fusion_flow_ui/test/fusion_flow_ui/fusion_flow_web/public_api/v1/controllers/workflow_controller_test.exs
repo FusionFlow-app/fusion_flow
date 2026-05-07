@@ -1,4 +1,4 @@
-defmodule FusionFlowUI.PublicAPI.WorkflowControllerTest do
+defmodule FusionFlowUI.PublicAPI.V1.WorkflowControllerTest do
   use FusionFlowUI.ConnCase, async: true
 
   alias FusionFlowCore.ApiKeys

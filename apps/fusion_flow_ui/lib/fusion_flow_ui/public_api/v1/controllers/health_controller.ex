@@ -1,4 +1,4 @@
-defmodule FusionFlowUI.PublicAPI.HealthController do
+defmodule FusionFlowUI.PublicAPI.V1.HealthController do
   use FusionFlowUI, :controller
 
   def show(conn, _params) do

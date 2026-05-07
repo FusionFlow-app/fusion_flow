@@ -1,4 +1,4 @@
-defmodule FusionFlowUI.PublicAPI.ExecutionControllerTest do
+defmodule FusionFlowUI.PublicAPI.V1.ExecutionControllerTest do
   use FusionFlowUI.ConnCase, async: true
 
   alias FusionFlowCore.ApiKeys
