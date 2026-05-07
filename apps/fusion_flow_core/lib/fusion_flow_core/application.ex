@@ -8,6 +8,7 @@ defmodule FusionFlowCore.Application do
     children = [
       FusionFlowCore.Repo,
       {Phoenix.PubSub, name: FusionFlowCore.PubSub},
+      {Task.Supervisor, name: FusionFlowCore.TaskSupervisor},
       FusionFlowCore.Webhooks.Registry,
       FusionFlowCore.Flows.Cache
     ]
