@@ -1,6 +1,8 @@
 import { test, expect } from '@playwright/test';
 import { waitForLiveView, clickAndWaitForNavigation } from '../helpers.js';
 
+const GRID_SIZE = 24;
+
 test.describe('Flow Editor', () => {
   test.describe.configure({ timeout: 60000 });
 
@@ -33,6 +35,32 @@ test.describe('Flow Editor', () => {
   test('displays rete editor canvas', async ({ page }) => {
     await expect(page.locator('#rete-container')).toBeVisible();
     await expect(page.locator('#rete')).toBeVisible();
+  });
+
+  test('snaps node to grid on drag end', async ({ page }) => {
+    await addNodeViaContextMenu(page, 'Logger');
+
+    const node = page.locator('custom-node').first();
+    await expect(node).toBeVisible({ timeout: 5000 });
+
+    const startPosition = await getNodeTranslate(node);
+    const box = await node.boundingBox();
+    expect(box).not.toBeNull();
+
+    const startX = box.x + box.width / 2;
+    const startY = box.y + box.height / 2;
+
+    await page.mouse.move(startX, startY);
+    await page.mouse.down();
+    await page.mouse.move(startX + 137, startY + 111);
+    await page.mouse.up();
+
+    await waitForNodeSnap(page, node, GRID_SIZE);
+
+    const endPosition = await getNodeTranslate(node);
+    expect(isSnapped(endPosition.x, GRID_SIZE)).toBeTruthy();
+    expect(isSnapped(endPosition.y, GRID_SIZE)).toBeTruthy();
+    expect(Math.abs(endPosition.x - startPosition.x) + Math.abs(endPosition.y - startPosition.y)).toBeGreaterThan(0.5);
   });
 
   test('navigates back to flows list', async ({ page }) => {
@@ -207,4 +235,100 @@ async function addNodeViaContextMenu(page, nodeName) {
 
   await page.locator(`[phx-click=create_node_from_modal][phx-value-name="${nodeName}"]`).click();
   await page.waitForTimeout(1000);
+}
+
+async function getNodeTranslate(locator) {
+  return await locator.evaluate((el) => {
+    const parseTransform = (transform) => {
+      if (!transform || transform === 'none') return null;
+      const translateMatch = transform.match(/translate\(([-\d.]+)px,\s*([-\d.]+)px\)/);
+      if (translateMatch) {
+        return { x: parseFloat(translateMatch[1]), y: parseFloat(translateMatch[2]) };
+      }
+      const matrixMatch = transform.match(/matrix\(([^)]+)\)/);
+      if (matrixMatch) {
+        const values = matrixMatch[1].split(',').map(value => parseFloat(value.trim()));
+        if (values.length >= 6) {
+          return { x: values[4], y: values[5] };
+        }
+      }
+      const matrix3dMatch = transform.match(/matrix3d\(([^)]+)\)/);
+      if (matrix3dMatch) {
+        const values = matrix3dMatch[1].split(',').map(value => parseFloat(value.trim()));
+        if (values.length >= 16) {
+          return { x: values[12], y: values[13] };
+        }
+      }
+      return null;
+    };
+
+    let current = el;
+    while (current && current !== document.body) {
+      const transform = current.style.transform || window.getComputedStyle(current).transform;
+      const parsed = parseTransform(transform);
+      if (parsed) return parsed;
+      current = current.parentElement;
+    }
+
+    const rect = el.getBoundingClientRect();
+    return { x: rect.left, y: rect.top };
+  });
+}
+
+async function waitForNodeSnap(page, locator, gridSize) {
+  const handle = await locator.elementHandle();
+  if (!handle) throw new Error('Node element handle not found.');
+
+  await page.waitForFunction(
+    ([el, grid]) => {
+      const parseTransform = (transform) => {
+        if (!transform || transform === 'none') return null;
+        const translateMatch = transform.match(/translate\(([-\d.]+)px,\s*([-\d.]+)px\)/);
+        if (translateMatch) {
+          return { x: parseFloat(translateMatch[1]), y: parseFloat(translateMatch[2]) };
+        }
+        const matrixMatch = transform.match(/matrix\(([^)]+)\)/);
+        if (matrixMatch) {
+          const values = matrixMatch[1].split(',').map(value => parseFloat(value.trim()));
+          if (values.length >= 6) {
+            return { x: values[4], y: values[5] };
+          }
+        }
+        const matrix3dMatch = transform.match(/matrix3d\(([^)]+)\)/);
+        if (matrix3dMatch) {
+          const values = matrix3dMatch[1].split(',').map(value => parseFloat(value.trim()));
+          if (values.length >= 16) {
+            return { x: values[12], y: values[13] };
+          }
+        }
+        return null;
+      };
+
+      const isSnapped = (value) => {
+        const rounded = Math.round(value * 100) / 100;
+        const remainder = ((rounded % grid) + grid) % grid;
+        return remainder < 0.5 || Math.abs(remainder - grid) < 0.5;
+      };
+
+      let current = el;
+      let position = null;
+      while (current && current !== document.body) {
+        const transform = current.style.transform || window.getComputedStyle(current).transform;
+        position = parseTransform(transform);
+        if (position) break;
+        current = current.parentElement;
+      }
+
+      if (!position) return false;
+      return isSnapped(position.x) && isSnapped(position.y);
+    },
+    [handle, gridSize],
+    { timeout: 5000 }
+  );
+}
+
+function isSnapped(value, gridSize) {
+  const rounded = Math.round(value * 100) / 100;
+  const remainder = ((rounded % gridSize) + gridSize) % gridSize;
+  return remainder < 0.5 || Math.abs(remainder - gridSize) < 0.5;
 }

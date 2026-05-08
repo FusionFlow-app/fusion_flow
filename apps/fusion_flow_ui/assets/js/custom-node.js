@@ -21,6 +21,7 @@ export class CustomNodeElement extends LitElement {
     return {
       data: { type: Object },
       emit: { attribute: false },
+      orientation: { type: String, reflect: true },
       selected: { type: Boolean, reflect: true },
       onConfig: { attribute: false },
       onDelete: { attribute: false },
@@ -124,6 +125,18 @@ export class CustomNodeElement extends LitElement {
       }
       .socket-container.right {
         right: -12px;
+      }
+      .socket-container.top {
+        top: -12px;
+        left: 50%;
+        margin-top: 0;
+        margin-left: -12px;
+      }
+      .socket-container.bottom {
+        bottom: -12px;
+        left: 50%;
+        margin-top: 0;
+        margin-left: -12px;
       }
       .error-node-btn {
         position: absolute;
@@ -256,6 +269,9 @@ export class CustomNodeElement extends LitElement {
   render() {
     const inputs = Object.entries(this.data.inputs || {});
     const outputs = Object.entries(this.data.outputs || {});
+    const orientation = this.orientation === 'vertical' ? 'vertical' : 'horizontal';
+    const inputSide = orientation === 'vertical' ? 'top' : 'left';
+    const outputSide = orientation === 'vertical' ? 'bottom' : 'right';
 
     const category = this.data.category || 'default';
     const colors = {
@@ -278,25 +294,25 @@ export class CustomNodeElement extends LitElement {
         class="circular-node ${this.selected ? 'is-selected' : ''}" 
         style="border-color: ${nodeColor}aa"
         @pointerdown=${(e) => {
-          if (e.shiftKey) {
-            e.preventDefault();
-            e.stopPropagation();
-            this.selected = !this.selected;
-            // Also update the Rete node's selected property
-            const nodeId = this.data.id;
-            const reteNode = window.reteEditorInstance?.getNode(nodeId);
-            if (reteNode) {
-              reteNode.selected = this.selected;
-            }
-            this.requestUpdate();
-            this.dispatchEvent(new CustomEvent('node-select', { 
-              bubbles: true, 
-              detail: { selected: this.selected, nodeId: this.data.id }
-            }));
-          } else if (this._onPointerDown) {
-            this._onPointerDown(e);
+        if (e.shiftKey) {
+          e.preventDefault();
+          e.stopPropagation();
+          this.selected = !this.selected;
+          // Also update the Rete node's selected property
+          const nodeId = this.data.id;
+          const reteNode = window.reteEditorInstance?.getNode(nodeId);
+          if (reteNode) {
+            reteNode.selected = this.selected;
           }
-        }}
+          this.requestUpdate();
+          this.dispatchEvent(new CustomEvent('node-select', {
+            bubbles: true,
+            detail: { selected: this.selected, nodeId: this.data.id }
+          }));
+        } else if (this._onPointerDown) {
+          this._onPointerDown(e);
+        }
+      }}
       >
         ${this.selected ? html`
           <div class="selection-indicator">
@@ -310,9 +326,9 @@ export class CustomNodeElement extends LitElement {
             class="error-node-btn"
             style="position: absolute; top: -4px; left: -4px; background: #ef4444; color: white; border: 2px solid white; border-radius: 50%; width: 24px; height: 24px; display: flex; align-items: center; justify-content: center; z-index: 50; animation: node-pulse 2s infinite;"
             @click=${(e) => {
-              e.stopPropagation();
-              if (this.onErrorDetails) this.onErrorDetails();
-            }}
+          e.stopPropagation();
+          if (this.onErrorDetails) this.onErrorDetails();
+        }}
           >!</div>
         ` : ''}
 
@@ -332,9 +348,9 @@ export class CustomNodeElement extends LitElement {
           @pointerdown=${(e) => e.stopPropagation()}
           @mousedown=${(e) => e.stopPropagation()}
           @click=${(e) => {
-            e.stopPropagation();
-            if (this.onConfig) this.onConfig();
-          }}
+        e.stopPropagation();
+        if (this.onConfig) this.onConfig();
+      }}
         >
           <span class="hero-cog-6-tooth w-4 h-4"></span>
         </div>
@@ -345,20 +361,20 @@ export class CustomNodeElement extends LitElement {
           @pointerdown=${(e) => e.stopPropagation()}
           @mousedown=${(e) => e.stopPropagation()}
           @click=${(e) => {
-            e.stopPropagation();
-            if (this.onDelete) this.onDelete();
-          }}
+        e.stopPropagation();
+        if (this.onDelete) this.onDelete();
+      }}
         >
           <span class="hero-x-mark w-4 h-4"></span>
         </div>
       </div>
 
       ${repeat(inputs, ([key]) => key, ([key, input]) => html`
-        <div class="socket-container left" key="input-${key}" data-key="${key}" data-side="input"></div>
+        <div class="socket-container ${inputSide}" key="input-${key}" data-key="${key}" data-side="input"></div>
       `)}
 
       ${repeat(outputs, ([key]) => key, ([key, output]) => html`
-        <div class="socket-container right" key="output-${key}" data-key="${key}" data-side="output"></div>
+        <div class="socket-container ${outputSide}" key="output-${key}" data-key="${key}" data-side="output"></div>
       `)}
     `;
   }
