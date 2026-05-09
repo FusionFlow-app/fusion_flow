@@ -1,10 +1,12 @@
 defmodule FusionFlow.Umbrella.MixProject do
   use Mix.Project
 
+  @version File.read!("VERSION") |> String.trim()
+
   def project do
     [
       apps_path: "apps",
-      version: "0.1.0",
+      version: @version,
       start_permanent: Mix.env() == :prod,
       aliases: aliases(),
       deps: deps(),

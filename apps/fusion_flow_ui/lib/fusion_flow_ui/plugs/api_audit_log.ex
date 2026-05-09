@@ -10,8 +10,11 @@ defmodule FusionFlowUI.Plugs.ApiAuditLog do
   def call(conn, _opts) do
     register_before_send(conn, fn conn ->
       if api_key = conn.assigns[:api_key] do
-        Logger.info("API Audit: key=#{api_key.prefix} method=#{conn.method} path=#{conn.request_path} status=#{conn.status}")
+        Logger.info(
+          "API Audit: key=#{api_key.prefix} method=#{conn.method} path=#{conn.request_path} status=#{conn.status}"
+        )
       end
+
       conn
     end)
   end

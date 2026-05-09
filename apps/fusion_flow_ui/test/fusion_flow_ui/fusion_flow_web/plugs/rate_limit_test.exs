@@ -25,7 +25,14 @@ defmodule FusionFlowUI.Plugs.RateLimitTest do
     {:ok, %{api_key: api_key}} = ApiKeys.create_api_key(user, %{name: "rate limit", scopes: []})
     window = div(System.system_time(:second), 60)
 
-    :ets.new(:api_rate_limit, [:set, :public, :named_table, write_concurrency: true, read_concurrency: true])
+    :ets.new(:api_rate_limit, [
+      :set,
+      :public,
+      :named_table,
+      write_concurrency: true,
+      read_concurrency: true
+    ])
+
     :ets.insert(:api_rate_limit, {{api_key.id, window}, 100})
 
     conn =
@@ -35,6 +42,7 @@ defmodule FusionFlowUI.Plugs.RateLimitTest do
 
     assert conn.halted
     assert conn.status == 429
+
     assert Jason.decode!(conn.resp_body) == %{
              "error" => %{"code" => "rate_limited", "message" => "Too Many Requests"}
            }

@@ -24,7 +24,9 @@ erl_crash.dump
 /tmp/
 
 # Ignore package tarball (built via "mix hex.build").
-fusion_flow-*.tar
+*.tar
+/apps/*/doc/
+/apps/**/doc/
 
 # Ignore assets that are produced by build tools.
 /priv/static/assets/

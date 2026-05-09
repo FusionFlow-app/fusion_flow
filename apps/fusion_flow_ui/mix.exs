@@ -1,10 +1,13 @@
 defmodule FusionFlowUI.MixProject do
   use Mix.Project
 
+  @version File.read!(Path.expand("../../VERSION", __DIR__)) |> String.trim()
+
   def project do
     [
       app: :fusion_flow_ui,
-      version: "0.1.0",
+      version: @version,
+
       build_path: "../../_build",
       config_path: "../../config/config.exs",
       deps_path: "../../deps",

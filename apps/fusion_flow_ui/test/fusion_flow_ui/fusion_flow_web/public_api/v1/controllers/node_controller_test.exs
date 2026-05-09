@@ -16,6 +16,7 @@ defmodule FusionFlowUI.PublicAPI.V1.NodeControllerTest do
                "data" => nodes,
                "meta" => %{"page" => 1, "per_page" => 20, "total" => _total, "total_pages" => 1}
              } = json_response(conn, 200)
+
       assert Enum.any?(nodes, &(&1["type"] == "Start"))
       assert Enum.any?(nodes, &(&1["rete"]["id"] == "Start"))
     end
@@ -28,7 +29,12 @@ defmodule FusionFlowUI.PublicAPI.V1.NodeControllerTest do
 
       assert %{
                "data" => [_node],
-               "meta" => %{"page" => 2, "per_page" => 1, "total" => total, "total_pages" => total_pages}
+               "meta" => %{
+                 "page" => 2,
+                 "per_page" => 1,
+                 "total" => total,
+                 "total_pages" => total_pages
+               }
              } = json_response(conn, 200)
 
       assert total >= 2

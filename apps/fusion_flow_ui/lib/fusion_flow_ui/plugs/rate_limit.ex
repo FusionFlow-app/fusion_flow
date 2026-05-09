@@ -37,6 +37,7 @@ defmodule FusionFlowUI.Plugs.RateLimit do
       if :rand.uniform(100) == 1 do
         Task.start(fn -> cleanup_ets(window) end)
       end
+
       conn
     end
   end
@@ -44,7 +45,13 @@ defmodule FusionFlowUI.Plugs.RateLimit do
   defp ensure_ets_table do
     if :ets.info(:api_rate_limit) == :undefined do
       try do
-        :ets.new(:api_rate_limit, [:set, :public, :named_table, write_concurrency: true, read_concurrency: true])
+        :ets.new(:api_rate_limit, [
+          :set,
+          :public,
+          :named_table,
+          write_concurrency: true,
+          read_concurrency: true
+        ])
       rescue
         ArgumentError -> :ok
       end
@@ -52,6 +59,8 @@ defmodule FusionFlowUI.Plugs.RateLimit do
   end
 
   defp cleanup_ets(current_window) do
-    :ets.select_delete(:api_rate_limit, [{{{:"$1", :"$2"}, :_}, [{:<, :"$2", current_window}], [true]}])
+    :ets.select_delete(:api_rate_limit, [
+      {{{:"$1", :"$2"}, :_}, [{:<, :"$2", current_window}], [true]}
+    ])
   end
 end

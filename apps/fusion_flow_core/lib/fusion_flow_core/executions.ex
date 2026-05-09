@@ -34,7 +34,8 @@ defmodule FusionFlowCore.Executions do
 
   def list_executions_for_flow_page(flow_or_id, opts \\ %{})
 
-  def list_executions_for_flow_page(%Flow{id: flow_id}, opts), do: list_executions_for_flow_page(flow_id, opts)
+  def list_executions_for_flow_page(%Flow{id: flow_id}, opts),
+    do: list_executions_for_flow_page(flow_id, opts)
 
   def list_executions_for_flow_page(flow_id, opts) do
     opts

@@ -1,10 +1,13 @@
 defmodule FusionFlowCore.MixProject do
   use Mix.Project
 
+  @version File.read!(Path.expand("../../VERSION", __DIR__)) |> String.trim()
+
   def project do
     [
       app: :fusion_flow_core,
-      version: "0.1.0",
+      version: @version,
+
       build_path: "../../_build",
       config_path: "../../config/config.exs",
       deps_path: "../../deps",
@@ -35,7 +38,7 @@ defmodule FusionFlowCore.MixProject do
       {:jason, "~> 1.2"},
       {:oban, "~> 2.0"},
       {:req, "~> 0.5"},
-      {:igniter, "~> 0.6", only: [:dev, :test]},
+      {:igniter, "~> 0.6"},
       {:phoenix_pubsub, "~> 2.1"}
     ]
   end
