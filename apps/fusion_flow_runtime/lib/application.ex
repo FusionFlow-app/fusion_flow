@@ -3,6 +3,8 @@ defmodule FusionFlowRuntime.Application do
 
   use Application
 
+  @version FusionFlow.Umbrella.MixProject.version()
+
   @impl true
   def start(_type, _args) do
     init_pythonx()
@@ -13,7 +15,7 @@ defmodule FusionFlowRuntime.Application do
     Pythonx.uv_init("""
     [project]
     name = "fusion_flow_runtime"
-    version = "0.1.0"
+    version = "#{@version}"
     requires-python = ">=3.11"
     dependencies = []
     """)

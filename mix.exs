@@ -1,15 +1,47 @@
 defmodule FusionFlow.Umbrella.MixProject do
   use Mix.Project
 
+  @version "0.2.0"
+
   def project do
     [
       apps_path: "apps",
-      version: "0.1.0",
+      name: "FusionFlow",
+      version: @version,
       start_permanent: Mix.env() == :prod,
       aliases: aliases(),
       deps: deps(),
       releases: releases(),
-      listeners: [Phoenix.CodeReloader]
+      listeners: [Phoenix.CodeReloader],
+      docs: docs()
+    ]
+  end
+
+  def version, do: @version
+
+  defp docs do
+    [
+      source_ref: "v#{@version}",
+      source_url: "https://github.com/FusionFlow-app/fusion_flow",
+      extras: extras(),
+      groups_for_extras: groups_for_extras()
+    ]
+  end
+
+  defp extras do
+    [
+      "CONTRIBUTING.md",
+      "guides/installation.md",
+      "guides/scaling.md"
+    ]
+  end
+
+  defp groups_for_extras do
+    [
+      "Guides": [
+        "guides/installation.md",
+        "guides/scaling.md"
+      ]
     ]
   end
 
@@ -20,7 +52,9 @@ defmodule FusionFlow.Umbrella.MixProject do
   end
 
   defp deps do
-    []
+    [
+      {:ex_doc, "~> 0.40.1", runtime: false}
+    ]
   end
 
   defp releases do
