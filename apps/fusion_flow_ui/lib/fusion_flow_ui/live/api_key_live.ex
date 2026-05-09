@@ -137,21 +137,9 @@ defmodule FusionFlowUI.ApiKeyLive do
             />
 
             <fieldset class="space-y-3">
-              <div class="flex items-center justify-between gap-3">
-                <legend class="text-sm font-medium text-gray-900 dark:text-white">
-                  {gettext("Scopes")}
-                </legend>
-                <button
-                  id="api-key-scope-toggle"
-                  type="button"
-                  phx-hook="ApiKeyScopeToggle"
-                  data-scope-selector="input[name='api_key[scopes][]']"
-                  class="inline-flex items-center gap-2 rounded-lg border border-gray-200 bg-white px-3 py-1.5 text-xs font-medium text-gray-700 shadow-sm transition hover:border-indigo-200 hover:bg-indigo-50 hover:text-indigo-700 focus:outline-none focus:ring-2 focus:ring-indigo-500 dark:border-slate-700 dark:bg-slate-900 dark:text-gray-300 dark:hover:border-indigo-800 dark:hover:bg-indigo-950/40 dark:hover:text-indigo-300"
-                >
-                  <.icon name="hero-check-circle" class="h-4 w-4" />
-                  {gettext("Toggle all")}
-                </button>
-              </div>
+              <legend class="text-sm font-medium text-gray-900 dark:text-white">
+                {gettext("Scopes")}
+              </legend>
               <div class="grid gap-2">
                 <label
                   :for={scope <- @scopes}

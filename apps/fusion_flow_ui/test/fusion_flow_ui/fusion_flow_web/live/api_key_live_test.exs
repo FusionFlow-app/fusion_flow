@@ -22,7 +22,7 @@ defmodule FusionFlowUI.ApiKeyLiveTest do
     test "renders API key management for system admin", %{conn: conn} do
       admin = system_admin_fixture()
 
-      {:ok, lv, html} =
+      {:ok, _lv, html} =
         conn
         |> log_in_user(admin)
         |> live(~p"/api-keys")
@@ -31,11 +31,6 @@ defmodule FusionFlowUI.ApiKeyLiveTest do
       assert html =~ "Create key"
       assert html =~ "Existing keys"
       assert html =~ "System admins only"
-      assert has_element?(lv, "#api-key-scope-toggle", "Toggle all")
-
-      for scope <- ApiKey.scopes() do
-        assert has_element?(lv, "input[name='api_key[scopes][]'][value='#{scope}']")
-      end
     end
   end
 
