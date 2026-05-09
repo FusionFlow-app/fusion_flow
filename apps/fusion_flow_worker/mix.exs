@@ -4,7 +4,7 @@ defmodule FusionFlowWorker.MixProject do
   def project do
     [
       app: :fusion_flow_worker,
-      version: FusionFlow.Umbrella.MixProject.version(),
+      version: "0.1.0",
       build_path: "../../_build",
       config_path: "../../config/config.exs",
       deps_path: "../../deps",
