@@ -200,6 +200,23 @@ const hooks = {
     updated() {
       this.el.focus();
     }
+  },
+  ApiKeyScopeToggle: {
+    mounted() {
+      this.el.addEventListener("click", () => {
+        const form = this.el.closest("form");
+        const selector = this.el.dataset.scopeSelector;
+        if (!form || !selector) return;
+
+        const scopes = Array.from(form.querySelectorAll(selector));
+        const shouldCheck = scopes.some((scope) => !scope.checked);
+
+        scopes.forEach((scope) => {
+          scope.checked = shouldCheck;
+          scope.dispatchEvent(new Event("change", { bubbles: true }));
+        });
+      });
+    }
   }
 }
 
