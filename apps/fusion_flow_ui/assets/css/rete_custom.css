@@ -1,13 +1,23 @@
 /* styles for the grid in the rete background */
+/* .rete-bg-grid sits inside content.holder (the element that receives the Rete transform).
+   The inline styles set by custom-background.js (top:0, left:0, 100%×100%) are overridden
+   with !important so the element spans ±20 000 px around the canvas origin. This ensures
+   dots remain visible throughout all practical pan distances, while still scaling and moving
+   with the canvas transform (pan/zoom). */
 .rete-bg-grid {
-    background-size: 50px 50px;
-    background-image: linear-gradient(to right, rgba(0, 0, 0, 0.04) 1px, transparent 1px), linear-gradient(to bottom, rgba(0, 0, 0, 0.04) 1px, transparent 1px);
+    top: -30000px !important;
+    left: -30000px !important;
+    width: 60000px !important;
+    height: 60000px !important;
     background-color: transparent !important;
+    background-repeat: repeat;
+    background-image: radial-gradient(circle, var(--color-gray-300) 1px, transparent 1px);
+    background-size: 22px 22px;
 }
 
 [data-theme="dark"] .rete-bg-grid,
 .dark .rete-bg-grid {
-    background-image: linear-gradient(to right, rgba(255, 255, 255, 0.05) 1px, transparent 1px), linear-gradient(to bottom, rgba(255, 255, 255, 0.05) 1px, transparent 1px);
+    background-image: radial-gradient(circle, var(--color-slate-700) 1px, transparent 1px);
 }
 
 /* Selection box */
