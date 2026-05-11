@@ -332,6 +332,19 @@ defmodule FusionFlowUI.FlowLive do
   end
 
   @impl true
+  def handle_event("handle_keydown", %{"key" => "Escape"}, socket) do
+    {:noreply,
+     assign(socket,
+       config_modal_open: false,
+       editing_node_data: nil,
+       current_node_id: nil
+     )}
+  end
+
+  @impl true
+  def handle_event("handle_keydown", _params, socket), do: {:noreply, socket}
+
+  @impl true
   def handle_event("save_node_config", params, socket) do
     node_id = socket.assigns.current_node_id
     config_data = Map.drop(params, ["_csrf_token", "_target", "node_label"])
@@ -934,7 +947,7 @@ defmodule FusionFlowUI.FlowLive do
   @impl true
   def render(assigns) do
     ~H"""
-    <div class="w-full h-[100vh] flex flex-col bg-white dark:bg-slate-950 overflow-hidden relative">
+    <div class="w-full h-[100vh] flex flex-col bg-white dark:bg-slate-950 overflow-hidden relative" phx-window-keydown="handle_keydown">
       <FusionFlowUI.Components.Flow.FlowHeader.flow_header
         has_changes={@has_changes}
         flow={@current_flow}
@@ -1091,6 +1104,7 @@ defmodule FusionFlowUI.FlowLive do
         ai_configured={@ai_configured}
         on_toggle="toggle_chat"
         on_send="send_message"
+        node_config_open={@config_modal_open}
       />
     </div>
     """
