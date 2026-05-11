@@ -158,6 +158,12 @@ const hooks = {
         });
       }
 
+      if (editor.onCanvasClick) {
+        editor.onCanvasClick(() => {
+          this.pushEvent("close_config_modal", {});
+        });
+      }
+
       if (editor.onCreateNode) {
         editor.onCreateNode((x, y) => {
           this.pushEvent("open_create_node_modal", { x, y });

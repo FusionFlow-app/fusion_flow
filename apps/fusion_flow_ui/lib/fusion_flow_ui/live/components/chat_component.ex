@@ -7,15 +7,16 @@ defmodule FusionFlowUI.Components.ChatComponent do
   attr :ai_configured, :boolean, default: true
   attr :on_toggle, :string, default: "toggle_chat"
   attr :on_send, :string, default: "send_message"
+  attr :node_config_open, :boolean, default: false
 
   def render(assigns) do
     ~H"""
     <div>
-      <%= unless @open do %>
+      <%= unless @open or @node_config_open do %>
         <.button
           phx-click={JS.push(@on_toggle) |> JS.focus(to: "#chat-input-field")}
           variant="primary"
-          class="fixed bottom-6 right-6 z-[100] p-4 rounded-full shadow-lg group w-14 h-14"
+          class="fixed bottom-6 right-6 z-[99] p-4 rounded-full shadow-lg group w-14 h-14"
           title="AI Chat"
         >
           <.icon

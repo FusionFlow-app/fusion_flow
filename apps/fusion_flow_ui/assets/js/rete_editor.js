@@ -103,6 +103,8 @@ export async function createEditor(container) {
                                     const cleanData = {
                                         id: node.id,
                                         label: node.label,
+                                        type: node.type,
+                                        icon: node.icon,
                                         controls: {},
                                         variables: variables
                                     };
@@ -583,6 +585,7 @@ export async function createEditor(container) {
         else if (isBackground && e.button === 0) {
             clearNodeSelection();
             clearConnectionSelection();
+            if (editor.triggerCanvasClick) editor.triggerCanvasClick();
         } else if (clickedNodeId && e.button === 0) {
             clearConnectionSelection();
         }
@@ -1100,6 +1103,9 @@ export async function createEditor(container) {
         },
         onNodeConfig: (cb) => {
             editor.triggerNodeConfig = cb;
+        },
+        onCanvasClick: (cb) => {
+            editor.triggerCanvasClick = cb;
         },
         onErrorDetails: (cb) => {
             editor.triggerErrorDetails = cb;
