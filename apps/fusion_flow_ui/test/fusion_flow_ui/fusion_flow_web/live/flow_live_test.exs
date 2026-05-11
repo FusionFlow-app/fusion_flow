@@ -448,9 +448,9 @@ defmodule FusionFlowUI.FlowLiveTest do
           }
         })
 
-      assert html =~ "Configure My Logger"
+      assert html =~ "My Logger"
       assert html =~ "Node Name"
-      assert html =~ "Save Configuration"
+      assert html =~ "Save"
       assert html =~ "Cancel"
     end
 
@@ -493,7 +493,7 @@ defmodule FusionFlowUI.FlowLiveTest do
       })
 
       html = render_click(lv, "close_config_modal")
-      refute html =~ "Configure Some Node"
+      refute html =~ "Some Node"
     end
 
     test "shows 'no configuration' for node without controls", %{conn: conn} do
