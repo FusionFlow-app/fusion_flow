@@ -80,6 +80,8 @@ defmodule FusionFlowNodes.Nodes.HttpRequest do
         req_opts
       end
 
+    req_opts = Keyword.put(req_opts, :plug, Application.get_env(:fusion_flow_nodes, :req_plug))
+
     case Req.request(req_opts) do
       {:ok, %{status: status, body: body}} when status >= 200 and status < 300 ->
         {:ok, Map.put(context, "result", body), "success"}
