@@ -23,6 +23,12 @@ The visual editor is built with a modern stack designed for interactivity and cu
 
 This is a web application written using the Phoenix web framework.
 
+> **Naming note:** the web layer of this project is the app `fusion_flow_ui`, and its
+> root module is **`FusionFlowUI`** — **not** `FusionFlowWeb`. Wherever the Phoenix
+> conventions below show a `...Web` module (e.g. `MyAppWeb`, `AppWeb`), the real
+> equivalent here is `FusionFlowUI` (e.g. `FusionFlowUI.UserAuth`, `FusionFlowUI.Layouts`,
+> `FusionFlowUI.ConnCase`). Mirror this in test paths too (use `test/fusion_flow_ui/...`).
+
 ## Project guidelines
 
 - Use `mix precommit` alias when you are done with all changes and fix any pending issues
@@ -36,7 +42,7 @@ This is a web application written using the Phoenix web framework.
   - You failed to follow the Authenticated Routes guidelines, or you failed to pass `current_scope` to `<Layouts.app>`
   - **Always** fix the `current_scope` error by moving your routes to the proper `live_session` and ensure you pass `current_scope` as needed
 - Phoenix v1.8 moved the `<.flash_group>` component to the `Layouts` module. You are **forbidden** from calling `<.flash_group>` outside of the `layouts.ex` module
-- Out of the box, `core_components.ex` imports an `<.icon name="hero-x-mark" class="w-5 h-5"/>` component for for hero icons. **Always** use the `<.icon>` component for icons, **never** use `Heroicons` modules or similar
+- Out of the box, `core_components.ex` imports an `<.icon name="hero-x-mark" class="w-5 h-5"/>` component for hero icons. **Always** use the `<.icon>` component for icons, **never** use `Heroicons` modules **nor a raw inline `<svg>`** for an icon that exists in the heroicons set (spinners included — use `<.icon name="hero-arrow-path" class="animate-spin"/>`)
 - **Always** use the imported `<.input>` component for form inputs from `core_components.ex` when available. `<.input>` is imported and using it will save steps and prevent errors
 - If you override the default input classes (`<.input class="myclass px-2 py-1 rounded-lg">)`) class with your own values, no default classes are inherited, so your
 custom classes must fully style the input
@@ -51,6 +57,7 @@ The application uses a specific color palette defined in `app.css`. You **MUST**
     -   Tailwind: `primary`, `text-primary`, `bg-primary`
     -   Usage: Main actions, active states, highlights.
     -   *Note*: In Dark mode, this is a Purple/Indigo shade (`oklch(58% 0.233 277.117)`). In Light mode, it is Indigo 600 (`oklch(45% 0.24 277)`).
+    -   *Rule*: **Never** hardcode `indigo-*` for brand color — use `primary`/`bg-primary`/`text-primary`. This applies to **shared components too** (e.g. `core_components.button` variants), so a theme change propagates everywhere.
 
 -   **Dark Mode Implementation**:
     -   Dark mode is driven by the `data-theme="dark"` attribute, **not** `prefers-color-scheme`. The `dark:` Tailwind variant is remapped via `@custom-variant dark (&:where([data-theme=dark], [data-theme=dark] *))` in `app.css`.
@@ -123,7 +130,7 @@ LiveViews that require login should **always be placed inside the __existing__ `
       pipe_through [:browser, :require_authenticated_user]
 
       live_session :require_authenticated_user,
-        on_mount: [{FusionFlowWeb.UserAuth, :require_authenticated}] do
+        on_mount: [{FusionFlowUI.UserAuth, :require_authenticated}] do
         # phx.gen.auth generated routes
         live "/users/settings", UserLive.Settings, :edit
         live "/users/settings/confirm-email/:token", UserLive.Settings, :confirm_email
@@ -148,7 +155,7 @@ LiveViews that can work with or without authentication, **always use the __exist
       pipe_through [:browser]
 
       live_session :current_user,
-        on_mount: [{FusionFlowWeb.UserAuth, :mount_current_scope}] do
+        on_mount: [{FusionFlowUI.UserAuth, :mount_current_scope}] do
         # our own routes that work with or without authentication
         live "/", PublicLive
       end
@@ -345,6 +352,7 @@ After implementing any new module, **always create corresponding tests**. Follow
 ## Phoenix HTML guidelines
 
 - Phoenix templates **always** use `~H` or .html.heex files (known as HEEx), **never** use `~E`
+- **Never** call `raw/1` (or `Phoenix.HTML.raw`) on HTML derived from user input or AI/LLM output without sanitizing it first. Rendering Markdown from such content (e.g. `Earmark.as_html!(content) |> raw()`) is an XSS vector — sanitize the resulting HTML, or render the content as plain text/escaped Markdown instead.
 - **Always** use the imported `Phoenix.Component.form/1` and `Phoenix.Component.inputs_for/1` function to build forms. **Never** use `Phoenix.HTML.form_for` or `Phoenix.HTML.inputs_for` as they are outdated
 - When building forms **always** use the already imported `Phoenix.Component.to_form/2` (`assign(socket, form: to_form(...))` and `<.form for={@form} id="msg-form">`), then access those forms in the template via `@form[:field]`
 - **Always** add unique DOM IDs to key elements (like forms, buttons, etc) when writing templates, these IDs can later be used in tests (`<.form for={@form} id="product-form">`)
@@ -426,6 +434,13 @@ After implementing any new module, **always create corresponding tests**. Follow
 - **Never** use the deprecated `live_redirect` and `live_patch` functions, instead **always** use the `<.link navigate={href}>` and  `<.link patch={href}>` in templates, and `push_navigate` and `push_patch` functions LiveViews
 - **Avoid LiveComponent's** unless you have a strong, specific need for them
 - LiveViews should be named like `AppWeb.WeatherLive`, with a `Live` suffix. When you go to add LiveView routes to the router, the default `:browser` scope is **already aliased** with the `AppWeb` module, so you can just do `live "/weather", WeatherLive`
+
+### LiveView organization & business logic
+
+- **Keep orchestration and business logic in core contexts, not in LiveViews.** A `handle_event` should call **one** context function that returns a tagged tuple (`{:ok, ...} | {:error, stage, reason}`), and then branch on the result. **Never** chain multiple context calls (e.g. update → create → enqueue) with nested `case` inside the LiveView — push that sequence into a context function.
+- **Extract function components when a LiveView grows.** When a LiveView module exceeds ~400 lines, or a `render/1` contains a self-contained UI block larger than ~40 lines, extract it into a function component (follow the existing `FusionFlowUI.Components.Modals.*` pattern). Do **not** let one LiveView accumulate dozens of `handle_event`/`handle_info` clauses for unrelated concerns.
+- **DRY across LiveViews.** Before duplicating a `handle_event`, `handle_async`, streaming loop, or data-normalization block into a second LiveView, extract it to a shared module. Two copies that drift apart are a bug waiting to happen.
+- **Prefer supervised async.** In LiveViews use `start_async/3` (or a `Task.Supervisor`) for background work, **never** a bare `Task.start/1`: failures must be handled and the task must die with the LiveView. Reserve `Task.async_stream/3` for concurrent enumeration with back-pressure.
 
 ### LiveView streams
 
@@ -713,6 +728,7 @@ The project uses **Playwright** for end-to-end testing. E2E tests live in the `e
 
 - **Always** translate any user-facing text strings when creating or modifying screens, components, and layouts.
 - **Always** use the `gettext/1` macro (e.g., `<%= gettext("My text") %>`) for text inside Phoenix templates (`.heex`, LiveViews) instead of hardcoding text.
+- This **also covers strings built in `.ex` modules**, not just templates: `put_flash(socket, :info, gettext("..."))`, flash messages, error/notice maps, and any user-facing string sent to the client **must** go through `gettext/1`. A string outside a `.heex` file is **not** exempt.
 - **After adding new gettext calls**, **always** run `mix gettext.extract` and `mix gettext.merge priv/gettext` to extract the new keys.
 - **Always** update the `.po` files (`en`, `pt_BR`, etc.) inside `priv/gettext/` to provide translations for the keys you just extracted.
 <!-- i18n-end -->
