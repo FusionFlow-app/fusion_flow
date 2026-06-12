@@ -139,7 +139,12 @@ defmodule FusionFlowCore.ExecutionsTest do
 
   describe "save_and_run/3" do
     setup do
-      start_supervised!({Oban, name: FusionFlowCore.Oban, repo: Repo, testing: :manual})
+      # In the full umbrella suite the FusionFlowCore.Oban instance is already
+      # started; running this file in isolation it isn't, so start it on demand.
+      unless oban_running?(FusionFlowCore.Oban) do
+        start_supervised!({Oban, name: FusionFlowCore.Oban, repo: Repo, testing: :manual})
+      end
+
       :ok
     end
 
@@ -174,5 +179,12 @@ defmodule FusionFlowCore.ExecutionsTest do
       assert Repo.aggregate(Oban.Job, :count, :id) == 0
       assert Executions.list_executions_for_flow(flow.id) == []
     end
+  end
+
+  defp oban_running?(name) do
+    Oban.config(name)
+    true
+  rescue
+    _ -> false
   end
 end
