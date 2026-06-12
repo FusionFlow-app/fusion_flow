@@ -3,6 +3,7 @@ defmodule FusionFlowUI.FlowAiCreatorLive do
 
   alias FusionFlowCore.Flows
   alias FusionFlowAI.Agents.FlowPlanner
+  alias FusionFlowUI.AIChat
 
   @impl true
   def mount(_params, _session, socket) do
@@ -38,13 +39,7 @@ defmodule FusionFlowUI.FlowAiCreatorLive do
       {:noreply, socket}
     else
       messages = socket.assigns.messages ++ [{:user, content}, {:ai, ""}]
-
-      ai_messages =
-        Enum.map(messages, fn
-          {:user, text} -> %{role: "user", content: text}
-          {:ai, text} -> %{role: "assistant", content: text}
-        end)
-        |> List.delete_at(-1)
+      ai_messages = AIChat.to_api_messages(messages)
 
       socket =
         assign(socket,
@@ -60,26 +55,7 @@ defmodule FusionFlowUI.FlowAiCreatorLive do
       socket =
         start_async(socket, :ai_stream, fn ->
           {:ok, result} = FlowPlanner.chat(ai_messages, nil, locale)
-
-          Enum.reduce_while(result.stream, :ok, fn event, _acc ->
-            case event do
-              {:text_delta, text} ->
-                send(parent, {:chat_stream_chunk, text})
-                {:cont, :ok}
-
-              {:error, reason} ->
-                send(parent, {:chat_stream_error, reason})
-                {:halt, {:error, reason}}
-
-              {:finish, _reason} ->
-                {:cont, :ok}
-
-              _ ->
-                {:cont, :ok}
-            end
-          end)
-
-          :ok
+          AIChat.consume_stream(result.stream, parent)
         end)
 
       {:noreply, socket}
@@ -90,13 +66,7 @@ defmodule FusionFlowUI.FlowAiCreatorLive do
   def handle_event("approve_plan", _params, socket) do
     content = "Looks good! Please generate the final flow JSON now."
     messages = socket.assigns.messages ++ [{:user, content}, {:ai, ""}]
-
-    ai_messages =
-      Enum.map(messages, fn
-        {:user, text} -> %{role: "user", content: text}
-        {:ai, text} -> %{role: "assistant", content: text}
-      end)
-      |> List.delete_at(-1)
+    ai_messages = AIChat.to_api_messages(messages)
 
     socket = assign(socket, messages: messages, loading: true, ai_awaiting_approval: false)
     parent = self()
@@ -105,20 +75,7 @@ defmodule FusionFlowUI.FlowAiCreatorLive do
     socket =
       start_async(socket, :ai_stream_json, fn ->
         {:ok, result} = FlowPlanner.chat(ai_messages, nil, locale)
-
-        full_reply =
-          Enum.reduce_while(result.stream, "", fn event, acc ->
-            case event do
-              {:text_delta, text} ->
-                send(parent, {:chat_stream_chunk, text})
-                {:cont, acc <> text}
-
-              _ ->
-                {:cont, acc}
-            end
-          end)
-
-        {:ok, full_reply}
+        AIChat.consume_stream(result.stream, parent)
       end)
 
     {:noreply, socket}
@@ -126,10 +83,7 @@ defmodule FusionFlowUI.FlowAiCreatorLive do
 
   @impl true
   def handle_info({:chat_stream_chunk, text}, socket) do
-    messages = socket.assigns.messages
-    {_last_role, last_content} = List.last(messages)
-    updated_messages = List.replace_at(messages, -1, {:ai, last_content <> text})
-    {:noreply, assign(socket, messages: updated_messages)}
+    {:noreply, assign(socket, messages: AIChat.append_chunk(socket.assigns.messages, text))}
   end
 
   @impl true
@@ -150,9 +104,12 @@ defmodule FusionFlowUI.FlowAiCreatorLive do
   end
 
   @impl true
-  def handle_async(:ai_stream_json, {:ok, {:ok, full_reply}}, socket) do
-    socket = parse_and_create_flow_if_json(full_reply, socket)
-    {:noreply, socket}
+  def handle_async(:ai_stream_json, {:ok, full_reply}, socket) when is_binary(full_reply) do
+    {:noreply, parse_and_create_flow_if_json(full_reply, socket)}
+  end
+
+  def handle_async(:ai_stream_json, {:ok, _other}, socket) do
+    {:noreply, assign(socket, loading: false)}
   end
 
   @impl true
@@ -161,66 +118,29 @@ defmodule FusionFlowUI.FlowAiCreatorLive do
   end
 
   defp parse_and_create_flow_if_json(content, socket) do
-    case Regex.run(~r/\{[\s\S]*"action":\s*"create_flow"[\s\S]*\}/m, content) do
-      [json_candidate] ->
-        case Jason.decode(json_candidate) do
-          {:ok, json_data} ->
-            flow_name = "AI Generated Flow #{System.unique_integer([:positive])}"
+    case AIChat.extract_create_flow_json(content) do
+      {:ok, json_data} ->
+        create_attrs = %{
+          name: "AI Generated Flow #{System.unique_integer([:positive])}",
+          nodes: AIChat.normalize_nodes(Map.get(json_data, "nodes", [])),
+          connections: Map.get(json_data, "connections", [])
+        }
 
-            # Normalize nodes to ensure compatibility with Rete.js editor
-            nodes =
-              json_data
-              |> Map.get("nodes", [])
-              |> Enum.map(fn node ->
-                node
-                |> Map.put_new("type", Map.get(node, "name"))
-                |> Map.update("controls", %{}, fn controls ->
-                  case Map.get(node, "type") || Map.get(node, "name") do
-                    "Evaluate Code" ->
-                      controls
-                      |> Map.put_new("language", "elixir")
-                      |> Map.put_new("code_elixir", Map.get(controls, "code", ""))
-                      |> Map.put_new("code_python", "")
-
-                    "Output" ->
-                      controls
-                      |> Map.put_new("status", "success")
-                      |> Map.put_new(
-                        "code",
-                        "ui do\n  text :status, label: \"Final Status\", default: \"success\"\nend\n"
-                      )
-
-                    _ ->
-                      controls
-                  end
-                end)
-              end)
-
-            create_attrs = %{
-              name: flow_name,
-              nodes: nodes,
-              connections: Map.get(json_data, "connections", [])
-            }
-
-            case Flows.create_flow(socket.assigns.current_scope, create_attrs) do
-              {:ok, new_flow} ->
-                socket
-                |> put_flash(:info, gettext("Flow built successfully!"))
-                |> push_navigate(to: ~p"/flows/#{new_flow}")
-
-              {:error, _} ->
-                assign(socket,
-                  messages:
-                    socket.assigns.messages ++ [{:error, "Failed to persist flow in database"}],
-                  loading: false
-                )
-            end
+        case Flows.create_flow(socket.assigns.current_scope, create_attrs) do
+          {:ok, new_flow} ->
+            socket
+            |> put_flash(:info, gettext("Flow built successfully!"))
+            |> push_navigate(to: ~p"/flows/#{new_flow}")
 
           {:error, _} ->
-            handle_regular_message(content, socket)
+            assign(socket,
+              messages:
+                socket.assigns.messages ++ [{:error, "Failed to persist flow in database"}],
+              loading: false
+            )
         end
 
-      nil ->
+      :error ->
         handle_regular_message(content, socket)
     end
   end
