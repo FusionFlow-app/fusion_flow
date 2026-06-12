@@ -4,6 +4,7 @@ defmodule FusionFlowCore.ExecutionsTest do
   alias FusionFlowCore.Executions
   alias FusionFlowCore.Executions.Execution
 
+  import FusionFlowCore.AccountsFixtures
   import FusionFlowCore.FlowsFixtures
 
   describe "executions" do
@@ -133,6 +134,45 @@ defmodule FusionFlowCore.ExecutionsTest do
                Executions.append_log(execution, %{"node_id" => "start", "status" => "success"})
 
       assert execution.logs == [%{"node_id" => "start", "status" => "success"}]
+    end
+  end
+
+  describe "save_and_run/3" do
+    setup do
+      start_supervised!({Oban, name: FusionFlowCore.Oban, repo: Repo, testing: :manual})
+      :ok
+    end
+
+    test "saves the flow graph and enqueues a manual execution" do
+      user = user_fixture()
+      scope = user_scope_fixture(user)
+      flow = flow_fixture(%{user: user, name: "Original"})
+
+      assert {:ok, %{flow: saved_flow, execution: %Execution{} = execution}} =
+               Executions.save_and_run(scope, flow, %{name: "Renamed"})
+
+      assert saved_flow.id == flow.id
+      assert saved_flow.name == "Renamed"
+      assert execution.flow_id == flow.id
+      assert execution.status == "queued"
+      assert execution.input == %{"trigger" => "manual"}
+
+      # the Oban job was inserted (Oban runs in :manual testing mode)
+      assert Repo.aggregate(Oban.Job, :count, :id) == 1
+    end
+
+    test "returns a :save error without creating an execution when the graph is invalid" do
+      user = user_fixture()
+      scope = user_scope_fixture(user)
+      flow = flow_fixture(%{user: user, name: "Original"})
+
+      assert {:error, :save, context} = Executions.save_and_run(scope, flow, %{name: ""})
+
+      assert %Ecto.Changeset{} = context.reason
+      # no partial flow/execution is reported and nothing was enqueued
+      refute Map.has_key?(context, :flow)
+      assert Repo.aggregate(Oban.Job, :count, :id) == 0
+      assert Executions.list_executions_for_flow(flow.id) == []
     end
   end
 end
