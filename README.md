@@ -46,13 +46,6 @@ cd apps/fusion_flow_worker
 mix run --no-halt
 ```
 
-## ✨ Showcase
-
-| Dashboard | Create Flow with AI | Flow Editor |
-| :---: | :---: | :---: |
-| ![Dashboard](apps/fusion_flow_ui/assets/screenshots/dashboard.png) | ![AI Creator](apps/fusion_flow_ui/assets/screenshots/ai_creator.png) | ![Flow Editor](apps/fusion_flow_ui/assets/screenshots/flow_editor.png) |
-| *System overview* | *Describe your logic, AI builds it* | *Visual orchestration* |
-
 ## 🤝 Community & Contributing
 
 We believe in building in public. Join our community to discuss ideas, track our vision, or help us build:
