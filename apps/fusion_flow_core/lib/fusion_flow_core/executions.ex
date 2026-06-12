@@ -114,6 +114,53 @@ defmodule FusionFlowCore.Executions do
     |> then(&Oban.insert(oban_name(), &1))
   end
 
+  @doc """
+  Saves a flow's graph and enqueues a manual execution for it.
+
+  Orchestrates the three steps the editor's "run" button performs — persist the
+  graph, create the execution record, enqueue the Oban job — so the LiveView
+  doesn't have to nest them.
+
+  Returns `{:ok, %{flow: flow, execution: execution}}` on success.
+
+  On failure returns `{:error, stage, context}`, where `stage` is one of
+  `:save`, `:create` or `:enqueue`, and `context` is a map carrying the
+  `:reason` plus any partial results already produced (`:flow` once the graph
+  is saved, `:execution` once the record is created) so the caller can still
+  reflect them in the UI.
+  """
+  def save_and_run(scope, %Flow{} = flow, data) do
+    with {:ok, saved_flow} <- save_flow(scope, flow, data),
+         {:ok, execution} <- create_run(saved_flow),
+         {:ok, _job} <- enqueue_run(saved_flow, execution) do
+      {:ok, %{flow: saved_flow, execution: execution}}
+    end
+  end
+
+  defp save_flow(scope, flow, data) do
+    case FusionFlowCore.Flows.update_flow(scope, flow, data) do
+      {:ok, saved_flow} -> {:ok, saved_flow}
+      {:error, reason} -> {:error, :save, %{reason: reason}}
+    end
+  end
+
+  defp create_run(saved_flow) do
+    case create_execution(%{flow_id: saved_flow.id, input: %{"trigger" => "manual"}}) do
+      {:ok, execution} -> {:ok, execution}
+      {:error, reason} -> {:error, :create, %{reason: reason, flow: saved_flow}}
+    end
+  end
+
+  defp enqueue_run(saved_flow, execution) do
+    case enqueue_execution(execution) do
+      {:ok, job} ->
+        {:ok, job}
+
+      {:error, reason} ->
+        {:error, :enqueue, %{reason: reason, flow: saved_flow, execution: execution}}
+    end
+  end
+
   defp oban_name do
     Application.get_env(:fusion_flow_core, :oban_name, FusionFlowCore.Oban)
   end

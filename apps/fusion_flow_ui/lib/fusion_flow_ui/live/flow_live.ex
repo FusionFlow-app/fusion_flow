@@ -105,80 +105,29 @@ defmodule FusionFlowUI.FlowLive do
 
   @impl true
   def handle_event("save_and_run", %{"data" => data}, socket) do
-    case FusionFlowCore.Flows.update_flow(
+    case FusionFlowCore.Executions.save_and_run(
            socket.assigns.current_scope,
            socket.assigns.current_flow,
            data
          ) do
-      {:ok, updated_flow} ->
-        case FusionFlowCore.Executions.create_execution(%{
-               flow_id: updated_flow.id,
-               input: %{"trigger" => "manual"}
-             }) do
-          {:ok, execution} ->
-            case FusionFlowCore.Executions.enqueue_execution(execution) do
-              {:ok, _job} ->
-                {:noreply,
-                 socket
-                 |> assign(
-                   current_flow: updated_flow,
-                   has_changes: false,
-                   execution_result: nil,
-                   execution_notice: execution_notice(:queued, execution),
-                   show_result_modal: false,
-                   inspecting_result: false
-                 )
-                 |> subscribe_to_execution(execution)
-                 |> schedule_execution_notice_dismiss(execution.id)
-                 |> put_flash(:info, "Flow saved and execution queued.")
-                 |> push_event("clear_node_errors", %{})}
-
-              {:error, _reason} ->
-                {:noreply,
-                 socket
-                 |> assign(current_flow: updated_flow, has_changes: false)
-                 |> assign(
-                   execution_notice: %{
-                     kind: :error,
-                     status: "failed",
-                     title: "Execution was not queued",
-                     message: "The flow was saved, but the execution job could not be created.",
-                     execution_id: execution.id,
-                     public_id: execution.public_id
-                   }
-                 )
-                 |> put_flash(:error, "Flow saved, but execution could not be queued.")}
-            end
-
-          {:error, _changeset} ->
-            {:noreply,
-             socket
-             |> assign(current_flow: updated_flow, has_changes: false)
-             |> assign(
-               execution_notice: %{
-                 kind: :error,
-                 status: "failed",
-                 title: "Execution was not created",
-                 message: "The flow was saved, but the execution record could not be created.",
-                 execution_id: nil
-               }
-             )
-             |> put_flash(:error, "Flow saved, but execution could not be created.")}
-        end
-
-      {:error, _changeset} ->
+      {:ok, %{flow: updated_flow, execution: execution}} ->
         {:noreply,
          socket
          |> assign(
-           execution_notice: %{
-             kind: :error,
-             status: "failed",
-             title: "Flow was not saved",
-             message: "The execution was not queued because the graph could not be saved.",
-             execution_id: nil
-           }
+           current_flow: updated_flow,
+           has_changes: false,
+           execution_result: nil,
+           execution_notice: execution_notice(:queued, execution),
+           show_result_modal: false,
+           inspecting_result: false
          )
-         |> put_flash(:error, "Failed to save flow before running.")}
+         |> subscribe_to_execution(execution)
+         |> schedule_execution_notice_dismiss(execution.id)
+         |> put_flash(:info, "Flow saved and execution queued.")
+         |> push_event("clear_node_errors", %{})}
+
+      {:error, stage, context} ->
+        {:noreply, handle_run_failure(socket, stage, context)}
     end
   end
 
@@ -806,7 +755,10 @@ defmodule FusionFlowUI.FlowLive do
   @impl true
   def render(assigns) do
     ~H"""
-    <div class="w-full h-[100vh] flex flex-col bg-white dark:bg-slate-950 overflow-hidden relative" phx-window-keydown="handle_keydown">
+    <div
+      class="w-full h-[100vh] flex flex-col bg-white dark:bg-slate-950 overflow-hidden relative"
+      phx-window-keydown="handle_keydown"
+    >
       <FusionFlowUI.Components.Flow.FlowHeader.flow_header
         has_changes={@has_changes}
         flow={@current_flow}
@@ -1055,6 +1007,53 @@ defmodule FusionFlowUI.FlowLive do
       socket
     end
   end
+
+  defp handle_run_failure(socket, stage, context) do
+    socket =
+      case context do
+        %{flow: flow} -> assign(socket, current_flow: flow, has_changes: false)
+        _ -> socket
+      end
+
+    socket
+    |> assign(execution_notice: run_failure_notice(stage, context))
+    |> put_flash(:error, run_failure_flash(stage))
+  end
+
+  defp run_failure_notice(:enqueue, %{execution: execution}) do
+    %{
+      kind: :error,
+      status: "failed",
+      title: "Execution was not queued",
+      message: "The flow was saved, but the execution job could not be created.",
+      execution_id: execution.id,
+      public_id: execution.public_id
+    }
+  end
+
+  defp run_failure_notice(:create, _context) do
+    %{
+      kind: :error,
+      status: "failed",
+      title: "Execution was not created",
+      message: "The flow was saved, but the execution record could not be created.",
+      execution_id: nil
+    }
+  end
+
+  defp run_failure_notice(:save, _context) do
+    %{
+      kind: :error,
+      status: "failed",
+      title: "Flow was not saved",
+      message: "The execution was not queued because the graph could not be saved.",
+      execution_id: nil
+    }
+  end
+
+  defp run_failure_flash(:enqueue), do: "Flow saved, but execution could not be queued."
+  defp run_failure_flash(:create), do: "Flow saved, but execution could not be created."
+  defp run_failure_flash(:save), do: "Failed to save flow before running."
 
   defp execution_notice(:queued, execution) do
     %{
