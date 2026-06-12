@@ -1,6 +1,8 @@
 defmodule FusionFlowUI.FlowLive do
   use FusionFlowUI, :live_view
 
+  alias FusionFlowUI.AIChat
+
   @impl true
   def mount(%{"id" => id}, _session, socket) do
     flow = FusionFlowCore.Flows.get_flow!(socket.assigns.current_scope, id)
@@ -64,17 +66,11 @@ defmodule FusionFlowUI.FlowLive do
     nodes = flow.nodes || []
     connections = flow.connections || []
 
-    all_definitions =
-      FusionFlowNodes.Nodes.all_nodes()
-      |> Enum.reduce(%{}, fn node, acc ->
-        Map.put(acc, node.name, node)
-      end)
-
     {:noreply,
      push_event(socket, "load_graph_data", %{
        nodes: nodes,
        connections: connections,
-       definitions: all_definitions
+       definitions: AIChat.node_definitions()
      })}
   end
 
@@ -266,16 +262,8 @@ defmodule FusionFlowUI.FlowLive do
     if content == "" do
       {:noreply, socket}
     else
-      messages = socket.assigns.chat_messages ++ [{:user, content}]
-      messages = messages ++ [{:ai, ""}]
-
-      ai_messages =
-        Enum.map(messages, fn
-          {:user, text} -> %{role: "user", content: text}
-          {:ai, text} -> %{role: "assistant", content: text}
-        end)
-
-      ai_messages = List.delete_at(ai_messages, -1)
+      messages = socket.assigns.chat_messages ++ [{:user, content}, {:ai, ""}]
+      ai_messages = AIChat.to_api_messages(messages)
 
       socket = assign(socket, chat_messages: messages, chat_loading: true)
 
@@ -285,26 +273,7 @@ defmodule FusionFlowUI.FlowLive do
       socket =
         start_async(socket, :ai_stream, fn ->
           {:ok, result} = FusionFlowAI.Agents.FlowCreator.chat(ai_messages, current_flow)
-
-          Enum.reduce_while(result.stream, :ok, fn event, _acc ->
-            case event do
-              {:text_delta, text} ->
-                send(parent, {:chat_stream_chunk, text})
-                {:cont, :ok}
-
-              {:error, reason} ->
-                send(parent, {:chat_stream_error, reason})
-                {:halt, {:error, reason}}
-
-              {:finish, _reason} ->
-                {:cont, :ok}
-
-              _ ->
-                {:cont, :ok}
-            end
-          end)
-
-          :ok
+          AIChat.consume_stream(result.stream, parent)
         end)
 
       {:noreply, socket}
@@ -721,111 +690,10 @@ defmodule FusionFlowUI.FlowLive do
 
   @impl true
   def handle_async(:ai_stream, {:ok, _result}, socket) do
-    messages = socket.assigns.chat_messages
-    {role, content} = List.last(messages)
-
     socket =
-      if role == :ai do
-        json_content =
-          content
-          |> String.replace(~r/^```json\s*/, "")
-          |> String.replace(~r/\s*```$/, "")
-          |> String.trim()
-
-        case Jason.decode(json_content) do
-          {:ok, %{"action" => "create_flow", "nodes" => raw_nodes, "connections" => connections}} ->
-            nodes =
-              Enum.map(raw_nodes, fn node ->
-                data = node["data"] || %{}
-
-                label = node["label"] || data["label"] || node["name"]
-
-                position =
-                  node["position"] ||
-                    %{"x" => data["x"] || 0, "y" => data["y"] || 0}
-
-                controls =
-                  cond do
-                    is_map(node["controls"]) and node["controls"] != %{} ->
-                      node["controls"]
-
-                    is_map(data["controls"]) and data["controls"] != %{} ->
-                      data["controls"]
-
-                    true ->
-                      Map.drop(data, ["label", "x", "y", "controls"])
-                  end
-
-                controls =
-                  Enum.into(controls, %{}, fn {k, v} ->
-                    if is_map(v) and Map.has_key?(v, "value") do
-                      {k, v["value"]}
-                    else
-                      {k, v}
-                    end
-                  end)
-
-                controls =
-                  if node["type"] == "Evaluate Code" or node["name"] == "Evaluate Code" do
-                    code_val = controls["code"] || controls["code_elixir"]
-
-                    if code_val do
-                      controls
-                      |> Map.put("code_elixir", code_val)
-                      |> Map.delete("code")
-                    else
-                      controls
-                    end
-                  else
-                    controls
-                  end
-
-                %{
-                  "id" => node["id"],
-                  "name" => node["name"],
-                  "type" => node["type"] || node["name"],
-                  "label" => label,
-                  "position" => position,
-                  "controls" => controls,
-                  "inputs" => node["inputs"] || %{},
-                  "outputs" => node["outputs"] || %{}
-                }
-              end)
-              |> Enum.with_index()
-              |> Enum.map(fn {node, index} ->
-                current_y = get_in(node, ["position", "y"]) || 100
-                new_x = 100 + index * 500
-
-                Map.put(node, "position", %{"x" => new_x, "y" => current_y})
-              end)
-
-            all_definitions =
-              FusionFlowNodes.Nodes.all_nodes()
-              |> Enum.reduce(%{}, fn node, acc ->
-                Map.put(acc, node.name, node)
-              end)
-
-            socket
-            |> push_event("load_graph_data", %{
-              nodes: nodes,
-              connections: connections,
-              definitions: all_definitions
-            })
-            |> put_flash(:info, "Flow generated by AI applied successfully!")
-            |> assign(has_changes: true)
-            |> update(:chat_messages, fn messages ->
-              List.replace_at(
-                messages,
-                -1,
-                {:ai, "Flow created successfully! You can see it on the canvas."}
-              )
-            end)
-
-          _ ->
-            socket
-        end
-      else
-        socket
+      case List.last(socket.assigns.chat_messages) do
+        {:ai, content} -> apply_ai_flow(socket, content)
+        _ -> socket
       end
 
     {:noreply, assign(socket, chat_loading: false)}
@@ -926,17 +794,8 @@ defmodule FusionFlowUI.FlowLive do
 
   @impl true
   def handle_info({:chat_stream_chunk, chunk}, socket) do
-    messages = socket.assigns.chat_messages
-    {last_role, last_content} = List.last(messages)
-
-    updated_messages =
-      if last_role == :ai do
-        List.replace_at(messages, -1, {:ai, last_content <> chunk})
-      else
-        messages
-      end
-
-    {:noreply, assign(socket, chat_messages: updated_messages)}
+    {:noreply,
+     assign(socket, chat_messages: AIChat.append_chunk(socket.assigns.chat_messages, chunk))}
   end
 
   @impl true
@@ -1108,6 +967,30 @@ defmodule FusionFlowUI.FlowLive do
       />
     </div>
     """
+  end
+
+  defp apply_ai_flow(socket, content) do
+    case AIChat.extract_create_flow_json(content) do
+      {:ok, %{"nodes" => raw_nodes} = json} ->
+        socket
+        |> push_event("load_graph_data", %{
+          nodes: AIChat.normalize_nodes(raw_nodes),
+          connections: Map.get(json, "connections", []),
+          definitions: AIChat.node_definitions()
+        })
+        |> put_flash(:info, "Flow generated by AI applied successfully!")
+        |> assign(has_changes: true)
+        |> update(:chat_messages, fn messages ->
+          List.replace_at(
+            messages,
+            -1,
+            {:ai, "Flow created successfully! You can see it on the canvas."}
+          )
+        end)
+
+      _ ->
+        socket
+    end
   end
 
   defp filter_nodes(query) do
