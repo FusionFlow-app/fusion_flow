@@ -58,7 +58,7 @@ defmodule FusionFlowUI.FlowLive.Index do
           <div class="bg-white dark:bg-slate-800 border border-gray-200 dark:border-slate-700 rounded-xl p-12 text-center shadow-sm">
             <div class="mx-auto w-16 h-16 bg-gray-100 dark:bg-slate-700 rounded-full flex items-center justify-center mb-4">
               <svg
-                class="w-8 h-8 text-gray-400"
+                class="w-8 h-8 text-gray-400 dark:text-gray-500"
                 fill="none"
                 viewBox="0 0 24 24"
                 stroke="currentColor"
@@ -67,7 +67,7 @@ defmodule FusionFlowUI.FlowLive.Index do
                   stroke-linecap="round"
                   stroke-linejoin="round"
                   stroke-width="2"
-                  d="M13 10V3L4 14h7v7l9-11h-7z"
+                  d="M12 6v6m0 0v6m0-6h6m-6 0H6"
                 />
               </svg>
             </div>
@@ -76,50 +76,68 @@ defmodule FusionFlowUI.FlowLive.Index do
               {gettext("No flows created yet")}
             </h3>
 
-            <p class="text-gray-500 dark:text-gray-400 text-sm max-w-sm mx-auto mb-6">
-              {gettext("Get started by creating your first visual automation workflow.")}
+            <p class="text-gray-500 dark:text-gray-400 mb-6 max-w-sm mx-auto text-center">
+              {gettext("Get started by creating your first workflow automation. It's easy!")}
             </p>
 
             <.button
               phx-click="create_flow"
               variant="primary"
+              class="px-6 py-3"
             >
-              {gettext("Create your first flow")}
+              <.icon name="hero-plus" class="h-5 w-5 mr-1" /> {gettext("Create your first flow")}
             </.button>
           </div>
         <% else %>
-          <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-            <%= for flow <- @flows do %>
-              <div class="bg-white dark:bg-slate-800 border border-gray-200 dark:border-slate-700 rounded-xl p-5 shadow-sm hover:shadow-md transition-shadow flex flex-col justify-between h-48 border-t-4 border-t-indigo-500">
-                <div>
-                  <div class="flex items-start justify-between">
-                    <h3 class="font-bold text-gray-900 dark:text-white text-lg line-clamp-1">
-                      {flow.name}
-                    </h3>
-                  </div>
-
-                  <p class="text-xs text-gray-500 dark:text-gray-400 mt-2">
-                    {length(flow.nodes || [])} {gettext("nodes")} • {length(flow.connections || [])} {gettext(
-                      "connections"
-                    )}
-                  </p>
-                </div>
-
-                <div class="flex items-center justify-between pt-4 border-t border-gray-100 dark:border-slate-700/50 mt-auto">
-                  <span class="text-xs text-gray-400">
-                    {Calendar.strftime(flow.updated_at, "%Y-%m-%d %H:%M")}
-                  </span>
-
-                  <.button
+          <div class="bg-white dark:bg-slate-800 border border-gray-200 dark:border-slate-700 rounded-xl shadow-sm overflow-hidden">
+            <ul role="list" class="divide-y divide-gray-200 dark:divide-slate-700">
+              <%= for flow <- @flows do %>
+                <li class="hover:bg-gray-50 dark:hover:bg-slate-700/50 transition-colors">
+                  <.link
                     navigate={~p"/flows/#{flow.id}"}
-                    variant="primary"
-                    class="text-xs px-3 py-1.5"
+                    class="flex items-center justify-between px-6 py-4"
                   >
-                    {gettext("Open Flow")}
-                  </.button>
-                </div>
-              </div>
-            <% end %>
+                    <div class="flex items-center gap-4">
+                      <div class="p-2 bg-indigo-50 dark:bg-indigo-900/20 text-indigo-600 dark:text-indigo-400 rounded-lg">
+                        <svg class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                          <path
+                            stroke-linecap="round"
+                            stroke-linejoin="round"
+                            stroke-width="2"
+                            d="M13 10V3L4 14h7v7l9-11h-7z"
+                          />
+                        </svg>
+                      </div>
+
+                      <div>
+                        <p class="text-sm font-medium text-gray-900 dark:text-white truncate">
+                          {flow.name}
+                        </p>
+
+                        <p class="text-xs text-gray-500 dark:text-gray-400 mt-0.5">
+                          {length(flow.nodes || [])} {gettext("nodes")} • {length(
+                            flow.connections || []
+                          )} {gettext("connections")} • {gettext("Updated")} {Calendar.strftime(
+                            flow.updated_at,
+                            "%b %d, %Y"
+                          )}
+                        </p>
+                      </div>
+                    </div>
+
+                    <div>
+                      <svg class="w-5 h-5 text-gray-400" viewBox="0 0 20 20" fill="currentColor">
+                        <path
+                          fill-rule="evenodd"
+                          d="M7.293 14.707a1 1 0 010-1.414L10.586 10 7.293 6.707a1 1 0 011.414-1.414l4 4a1 1 0 010 1.414l-4 4a1 1 0 01-1.414 0z"
+                          clip-rule="evenodd"
+                        />
+                      </svg>
+                    </div>
+                  </.link>
+                </li>
+              <% end %>
+            </ul>
           </div>
         <% end %>
       </div>
