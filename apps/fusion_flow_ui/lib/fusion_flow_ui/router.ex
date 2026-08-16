@@ -46,25 +46,31 @@ defmodule FusionFlowUI.Router do
     pipe_through [:browser, :require_authenticated_user]
 
     live_session :require_authenticated_user,
-      on_mount: [{FusionFlowUI.UserAuth, :require_authenticated}] do
-      live "/users/settings", UserLive.Settings, :edit
-      live "/", DashboardLive.Index
-    end
-
-    live_session :require_system_admin,
       on_mount: [
         {FusionFlowUI.UserAuth, :require_authenticated},
-        {FusionFlowUI.UserAuth, :require_system_admin}
+        {FusionFlowUI.WorkspaceAuth, :mount_workspace_scope}
       ] do
-      live "/users", UserLive.Index, :index
+      live "/users/settings", UserLive.Settings, :edit
+      live "/", DashboardLive.Index
+      live "/workspaces", WorkspaceLive.Index
       live "/flows", FlowLive.Index
       live "/flows/new/ai", FlowLive.AICreator
       live "/flows/:id", FlowLive.Editor
       live "/executions", ExecutionLive.Index, :index
       live "/executions/:public_id", ExecutionLive.Index, :show
+    end
+
+    live_session :require_system_admin,
+      on_mount: [
+        {FusionFlowUI.UserAuth, :require_authenticated},
+        {FusionFlowUI.WorkspaceAuth, :mount_workspace_scope},
+        {FusionFlowUI.UserAuth, :require_system_admin}
+      ] do
+      live "/users", UserLive.Index, :index
       live "/api-keys", ApiKeyLive.Index
     end
 
+    get "/workspaces/switch/:id", WorkspaceSessionController, :switch
     post "/users/update-password", UserSessionController, :update_password
   end
 

@@ -23,14 +23,14 @@ defmodule FusionFlowUI.ExecutionLive.Index do
 
     socket
     |> assign(page_title: gettext("Execution"))
-    |> assign(executions: Executions.list_executions())
+    |> assign(executions: Executions.list_executions(socket.assigns.current_scope))
     |> assign(selected_execution: execution)
   end
 
   defp apply_action(socket, :index, _params) do
     socket
     |> assign(page_title: gettext("Executions"))
-    |> assign(executions: Executions.list_executions())
+    |> assign(executions: Executions.list_executions(socket.assigns.current_scope))
     |> assign(selected_execution: nil)
   end
 

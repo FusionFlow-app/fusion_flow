@@ -4,7 +4,7 @@ defmodule FusionFlowCore.Flows do
   """
 
   import Ecto.Query, warn: false
-  alias FusionFlowCore.Repo
+  alias FusionFlowCore.{Policy, Repo}
 
   alias FusionFlowCore.Accounts.Scope
   alias FusionFlowCore.Flows.Flow
@@ -12,15 +12,21 @@ defmodule FusionFlowCore.Flows do
 
   @doc """
   Returns the list of flows.
-
-  ## Examples
-
-      iex> list_flows()
-      [%Flow{}, ...]
-
   """
   def list_flows do
     Repo.all(Flow)
+  end
+
+  def list_flows(%Scope{workspace: ws} = scope) when not is_nil(ws) do
+    case Policy.authorize(scope, :view_flows) do
+      :ok ->
+        scope
+        |> scope_query()
+        |> Repo.all()
+
+      {:error, _} ->
+        []
+    end
   end
 
   def list_flows(%Scope{} = scope) do
@@ -38,19 +44,17 @@ defmodule FusionFlowCore.Flows do
 
   @doc """
   Gets a single flow.
-
   Raises `Ecto.NoResultsError` if the Flow does not exist.
-
-  ## Examples
-
-      iex> get_flow!(123)
-      %Flow{}
-
-      iex> get_flow!(456)
-      ** (Ecto.NoResultsError)
-
   """
   def get_flow!(id), do: Repo.get!(Flow, id)
+
+  def get_flow!(%Scope{workspace: ws} = scope, id) when not is_nil(ws) do
+    with :ok <- Policy.authorize(scope, :view_flows) do
+      scope
+      |> scope_query()
+      |> Repo.get!(id)
+    end
+  end
 
   def get_flow!(%Scope{} = scope, id) do
     scope
@@ -60,6 +64,14 @@ defmodule FusionFlowCore.Flows do
 
   def get_flow(id), do: Repo.get(Flow, id)
 
+  def get_flow(%Scope{workspace: ws} = scope, id) when not is_nil(ws) do
+    with :ok <- Policy.authorize(scope, :view_flows) do
+      scope
+      |> scope_query()
+      |> Repo.get(id)
+    end
+  end
+
   def get_flow(%Scope{} = scope, id) do
     scope
     |> scope_query()
@@ -68,15 +80,6 @@ defmodule FusionFlowCore.Flows do
 
   @doc """
   Creates a flow.
-
-  ## Examples
-
-      iex> create_flow(%{field: value})
-      {:ok, %Flow{}}
-
-      iex> create_flow(%{field: bad_value})
-      {:error, %Ecto.Changeset{}}
-
   """
   def create_flow(attrs \\ %{}) do
     result =
@@ -94,27 +97,36 @@ defmodule FusionFlowCore.Flows do
     end
   end
 
-  def create_flow(%Scope{user: %{id: user_id}}, attrs) do
-    attrs =
-      attrs
-      |> Map.new()
-      |> Map.drop([:user_id, "user_id"])
-      |> put_owner_id(user_id)
+  def create_flow(
+        %Scope{workspace: %FusionFlowCore.Workspaces.Workspace{id: ws_id}, user: user} = scope,
+        attrs
+      ) do
+    with :ok <- Policy.authorize(scope, :create_flows) do
+      attrs =
+        attrs
+        |> Map.new()
+        |> Map.drop([:user_id, "user_id", :workspace_id, "workspace_id"])
+        |> put_field(:user_id, user && user.id)
+        |> put_field(:workspace_id, ws_id)
 
-    create_flow(attrs)
+      create_flow(attrs)
+    end
+  end
+
+  def create_flow(%Scope{user: %{id: user_id}} = scope, attrs) do
+    with :ok <- Policy.authorize(scope, :create_flows) do
+      attrs =
+        attrs
+        |> Map.new()
+        |> Map.drop([:user_id, "user_id"])
+        |> put_owner_id(user_id)
+
+      create_flow(attrs)
+    end
   end
 
   @doc """
   Updates a flow.
-
-  ## Examples
-
-      iex> update_flow(flow, %{field: new_value})
-      {:ok, %Flow{}}
-
-      iex> update_flow(flow, %{field: bad_value})
-      {:error, %Ecto.Changeset{}}
-
   """
   def update_flow(%Flow{} = flow, attrs) do
     result =
@@ -133,6 +145,18 @@ defmodule FusionFlowCore.Flows do
     end
   end
 
+  def update_flow(%Scope{workspace: ws} = scope, %Flow{} = flow, attrs) when not is_nil(ws) do
+    with :ok <- Policy.authorize(scope, :edit_flows),
+         %Flow{} = flow <- get_flow!(scope, flow.id) do
+      attrs =
+        attrs
+        |> Map.new()
+        |> Map.drop([:user_id, "user_id", :workspace_id, "workspace_id"])
+
+      update_flow(flow, attrs)
+    end
+  end
+
   def update_flow(%Scope{} = scope, %Flow{} = flow, attrs) do
     flow = get_flow!(scope, flow.id)
 
@@ -146,20 +170,18 @@ defmodule FusionFlowCore.Flows do
 
   @doc """
   Deletes a flow.
-
-  ## Examples
-
-      iex> delete_flow(flow)
-      {:ok, %Flow{}}
-
-      iex> delete_flow(flow)
-      {:error, %Ecto.Changeset{}}
-
   """
   def delete_flow(%Flow{} = flow) do
     FusionFlowCore.Flows.Cache.invalidate(flow.id)
     FusionFlowCore.Webhooks.unregister_flow(flow)
     Repo.delete(flow)
+  end
+
+  def delete_flow(%Scope{workspace: ws} = scope, %Flow{} = flow) when not is_nil(ws) do
+    with :ok <- Policy.authorize(scope, :delete_flows),
+         %Flow{} = flow <- get_flow!(scope, flow.id) do
+      delete_flow(flow)
+    end
   end
 
   def delete_flow(%Scope{} = scope, %Flow{} = flow) do
@@ -169,22 +191,15 @@ defmodule FusionFlowCore.Flows do
 
   @doc """
   Returns an `%Ecto.Changeset{}` for tracking flow changes.
-
-  ## Examples
-
-      iex> change_flow(flow)
-      %Ecto.Changeset{data: %Flow{}}
-
   """
   def change_flow(%Flow{} = flow, attrs \\ %{}) do
     Flow.changeset(flow, attrs)
   end
 
-  @doc """
-  Gets the first flow or creates a default one if none exist.
-  """
-  def get_first_or_create_default_flow do
-    case Repo.one(from f in Flow, limit: 1) do
+  def get_first_or_create_default_flow, do: get_or_create_default_flow()
+
+  def get_or_create_default_flow do
+    case Repo.one(from f in Flow, order_by: [asc: f.id], limit: 1) do
       nil ->
         case default_owner_id() do
           nil ->
@@ -205,6 +220,19 @@ defmodule FusionFlowCore.Flows do
     end
   end
 
+  defp scope_query(%Scope{is_system_admin: true}) do
+    from(f in Flow)
+  end
+
+  defp scope_query(%Scope{workspace: %{id: ws_id}, user: %{id: user_id}}) do
+    from f in Flow,
+      where: f.workspace_id == ^ws_id or (is_nil(f.workspace_id) and f.user_id == ^user_id)
+  end
+
+  defp scope_query(%Scope{workspace: %{id: ws_id}}) do
+    from f in Flow, where: f.workspace_id == ^ws_id
+  end
+
   defp scope_query(%Scope{user: %{id: user_id}}) do
     from f in Flow, where: f.user_id == ^user_id
   end
@@ -219,14 +247,18 @@ defmodule FusionFlowCore.Flows do
   end
 
   defp put_owner_id(attrs, user_id) do
+    put_field(attrs, :user_id, user_id)
+  end
+
+  defp put_field(attrs, key_atom, value) do
     key =
       if attrs |> Map.keys() |> Enum.any?(&is_binary/1) do
-        "user_id"
+        to_string(key_atom)
       else
-        :user_id
+        key_atom
       end
 
-    Map.put(attrs, key, user_id)
+    Map.put(attrs, key, value)
   end
 
   alias FusionFlowCore.Flows.ExecutionLog

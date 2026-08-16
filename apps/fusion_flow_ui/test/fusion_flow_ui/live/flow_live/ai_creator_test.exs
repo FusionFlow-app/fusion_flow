@@ -11,15 +11,15 @@ defmodule FusionFlowUI.FlowLive.AICreatorTest do
       assert path == ~p"/users/log-in"
     end
 
-    test "redirects non-admin to root", %{conn: conn} do
+    test "redirects to /flows when openai is not configured", %{conn: conn} do
       user = user_fixture()
 
-      assert {:error, {:redirect, %{to: path}}} =
+      assert {:error, {:live_redirect, %{to: path}}} =
                conn
                |> log_in_user(user)
                |> live(~p"/flows/new/ai")
 
-      assert path == ~p"/"
+      assert path == ~p"/flows"
     end
   end
 end

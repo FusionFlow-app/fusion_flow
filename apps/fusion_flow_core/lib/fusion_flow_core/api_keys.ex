@@ -5,16 +5,42 @@ defmodule FusionFlowCore.ApiKeys do
 
   import Ecto.Query, warn: false
 
+  alias FusionFlowCore.Accounts.Scope
   alias FusionFlowCore.Accounts.User
   alias FusionFlowCore.ApiKeys.ApiKey
+  alias FusionFlowCore.Policy
   alias FusionFlowCore.Repo
 
   @prefix_size 8
   @secret_size 32
   @max_create_attempts 5
 
-  def create_api_key(%User{id: user_id}, attrs \\ %{}) do
+  def create_api_key(
+        %Scope{workspace: %FusionFlowCore.Workspaces.Workspace{id: ws_id}, user: user} = scope,
+        attrs
+      ) do
+    with :ok <- Policy.authorize(scope, :manage_api_keys) do
+      attrs =
+        attrs
+        |> Map.new()
+        |> Map.put(:workspace_id, ws_id)
+
+      create_api_key(user, attrs)
+    end
+  end
+
+  def create_api_key(%Scope{user: %User{} = user} = scope, attrs) do
+    with :ok <- Policy.authorize(scope, :manage_api_keys) do
+      create_api_key(user, attrs)
+    end
+  end
+
+  def create_api_key(%User{id: user_id}, attrs) do
     create_api_key(user_id, Map.new(attrs), @max_create_attempts)
+  end
+
+  def create_api_key(%User{} = user) do
+    create_api_key(user, %{})
   end
 
   defp create_api_key(user_id, attrs, attempts_left) when attempts_left > 0 do
@@ -74,6 +100,12 @@ defmodule FusionFlowCore.ApiKeys do
 
   def authenticate(_token), do: :error
 
+  def revoke_api_key(%Scope{} = scope, %ApiKey{} = api_key) do
+    with :ok <- Policy.authorize(scope, :manage_api_keys) do
+      revoke_api_key(api_key)
+    end
+  end
+
   def revoke_api_key(%ApiKey{} = api_key) do
     api_key
     |> ApiKey.revoke_changeset()
@@ -88,6 +120,51 @@ defmodule FusionFlowCore.ApiKeys do
 
   def list_api_keys do
     Repo.all(from key in ApiKey, preload: [:user], order_by: [desc: key.inserted_at])
+  end
+
+  def list_api_keys(%Scope{
+        is_system_admin: true,
+        user: %User{id: user_id},
+        workspace: %{id: ws_id}
+      }) do
+    Repo.all(
+      from key in ApiKey,
+        where: key.workspace_id == ^ws_id or key.user_id == ^user_id or is_nil(key.workspace_id),
+        preload: [:user],
+        order_by: [desc: key.inserted_at]
+    )
+  end
+
+  def list_api_keys(%Scope{is_system_admin: true}) do
+    Repo.all(from key in ApiKey, preload: [:user], order_by: [desc: key.inserted_at])
+  end
+
+  def list_api_keys(%Scope{workspace: ws, user: %User{id: user_id}} = scope)
+      when not is_nil(ws) do
+    with :ok <- Policy.authorize(scope, :view_api_keys) do
+      Repo.all(
+        from key in ApiKey,
+          where:
+            key.workspace_id == ^ws.id or (is_nil(key.workspace_id) and key.user_id == ^user_id),
+          preload: [:user],
+          order_by: [desc: key.inserted_at]
+      )
+    end
+  end
+
+  def list_api_keys(%Scope{workspace: ws} = scope) when not is_nil(ws) do
+    with :ok <- Policy.authorize(scope, :view_api_keys) do
+      Repo.all(
+        from key in ApiKey,
+          where: key.workspace_id == ^ws.id,
+          preload: [:user],
+          order_by: [desc: key.inserted_at]
+      )
+    end
+  end
+
+  def list_api_keys(%Scope{user: %User{} = user}) do
+    list_api_keys(user)
   end
 
   def list_api_keys(%User{id: user_id}) do

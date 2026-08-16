@@ -5,9 +5,10 @@ defmodule FusionFlowUI.DashboardLive.Index do
 
   @impl true
   def mount(_params, _session, socket) do
-    user = socket.assigns.current_scope.user
+    scope = socket.assigns.current_scope
+    user = scope && scope.user
     admin? = user && FusionFlowCore.Accounts.User.system_admin?(user)
-    flows = if admin?, do: Flows.list_flows(socket.assigns.current_scope), else: []
+    flows = if admin?, do: Flows.list_flows(scope), else: []
     active_count = length(flows)
 
     {:ok,

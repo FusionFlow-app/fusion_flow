@@ -52,7 +52,14 @@ defmodule FusionFlowUI.UserLive.Register do
             {gettext("Create your account")}
           </h1>
           <p class="mt-2 text-sm text-gray-500 dark:text-gray-400">
-            {gettext("You were invited to FusionFlowCore. Complete the form below.")}
+            <%= if @invite.workspace do %>
+              {gettext("You were invited to join %{workspace} as %{role}.",
+                workspace: @invite.workspace.name,
+                role: String.capitalize(@invite.role || "member")
+              )}
+            <% else %>
+              {gettext("You were invited to FusionFlow. Complete the form below.")}
+            <% end %>
           </p>
         </div>
 

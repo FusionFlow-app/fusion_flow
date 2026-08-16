@@ -25,15 +25,13 @@ defmodule FusionFlowUI.ApiKeyLive.Index do
 
   @impl true
   def handle_event("create", %{"api_key" => params}, socket) do
-    user = socket.assigns.current_scope.user
-
     attrs = %{
       name: Map.get(params, "name"),
       scopes: Map.get(params, "scopes", []),
       expires_at: expires_at(Map.get(params, "expires_in", "never"))
     }
 
-    case ApiKeys.create_api_key(user, attrs) do
+    case ApiKeys.create_api_key(socket.assigns.current_scope, attrs) do
       {:ok, %{token: token}} ->
         {:noreply,
          socket
@@ -50,7 +48,7 @@ defmodule FusionFlowUI.ApiKeyLive.Index do
   def handle_event("revoke", %{"id" => id}, socket) do
     api_key = ApiKeys.get_api_key!(id)
 
-    case ApiKeys.revoke_api_key(api_key) do
+    case ApiKeys.revoke_api_key(socket.assigns.current_scope, api_key) do
       {:ok, _api_key} ->
         {:noreply,
          socket
@@ -263,8 +261,7 @@ defmodule FusionFlowUI.ApiKeyLive.Index do
   end
 
   defp assign_api_keys(socket) do
-    user = socket.assigns.current_scope.user
-    assign(socket, :api_keys, ApiKeys.list_api_keys(user))
+    assign(socket, :api_keys, ApiKeys.list_api_keys(socket.assigns.current_scope))
   end
 
   defp api_key_form do

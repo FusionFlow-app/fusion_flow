@@ -12,15 +12,18 @@ defmodule FusionFlowUI.FlowLive.IndexTest do
       assert path == ~p"/users/log-in"
     end
 
-    test "redirects non-admin to root", %{conn: conn} do
+    test "renders flow list for authenticated user", %{conn: conn} do
       user = user_fixture()
+      Process.put(:fusion_flow_owner, user)
+      flow_fixture(%{name: "User Flow"})
 
-      assert {:error, {:redirect, %{to: path}}} =
-               conn
-               |> log_in_user(user)
-               |> live(~p"/flows")
+      {:ok, _lv, html} =
+        conn
+        |> log_in_user(user)
+        |> live(~p"/flows")
 
-      assert path == ~p"/"
+      assert html =~ "User Flow"
+      assert html =~ "My Flows"
     end
 
     test "renders flow list for system admin", %{conn: conn} do

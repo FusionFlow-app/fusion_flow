@@ -9,6 +9,7 @@ defmodule FusionFlowUI.ExecutionLive.IndexTest do
 
   setup %{conn: conn} do
     admin = system_admin_fixture()
+    Process.put(:fusion_flow_owner, admin)
     %{conn: log_in_user(conn, admin), user: admin}
   end
 
@@ -21,7 +22,7 @@ defmodule FusionFlowUI.ExecutionLive.IndexTest do
       assert path == ~p"/users/log-in"
     end
 
-    test "redirects non-admin to root" do
+    test "allows authenticated regular users to view their executions" do
       user = user_fixture()
 
       conn =
@@ -29,8 +30,8 @@ defmodule FusionFlowUI.ExecutionLive.IndexTest do
         |> Phoenix.ConnTest.init_test_session(%{})
         |> log_in_user(user)
 
-      assert {:error, {:redirect, %{to: path}}} = live(conn, ~p"/executions")
-      assert path == ~p"/"
+      assert {:ok, _lv, html} = live(conn, ~p"/executions")
+      assert html =~ "Executions"
     end
   end
 

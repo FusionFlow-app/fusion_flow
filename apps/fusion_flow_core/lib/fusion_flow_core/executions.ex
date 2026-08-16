@@ -21,6 +21,26 @@ defmodule FusionFlowCore.Executions do
     Repo.all(from e in Execution, order_by: [desc: e.inserted_at], preload: [:flow])
   end
 
+  def list_executions(%FusionFlowCore.Accounts.Scope{workspace: ws} = scope)
+      when not is_nil(ws) do
+    case FusionFlowCore.Policy.authorize(scope, :view_executions) do
+      :ok ->
+        Repo.all(
+          from e in Execution,
+            where: e.workspace_id == ^ws.id,
+            order_by: [desc: e.inserted_at],
+            preload: [:flow]
+        )
+
+      {:error, _} ->
+        []
+    end
+  end
+
+  def list_executions(%FusionFlowCore.Accounts.Scope{} = _scope) do
+    list_executions()
+  end
+
   def list_executions_for_flow(%Flow{id: flow_id}), do: list_executions_for_flow(flow_id)
 
   def list_executions_for_flow(flow_id) do
@@ -145,7 +165,13 @@ defmodule FusionFlowCore.Executions do
   end
 
   defp create_run(saved_flow) do
-    case create_execution(%{flow_id: saved_flow.id, input: %{"trigger" => "manual"}}) do
+    attrs = %{
+      flow_id: saved_flow.id,
+      workspace_id: saved_flow.workspace_id,
+      input: %{"trigger" => "manual"}
+    }
+
+    case create_execution(attrs) do
       {:ok, execution} -> {:ok, execution}
       {:error, reason} -> {:error, :create, %{reason: reason, flow: saved_flow}}
     end

@@ -41,8 +41,8 @@ defmodule FusionFlowUI.Layouts do
     ~H"""
     <div class="flex h-screen w-full bg-gray-50 dark:bg-slate-950 overflow-hidden">
       <%= if @current_scope && @current_scope.user do %>
-        <aside class="w-20 lg:w-64 bg-white dark:bg-slate-900 border-r border-gray-200 dark:border-slate-800 flex flex-col items-center lg:items-start py-6 shadow-sm z-20 transition-all duration-300">
-          <div class="px-0 lg:px-6 w-full flex justify-center lg:justify-start mb-8">
+        <aside class="w-20 lg:w-64 bg-white dark:bg-slate-900 border-r border-gray-200 dark:border-slate-800 flex flex-col items-center lg:items-start py-4 shadow-sm z-20 overflow-y-auto transition-all duration-300">
+          <div class="px-0 lg:px-6 w-full flex justify-center lg:justify-start mb-4">
             <.link
               navigate={~p"/"}
               class="flex items-center gap-2 group transition-opacity hover:opacity-80"
@@ -57,6 +57,111 @@ defmodule FusionFlowUI.Layouts do
               </span>
             </.link>
           </div>
+          
+    <!-- Active Workspace Widget in Sidebar -->
+          <%= if @current_scope && @current_scope.workspace do %>
+            <div class="hidden lg:block w-full px-4 mb-4 relative" id="workspace-switcher-root">
+              <div class="flex items-center justify-between p-2 rounded-xl bg-slate-100 dark:bg-slate-800/80 hover:bg-slate-200/80 dark:hover:bg-slate-800 border border-gray-200 dark:border-slate-700 transition-colors group">
+                <.link
+                  navigate={~p"/workspaces"}
+                  class="flex items-center gap-2.5 min-w-0 flex-1 cursor-pointer"
+                  title={gettext("Workspace Settings")}
+                >
+                  <div class="w-7 h-7 rounded-lg bg-indigo-600 flex items-center justify-center text-white text-xs font-bold shrink-0 shadow-sm">
+                    {String.at(@current_scope.workspace.name || "W", 0) |> String.upcase()}
+                  </div>
+                  <div class="truncate text-left">
+                    <div class="text-xs font-bold text-gray-900 dark:text-white truncate group-hover:text-indigo-600 dark:group-hover:text-indigo-400 transition-colors">
+                      {@current_scope.workspace.name}
+                    </div>
+                    <div class="text-[10px] text-gray-500 dark:text-gray-400 capitalize font-medium">
+                      <%= if @current_scope.is_system_admin do %>
+                        <span class="text-amber-600 dark:text-amber-400 font-bold">
+                          Platform Admin
+                        </span>
+                      <% else %>
+                        {@current_scope.role || "Member"}
+                      <% end %>
+                    </div>
+                  </div>
+                </.link>
+
+                <button
+                  type="button"
+                  id="workspace-switcher-button"
+                  phx-click={
+                    JS.toggle(
+                      to: "#workspace-switcher-dropdown",
+                      in:
+                        {"transition ease-out duration-100", "transform opacity-0 scale-95",
+                         "transform opacity-100 scale-100"},
+                      out:
+                        {"transition ease-in duration-75", "transform opacity-100 scale-100",
+                         "transform opacity-0 scale-95"}
+                    )
+                  }
+                  class="p-1 rounded-lg hover:bg-slate-300/60 dark:hover:bg-slate-700 text-gray-400 hover:text-gray-700 dark:hover:text-gray-200 transition-colors shrink-0 ml-1"
+                  title={gettext("Switch Workspace")}
+                >
+                  <.icon name="hero-chevron-up-down" class="w-4 h-4" />
+                </button>
+              </div>
+              
+    <!-- Workspace Switcher Popover Menu -->
+              <div
+                id="workspace-switcher-dropdown"
+                phx-click-away={JS.hide(to: "#workspace-switcher-dropdown")}
+                class="absolute top-full left-4 right-4 mt-2 bg-white dark:bg-slate-900 rounded-xl shadow-xl border border-gray-100 dark:border-slate-800 overflow-hidden z-50 hidden py-1.5"
+              >
+                <div class="px-3 py-1.5 text-[10px] font-bold uppercase tracking-wider text-gray-400 dark:text-gray-500">
+                  {gettext("Switch Workspace")}
+                </div>
+
+                <div class="max-h-56 overflow-y-auto divide-y divide-gray-50 dark:divide-slate-800/50">
+                  <%= for ws <- assigns[:user_workspaces] || [@current_scope.workspace] do %>
+                    <.link
+                      href={~p"/workspaces/switch/#{ws.id}"}
+                      class={[
+                        "flex items-center justify-between px-3 py-2 text-xs transition-colors hover:bg-gray-50 dark:hover:bg-slate-800",
+                        ws.id == @current_scope.workspace.id &&
+                          "bg-indigo-50/60 dark:bg-indigo-950/30 text-indigo-600 dark:text-indigo-400 font-semibold"
+                      ]}
+                    >
+                      <div class="flex items-center gap-2 truncate">
+                        <div class="w-5 h-5 rounded bg-slate-200 dark:bg-slate-700 flex items-center justify-center text-[10px] font-bold text-gray-700 dark:text-gray-300 shrink-0">
+                          {String.at(ws.name || "W", 0) |> String.upcase()}
+                        </div>
+                        <span class="truncate">{ws.name}</span>
+                      </div>
+                      <%= if ws.id == @current_scope.workspace.id do %>
+                        <.icon
+                          name="hero-check"
+                          class="w-4 h-4 text-indigo-600 dark:text-indigo-400 shrink-0"
+                        />
+                      <% end %>
+                    </.link>
+                  <% end %>
+                </div>
+
+                <div class="border-t border-gray-100 dark:border-slate-800 mt-1 pt-1">
+                  <.link
+                    navigate={~p"/workspaces?action=new"}
+                    class="flex items-center gap-2 px-3 py-2 text-xs text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-slate-800 transition-colors"
+                  >
+                    <.icon name="hero-plus" class="w-4 h-4 text-gray-400" />
+                    <span>{gettext("New Workspace")}</span>
+                  </.link>
+                  <.link
+                    navigate={~p"/workspaces"}
+                    class="flex items-center gap-2 px-3 py-2 text-xs text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-slate-800 transition-colors"
+                  >
+                    <.icon name="hero-cog-6-tooth" class="w-4 h-4 text-gray-400" />
+                    <span>{gettext("Workspace Settings")}</span>
+                  </.link>
+                </div>
+              </div>
+            </div>
+          <% end %>
 
           <nav class="flex-1 w-full px-3 lg:px-4 space-y-2">
             <.link
@@ -78,7 +183,17 @@ defmodule FusionFlowUI.Layouts do
               </svg>
               <span class="hidden lg:block font-medium text-sm">{gettext("Dashboard")}</span>
             </.link>
-            <%= if @current_scope && @current_scope.user && FusionFlowCore.Accounts.User.system_admin?(@current_scope.user) do %>
+            <.link
+              navigate={~p"/workspaces"}
+              class="flex items-center justify-center lg:justify-start gap-3 px-3 py-2.5 rounded-lg text-gray-600 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-slate-800 hover:text-gray-900 dark:hover:text-white transition-all group"
+            >
+              <.icon
+                name="hero-building-office-2"
+                class="w-6 h-6 lg:w-5 lg:h-5 text-gray-500 dark:text-gray-500 group-hover:text-indigo-600 dark:group-hover:text-indigo-400"
+              />
+              <span class="hidden lg:block font-medium text-sm">{gettext("Workspaces")}</span>
+            </.link>
+            <%= if @current_scope && FusionFlowCore.Policy.can?(@current_scope, :view_flows) do %>
               <.link
                 navigate={~p"/flows"}
                 class="flex items-center justify-center lg:justify-start gap-3 px-3 py-2.5 rounded-lg text-gray-600 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-slate-800 hover:text-gray-900 dark:hover:text-white transition-all group"
@@ -108,25 +223,29 @@ defmodule FusionFlowUI.Layouts do
                 />
                 <span class="hidden lg:block font-medium text-sm">{gettext("Executions")}</span>
               </.link>
-              <.link
-                navigate={~p"/flows/new/ai"}
-                class="flex items-center justify-center lg:justify-start gap-3 px-3 py-2.5 rounded-lg text-gray-600 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-slate-800 hover:text-gray-900 dark:hover:text-white transition-all group"
-              >
-                <svg
-                  class="w-6 h-6 lg:w-5 lg:h-5 text-gray-500 dark:text-gray-500 group-hover:text-purple-600 dark:group-hover:text-purple-400"
-                  fill="none"
-                  viewBox="0 0 24 24"
-                  stroke="currentColor"
+              <%= if FusionFlowCore.Policy.can?(@current_scope, :create_flows) do %>
+                <.link
+                  navigate={~p"/flows/new/ai"}
+                  class="flex items-center justify-center lg:justify-start gap-3 px-3 py-2.5 rounded-lg text-gray-600 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-slate-800 hover:text-gray-900 dark:hover:text-white transition-all group"
                 >
-                  <path
-                    stroke-linecap="round"
-                    stroke-linejoin="round"
-                    stroke-width="2"
-                    d="M19.428 15.428a2 2 0 00-1.022-.547l-2.387-.477a6 6 0 00-3.86.517l-.318.158a6 6 0 01-3.86.517L6.05 15.21a2 2 0 00-1.806.547M8 4h8l-1 1v5.172a2 2 0 00.586 1.414l5 5c1.26 1.26.367 3.414-1.415 3.414H4.828c-1.782 0-2.674-2.154-1.414-3.414l5-5A2 2 0 009 10.172V5L8 4z"
-                  />
-                </svg>
-                <span class="hidden lg:block font-medium text-sm">{gettext("Create with AI")}</span>
-              </.link>
+                  <svg
+                    class="w-6 h-6 lg:w-5 lg:h-5 text-gray-500 dark:text-gray-500 group-hover:text-purple-600 dark:group-hover:text-purple-400"
+                    fill="none"
+                    viewBox="0 0 24 24"
+                    stroke="currentColor"
+                  >
+                    <path
+                      stroke-linecap="round"
+                      stroke-linejoin="round"
+                      stroke-width="2"
+                      d="M19.428 15.428a2 2 0 00-1.022-.547l-2.387-.477a6 6 0 00-3.86.517l-.318.158a6 6 0 01-3.86.517L6.05 15.21a2 2 0 00-1.806.547M8 4h8l-1 1v5.172a2 2 0 00.586 1.414l5 5c1.26 1.26.367 3.414-1.415 3.414H4.828c-1.782 0-2.674-2.154-1.414-3.414l5-5A2 2 0 009 10.172V5L8 4z"
+                    />
+                  </svg>
+                  <span class="hidden lg:block font-medium text-sm">{gettext("Create with AI")}</span>
+                </.link>
+              <% end %>
+            <% end %>
+            <%= if @current_scope && FusionFlowCore.Policy.can?(@current_scope, :view_api_keys) do %>
               <.link
                 navigate={~p"/api-keys"}
                 class="flex items-center justify-center lg:justify-start gap-3 px-3 py-2.5 rounded-lg text-gray-600 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-slate-800 hover:text-gray-900 dark:hover:text-white transition-all group"
@@ -137,6 +256,8 @@ defmodule FusionFlowUI.Layouts do
                 />
                 <span class="hidden lg:block font-medium text-sm">{gettext("API keys")}</span>
               </.link>
+            <% end %>
+            <%= if @current_scope && @current_scope.user && FusionFlowCore.Accounts.User.system_admin?(@current_scope.user) do %>
               <.link
                 navigate={~p"/users"}
                 class="flex items-center justify-center lg:justify-start gap-3 px-3 py-2.5 rounded-lg text-gray-600 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-slate-800 hover:text-gray-900 dark:hover:text-white transition-all group"
@@ -159,8 +280,8 @@ defmodule FusionFlowUI.Layouts do
             <% end %>
           </nav>
 
-          <div class="px-3 lg:px-4 w-full mt-auto">
-            <div class="hidden lg:block w-full text-xs text-gray-500 dark:text-gray-500 px-2 mt-4">
+          <div class="px-3 lg:px-4 w-full mt-auto pt-2">
+            <div class="hidden lg:block w-full text-xs text-gray-500 dark:text-gray-500 px-2 mt-2">
               <form id="locale-form" phx-change="change_locale" class="w-full">
                 <label for="locale-select" class="sr-only">Language</label>
                 <select
@@ -176,11 +297,11 @@ defmodule FusionFlowUI.Layouts do
               </form>
             </div>
 
-            <div class="hidden lg:flex w-full mt-4 justify-between items-center text-xs text-gray-500 dark:text-gray-500 px-2">
+            <div class="hidden lg:flex w-full mt-2 justify-between items-center text-xs text-gray-500 dark:text-gray-500 px-2">
               <span>{gettext("Theme")}</span> <.theme_toggle />
             </div>
 
-            <div class="mt-6 pt-6 border-t border-gray-100 dark:border-slate-800">
+            <div class="mt-3 pt-3 border-t border-gray-100 dark:border-slate-800">
               <div class="relative group" id="user-menu-root">
                 <.button
                   id="user-menu-button"
@@ -230,6 +351,12 @@ defmodule FusionFlowUI.Layouts do
                   phx-click-away={JS.hide(to: "#user-menu-dropdown")}
                 >
                   <div class="p-2 space-y-1">
+                    <.link
+                      navigate={~p"/workspaces"}
+                      class="flex items-center gap-3 px-3 py-2 text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-slate-800 rounded-lg transition-colors"
+                    >
+                      <.icon name="hero-user-group" class="size-4" /> {gettext("Workspaces & Team")}
+                    </.link>
                     <.link
                       navigate={~p"/users/settings"}
                       class="flex items-center gap-3 px-3 py-2 text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-slate-800 rounded-lg transition-colors"

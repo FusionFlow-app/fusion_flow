@@ -16,8 +16,9 @@ defmodule FusionFlowUI.UserLive.IndexTest do
       assert path == ~p"/"
     end
 
-    test "renders users page for system admin", %{conn: conn} do
+    test "renders users page for system admin with current workspace", %{conn: conn} do
       admin = system_admin_fixture()
+      {:ok, %{workspace: ws}} = FusionFlowCore.Workspaces.ensure_default_workspace(admin)
       _other = user_fixture()
 
       {:ok, _lv, html} =
@@ -26,22 +27,31 @@ defmodule FusionFlowUI.UserLive.IndexTest do
         |> live(~p"/users")
 
       assert html =~ "Users"
-      assert html =~ "Invite link"
+      assert html =~ "Invite to Current Workspace"
       assert html =~ admin.username
+      assert html =~ ws.slug
     end
 
-    test "generate_invite creates and shows invite link", %{conn: conn} do
+    test "generate_invite creates and shows invite link for current workspace", %{conn: conn} do
       admin = system_admin_fixture()
+      {:ok, %{workspace: ws}} = FusionFlowCore.Workspaces.ensure_default_workspace(admin)
 
       {:ok, lv, _html} =
         conn
         |> log_in_user(admin)
         |> live(~p"/users")
 
-      assert lv |> element("button", "Generate invite link") |> has_element?()
-      lv |> element("button", "Generate invite link") |> render_click()
+      lv
+      |> form("form[phx-submit='generate_invite']", %{
+        "role" => "editor",
+        "email" => "invited@example.com"
+      })
+      |> render_submit()
+
       assert has_element?(lv, "input#invite-url")
-      assert render(lv) =~ "/users/register/"
+      html = render(lv)
+      assert html =~ "/users/register/"
+      assert html =~ ws.slug
     end
   end
 end

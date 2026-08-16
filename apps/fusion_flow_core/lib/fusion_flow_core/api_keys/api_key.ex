@@ -33,6 +33,7 @@ defmodule FusionFlowCore.ApiKeys.ApiKey do
     field :revoked_at, :utc_datetime
 
     belongs_to :user, User
+    belongs_to :workspace, FusionFlowCore.Workspaces.Workspace
 
     timestamps(type: :utc_datetime)
   end
@@ -41,12 +42,13 @@ defmodule FusionFlowCore.ApiKeys.ApiKey do
 
   def create_changeset(api_key, attrs) do
     api_key
-    |> cast(attrs, [:user_id, :name, :prefix, :key_hash, :scopes, :expires_at])
+    |> cast(attrs, [:user_id, :workspace_id, :name, :prefix, :key_hash, :scopes, :expires_at])
     |> validate_required([:user_id, :name, :prefix, :key_hash, :scopes])
     |> validate_length(:name, min: 1, max: 120)
     |> validate_format(:prefix, ~r/^[a-zA-Z0-9]{8}$/)
     |> validate_subset(:scopes, @scopes)
     |> foreign_key_constraint(:user_id)
+    |> foreign_key_constraint(:workspace_id)
     |> unique_constraint(:prefix)
   end
 

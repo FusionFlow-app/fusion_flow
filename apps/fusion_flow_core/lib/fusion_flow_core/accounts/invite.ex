@@ -6,13 +6,17 @@ defmodule FusionFlowCore.Accounts.Invite do
   import Ecto.Changeset
 
   @invite_validity_days 7
+  @roles ~w(owner admin editor viewer)
 
   schema "invites" do
     field :token, :string
+    field :role, :string, default: "editor"
+    field :email, :string
     field :expires_at, :utc_datetime
     field :used_at, :utc_datetime
 
     belongs_to :invited_by_user, FusionFlowCore.Accounts.User
+    belongs_to :workspace, FusionFlowCore.Workspaces.Workspace
 
     timestamps(type: :utc_datetime)
   end
@@ -20,10 +24,20 @@ defmodule FusionFlowCore.Accounts.Invite do
   @doc false
   def changeset(invite, attrs) do
     invite
-    |> cast(attrs, [:token, :expires_at, :used_at, :invited_by_user_id])
+    |> cast(attrs, [
+      :token,
+      :role,
+      :email,
+      :expires_at,
+      :used_at,
+      :invited_by_user_id,
+      :workspace_id
+    ])
     |> validate_required([:token, :expires_at, :invited_by_user_id])
+    |> validate_inclusion(:role, @roles)
     |> unique_constraint(:token)
     |> foreign_key_constraint(:invited_by_user_id)
+    |> foreign_key_constraint(:workspace_id)
   end
 
   @doc "Returns the default validity in days for new invites."

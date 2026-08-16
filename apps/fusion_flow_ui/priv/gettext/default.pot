@@ -11,653 +11,1308 @@
 msgid ""
 msgstr ""
 
-#: lib/fusion_flow_web/components/core_components.ex:405
+#: lib/fusion_flow_ui/components/core_components.ex:405
+#: lib/fusion_flow_ui/live/api_key_live/index.ex:203
+#: lib/fusion_flow_ui/live/workspace_live/index.ex:379
 #, elixir-autogen, elixir-format
 msgid "Actions"
 msgstr ""
 
-#: lib/fusion_flow_web/live/dashboard_live.ex:90
-#, elixir-autogen, elixir-format
-msgid "Active Integrations"
-msgstr ""
-
-#: lib/fusion_flow_web/components/layouts.ex:279
-#: lib/fusion_flow_web/components/layouts.ex:291
+#: lib/fusion_flow_ui/components/layouts.ex:417
+#: lib/fusion_flow_ui/components/layouts.ex:429
 #, elixir-autogen, elixir-format
 msgid "Attempting to reconnect"
 msgstr ""
 
-#: lib/fusion_flow_web/live/flow_live.ex:829
+#: lib/fusion_flow_ui/live/flow_live/editor.html.heex:26
 #, elixir-autogen, elixir-format
 msgid "Coming Soon"
 msgstr ""
 
-#: lib/fusion_flow_web/live/flow_live.ex:826
+#: lib/fusion_flow_ui/live/flow_live/editor.html.heex:23
 #, elixir-autogen, elixir-format
 msgid "Configure Node"
 msgstr ""
 
-#: lib/fusion_flow_web/live/dashboard_live.ex:130
+#: lib/fusion_flow_ui/live/dashboard_live/index.ex:139
 #, elixir-autogen, elixir-format
 msgid "Create Flow"
 msgstr ""
 
-#: lib/fusion_flow_web/live/flow_list_live.ex:84
+#: lib/fusion_flow_ui/live/flow_live/index.ex:87
 #, elixir-autogen, elixir-format
 msgid "Create your first flow"
 msgstr ""
 
-#: lib/fusion_flow_web/components/layouts.ex:89
-#: lib/fusion_flow_web/live/dashboard_live.ex:32
+#: lib/fusion_flow_ui/components/layouts.ex:184
+#: lib/fusion_flow_ui/live/dashboard_live/index.ex:33
 #, elixir-autogen, elixir-format
 msgid "Dashboard"
 msgstr ""
 
-#: lib/fusion_flow_web/live/flow_live.ex:831
+#: lib/fusion_flow_ui/live/flow_live/editor.html.heex:28
 #, elixir-autogen, elixir-format
 msgid "Drag to canvas"
 msgstr ""
 
-#: lib/fusion_flow_web/components/modals/node_config_modal.ex:122
-#: lib/fusion_flow_web/live/flow_live.ex:828
+#: lib/fusion_flow_ui/components/modals/node_config_modal.ex:131
+#: lib/fusion_flow_ui/live/flow_live/editor.html.heex:25
 #, elixir-autogen, elixir-format
 msgid "Edit Code"
 msgstr ""
 
-#: lib/fusion_flow_web/live/flow_list_live.ex:22
+#: lib/fusion_flow_ui/live/flow_live/index.ex:26
 #, elixir-autogen, elixir-format
 msgid "Failed to create flow."
 msgstr ""
 
-#: lib/fusion_flow_web/live/flow_list_live.ex:40
+#: lib/fusion_flow_ui/live/flow_live/index.ex:44
 #, elixir-autogen, elixir-format
 msgid "Flows available"
 msgstr ""
 
-#: lib/fusion_flow_web/live/dashboard_live.ex:126
-#, elixir-autogen, elixir-format
-msgid "Get started by creating a new workflow automation."
-msgstr ""
-
-#: lib/fusion_flow_web/live/flow_list_live.ex:76
-#, elixir-autogen, elixir-format
-msgid "Get started by creating your first workflow automation. It's easy!"
-msgstr ""
-
-#: lib/fusion_flow_web/live/dashboard_live.ex:43
+#: lib/fusion_flow_ui/live/dashboard_live/index.ex:44
 #, elixir-autogen, elixir-format
 msgid "Manage Flows"
 msgstr ""
 
-#: lib/fusion_flow_web/components/layouts.ex:108
-#: lib/fusion_flow_web/live/flow_list_live.ex:8
-#: lib/fusion_flow_web/live/flow_list_live.ex:37
+#: lib/fusion_flow_ui/components/layouts.ex:214
+#: lib/fusion_flow_ui/live/flow_live/index.ex:11
+#: lib/fusion_flow_ui/live/flow_live/index.ex:41
 #, elixir-autogen, elixir-format
 msgid "My Flows"
 msgstr ""
 
-#: lib/fusion_flow_web/live/flow_list_live.ex:48
+#: lib/fusion_flow_ui/live/flow_live/index.ex:52
 #, elixir-autogen, elixir-format
 msgid "New Flow"
 msgstr ""
 
-#: lib/fusion_flow_web/live/dashboard_live.ex:124
-#, elixir-autogen, elixir-format
-msgid "No flows"
-msgstr ""
-
-#: lib/fusion_flow_web/live/flow_list_live.ex:72
+#: lib/fusion_flow_ui/live/flow_live/index.ex:76
 #, elixir-autogen, elixir-format
 msgid "No flows created yet"
 msgstr ""
 
-#: lib/fusion_flow_web/live/dashboard_live.ex:110
-#, elixir-autogen, elixir-format
-msgid "Recent Workflows"
-msgstr ""
-
-#: lib/fusion_flow_web/live/flow_live.ex:825
+#: lib/fusion_flow_ui/live/flow_live/editor.html.heex:22
 #, elixir-autogen, elixir-format
 msgid "Remove Node"
 msgstr ""
 
-#: lib/fusion_flow_web/live/flow_live.ex:823
+#: lib/fusion_flow_ui/live/flow_live/editor.html.heex:20
 #, elixir-autogen, elixir-format
 msgid "Run"
 msgstr ""
 
-#: lib/fusion_flow_web/live/flow_live.ex:830
+#: lib/fusion_flow_ui/live/flow_live/editor.html.heex:27
 #, elixir-autogen, elixir-format
 msgid "Select Integration"
 msgstr ""
 
-#: lib/fusion_flow_web/components/layouts.ex:286
+#: lib/fusion_flow_ui/components/layouts.ex:424
 #, elixir-autogen, elixir-format
 msgid "Something went wrong!"
 msgstr ""
 
-#: lib/fusion_flow_web/components/layouts.ex:169
+#: lib/fusion_flow_ui/components/layouts.ex:301
 #, elixir-autogen, elixir-format
 msgid "Theme"
 msgstr ""
 
-#: lib/fusion_flow_web/live/dashboard_live.ex:71
-#, elixir-autogen, elixir-format
-msgid "Total Processed Nodes"
-msgstr ""
-
-#: lib/fusion_flow_web/live/dashboard_live.ex:53
+#: lib/fusion_flow_ui/live/dashboard_live/index.ex:54
 #, elixir-autogen, elixir-format
 msgid "Total Workflows"
 msgstr ""
 
-#: lib/fusion_flow_web/live/flow_list_live.ex:116
-#, elixir-autogen, elixir-format
-msgid "Updated"
-msgstr ""
-
-#: lib/fusion_flow_web/live/flow_live.ex:827
+#: lib/fusion_flow_ui/live/flow_live/editor.html.heex:24
 #, elixir-autogen, elixir-format
 msgid "View Error"
 msgstr ""
 
-#: lib/fusion_flow_web/live/flow_live.ex:824
+#: lib/fusion_flow_ui/live/flow_live/editor.html.heex:21
 #, elixir-autogen, elixir-format
 msgid "Waiting..."
 msgstr ""
 
-#: lib/fusion_flow_web/components/layouts.ex:274
+#: lib/fusion_flow_ui/components/layouts.ex:412
 #, elixir-autogen, elixir-format
 msgid "We can't find the internet"
 msgstr ""
 
-#: lib/fusion_flow_web/live/dashboard_live.ex:35
+#: lib/fusion_flow_ui/live/dashboard_live/index.ex:36
 #, elixir-autogen, elixir-format
 msgid "Welcome back to FusionFlow! Here's an overview of your automated logic."
 msgstr ""
 
-#: lib/fusion_flow_web/components/core_components.ex:75
+#: lib/fusion_flow_ui/components/core_components.ex:75
 #, elixir-autogen, elixir-format
 msgid "close"
 msgstr ""
 
-#: lib/fusion_flow_web/live/flow_list_live.ex:116
+#: lib/fusion_flow_ui/live/dashboard_live/index.ex:160
+#: lib/fusion_flow_ui/live/flow_live/index.ex:102
 #, elixir-autogen, elixir-format
 msgid "connections"
 msgstr ""
 
-#: lib/fusion_flow_web/live/flow_list_live.ex:114
+#: lib/fusion_flow_ui/live/dashboard_live/index.ex:158
+#: lib/fusion_flow_ui/live/flow_live/index.ex:102
 #, elixir-autogen, elixir-format
 msgid "nodes"
 msgstr ""
 
-#: lib/fusion_flow_web/live/flow_ai_creator_live.ex:349
-#, elixir-autogen, elixir-format
-msgid "Are you happy with this implementation plan?"
-msgstr ""
-
-#: lib/fusion_flow_web/live/flow_ai_creator_live.ex:322
-#, elixir-autogen, elixir-format
-msgid "Building flow and rendering graph..."
-msgstr ""
-
-#: lib/fusion_flow_web/live/flow_ai_creator_live.ex:14
-#: lib/fusion_flow_web/live/flow_ai_creator_live.ex:269
+#: lib/fusion_flow_ui/live/flow_live/ai_creator.ex:15
 #, elixir-autogen, elixir-format
 msgid "Create Flow with AI"
 msgstr ""
 
-#: lib/fusion_flow_web/components/layouts.ex:127
+#: lib/fusion_flow_ui/components/layouts.ex:244
 #, elixir-autogen, elixir-format
 msgid "Create with AI"
 msgstr ""
 
-#: lib/fusion_flow_web/live/flow_ai_creator_live.ex:273
-#, elixir-autogen, elixir-format
-msgid "Describe what you want to automate, and I will build the flow structure for you."
-msgstr ""
-
-#: lib/fusion_flow_web/live/flow_ai_creator_live.ex:208
-#, elixir-autogen, elixir-format
-msgid "Flow built successfully!"
-msgstr ""
-
-#: lib/fusion_flow_web/live/flow_ai_creator_live.ex:307
-#, elixir-autogen, elixir-format
-msgid "For example: 'Create a flow that listens to a webhook, logs the payload and saves it into the database.'"
-msgstr ""
-
-#: lib/fusion_flow_web/live/flow_ai_creator_live.ex:303
-#, elixir-autogen, elixir-format
-msgid "How can I help you today?"
-msgstr ""
-
-#: lib/fusion_flow_web/live/flow_ai_creator_live.ex:24
+#: lib/fusion_flow_ui/live/flow_live/ai_creator.ex:25
 #, elixir-autogen, elixir-format
 msgid "OpenAI API Key is not configured."
 msgstr ""
 
-#: lib/fusion_flow_web/live/flow_ai_creator_live.ex:359
-#, elixir-autogen, elixir-format
-msgid "Or reply below with adjustments"
-msgstr ""
-
-#: lib/fusion_flow_web/live/components/chat_component.ex:196
-#: lib/fusion_flow_web/live/flow_ai_creator_live.ex:388
+#: lib/fusion_flow_ui/live/components/chat_component.ex:197
 #, elixir-autogen, elixir-format
 msgid "Send"
 msgstr ""
 
-#: lib/fusion_flow_web/live/flow_ai_creator_live.ex:337
-#, elixir-autogen, elixir-format
-msgid "Thinking..."
-msgstr ""
-
-#: lib/fusion_flow_web/live/flow_ai_creator_live.ex:375
-#, elixir-autogen, elixir-format
-msgid "Type your prompt here..."
-msgstr ""
-
-#: lib/fusion_flow_web/live/flow_ai_creator_live.ex:356
-#, elixir-autogen, elixir-format
-msgid "Yes, Build This Flow"
-msgstr ""
-
-#: lib/fusion_flow_web/live/user_live/settings.ex:15
+#: lib/fusion_flow_ui/live/user_live/settings.ex:15
 #, elixir-autogen, elixir-format
 msgid "Account Settings"
 msgstr ""
 
-#: lib/fusion_flow_web/components/modals/execution_result_modal.ex:38
+#: lib/fusion_flow_ui/components/modals/execution_result_modal.ex:38
 #, elixir-autogen, elixir-format
 msgid "Back to Result"
 msgstr ""
 
-#: lib/fusion_flow_web/components/modals/code_editor_modal.ex:90
-#: lib/fusion_flow_web/components/modals/create_node_modal.ex:91
-#: lib/fusion_flow_web/components/modals/node_config_modal.ex:159
+#: lib/fusion_flow_ui/components/modals/code_editor_modal.ex:90
+#: lib/fusion_flow_ui/components/modals/create_node_modal.ex:92
+#: lib/fusion_flow_ui/components/modals/node_config_modal.ex:169
+#: lib/fusion_flow_ui/live/flow_live/ai_creator.ex:163
+#: lib/fusion_flow_ui/live/workspace_live/index.ex:551
 #, elixir-autogen, elixir-format
 msgid "Cancel"
 msgstr ""
 
-#: lib/fusion_flow_web/live/user_live/settings.ex:73
+#: lib/fusion_flow_ui/live/user_live/settings.ex:73
 #, elixir-autogen, elixir-format
 msgid "Change Email"
 msgstr ""
 
-#: lib/fusion_flow_web/live/user_live/settings.ex:84
+#: lib/fusion_flow_ui/live/user_live/settings.ex:84
 #, elixir-autogen, elixir-format
 msgid "Change Password"
 msgstr ""
 
-#: lib/fusion_flow_web/live/user_live/settings.ex:72
+#: lib/fusion_flow_ui/live/user_live/settings.ex:72
 #, elixir-autogen, elixir-format
 msgid "Changing..."
 msgstr ""
 
-#: lib/fusion_flow_web/components/modals/error_modal.ex:58
+#: lib/fusion_flow_ui/components/modals/error_modal.ex:58
 #, elixir-autogen, elixir-format
 msgid "Close"
 msgstr ""
 
-#: lib/fusion_flow_web/live/user_live/settings.ex:120
+#: lib/fusion_flow_ui/live/user_live/settings.ex:120
 #, elixir-autogen, elixir-format
 msgid "Confirm New Password"
 msgstr ""
 
-#: lib/fusion_flow_web/components/modals/execution_result_modal.ex:101
+#: lib/fusion_flow_ui/components/modals/execution_result_modal.ex:101
+#: lib/fusion_flow_ui/live/workspace_live/index.ex:631
 #, elixir-autogen, elixir-format
 msgid "Done"
 msgstr ""
 
-#: lib/fusion_flow_web/live/user_live/settings.ex:68
+#: lib/fusion_flow_ui/live/user_live/settings.ex:68
 #, elixir-autogen, elixir-format
 msgid "Email Address"
 msgstr ""
 
-#: lib/fusion_flow_web/live/user_live/settings.ex:88
+#: lib/fusion_flow_ui/live/user_live/settings.ex:88
 #, elixir-autogen, elixir-format
 msgid "Ensure your account is using a long, random password to stay secure."
 msgstr ""
 
-#: lib/fusion_flow_web/live/user_live/login.ex:54
-#: lib/fusion_flow_web/live/user_live/register.ex:69
-#: lib/fusion_flow_web/live/user_live/setup.ex:52
+#: lib/fusion_flow_ui/live/user_live/login.ex:54
+#: lib/fusion_flow_ui/live/user_live/register.ex:76
+#: lib/fusion_flow_ui/live/user_live/setup.ex:64
 #, elixir-autogen, elixir-format
 msgid "Enter your username"
 msgstr ""
 
-#: lib/fusion_flow_web/components/modals/execution_result_modal.ex:78
+#: lib/fusion_flow_ui/components/modals/execution_result_modal.ex:78
 #, elixir-autogen, elixir-format
 msgid "Inspect Full Context"
 msgstr ""
 
-#: lib/fusion_flow_web/components/modals/dependencies_modal.ex:131
+#: lib/fusion_flow_ui/components/modals/dependencies_modal.ex:131
 #, elixir-autogen, elixir-format
 msgid "Install"
 msgstr ""
 
-#: lib/fusion_flow_web/live/user_live/login.ex:72
+#: lib/fusion_flow_ui/live/user_live/login.ex:72
 #, elixir-autogen, elixir-format
 msgid "Log in"
 msgstr ""
 
-#: lib/fusion_flow_web/components/layouts.ex:233
+#: lib/fusion_flow_ui/components/layouts.ex:371
 #, elixir-autogen, elixir-format
 msgid "Log out"
 msgstr ""
 
-#: lib/fusion_flow_web/live/user_live/settings.ex:19
+#: lib/fusion_flow_ui/live/user_live/settings.ex:19
 #, elixir-autogen, elixir-format
 msgid "Manage your account settings, security, and preferences."
 msgstr ""
 
-#: lib/fusion_flow_web/live/user_live/settings.ex:113
+#: lib/fusion_flow_ui/live/user_live/settings.ex:113
 #, elixir-autogen, elixir-format
 msgid "New Password"
 msgstr ""
 
-#: lib/fusion_flow_web/live/user_live/login.ex:61
-#: lib/fusion_flow_web/live/user_live/register.ex:83
-#: lib/fusion_flow_web/live/user_live/setup.ex:66
+#: lib/fusion_flow_ui/live/user_live/login.ex:61
+#: lib/fusion_flow_ui/live/user_live/register.ex:90
+#: lib/fusion_flow_ui/live/user_live/setup.ex:78
 #, elixir-autogen, elixir-format
 msgid "Password"
 msgstr ""
 
-#: lib/fusion_flow_web/live/user_live/settings.ex:28
+#: lib/fusion_flow_ui/live/user_live/settings.ex:28
 #, elixir-autogen, elixir-format
 msgid "Profile Information"
 msgstr ""
 
-#: lib/fusion_flow_web/components/modals/dependencies_modal.ex:121
+#: lib/fusion_flow_ui/components/modals/dependencies_modal.ex:121
 #, elixir-autogen, elixir-format
 msgid "Restart Required"
 msgstr ""
 
-#: lib/fusion_flow_web/components/flow/flow_header.ex:115
-#: lib/fusion_flow_web/components/modals/code_editor_modal.ex:96
+#: lib/fusion_flow_ui/components/flow/flow_header.ex:109
+#: lib/fusion_flow_ui/components/modals/code_editor_modal.ex:96
 #, elixir-autogen, elixir-format
 msgid "Save Changes"
 msgstr ""
 
-#: lib/fusion_flow_web/components/modals/node_config_modal.ex:166
-#, elixir-autogen, elixir-format
-msgid "Save Configuration"
-msgstr ""
-
-#: lib/fusion_flow_web/live/user_live/settings.ex:51
-#: lib/fusion_flow_web/live/user_live/settings.ex:124
+#: lib/fusion_flow_ui/live/user_live/settings.ex:51
+#: lib/fusion_flow_ui/live/user_live/settings.ex:124
 #, elixir-autogen, elixir-format
 msgid "Saving..."
 msgstr ""
 
-#: lib/fusion_flow_web/components/layouts.ex:226
+#: lib/fusion_flow_ui/components/layouts.ex:364
 #, elixir-autogen, elixir-format
 msgid "Settings"
 msgstr ""
 
-#: lib/fusion_flow_web/live/user_live/login.ex:18
+#: lib/fusion_flow_ui/live/user_live/login.ex:18
 #, elixir-autogen, elixir-format
 msgid "Sign in to your account to continue"
 msgstr ""
 
-#: lib/fusion_flow_web/live/user_live/settings.ex:125
+#: lib/fusion_flow_ui/live/user_live/settings.ex:125
 #, elixir-autogen, elixir-format
 msgid "Update Password"
 msgstr ""
 
-#: lib/fusion_flow_web/live/user_live/settings.ex:52
+#: lib/fusion_flow_ui/live/user_live/settings.ex:52
 #, elixir-autogen, elixir-format
 msgid "Update Username"
 msgstr ""
 
-#: lib/fusion_flow_web/live/user_live/settings.ex:32
+#: lib/fusion_flow_ui/live/user_live/settings.ex:32
 #, elixir-autogen, elixir-format
 msgid "Update your public username and email address."
 msgstr ""
 
-#: lib/fusion_flow_web/live/user_live/index.ex:122
-#: lib/fusion_flow_web/live/user_live/login.ex:53
-#: lib/fusion_flow_web/live/user_live/register.ex:68
-#: lib/fusion_flow_web/live/user_live/settings.ex:47
-#: lib/fusion_flow_web/live/user_live/setup.ex:51
+#: lib/fusion_flow_ui/live/user_live/index.ex:326
+#: lib/fusion_flow_ui/live/user_live/login.ex:53
+#: lib/fusion_flow_ui/live/user_live/register.ex:75
+#: lib/fusion_flow_ui/live/user_live/settings.ex:47
+#: lib/fusion_flow_ui/live/user_live/setup.ex:63
 #, elixir-autogen, elixir-format
 msgid "Username"
 msgstr ""
 
-#: lib/fusion_flow_web/live/user_live/login.ex:11
+#: lib/fusion_flow_ui/live/user_live/login.ex:11
 #, elixir-autogen, elixir-format
 msgid "Welcome back"
 msgstr ""
 
-#: lib/fusion_flow_web/user_auth.ex:228
-#: lib/fusion_flow_web/user_auth.ex:305
+#: lib/fusion_flow_ui/user_auth.ex:228
+#: lib/fusion_flow_ui/user_auth.ex:308
 #, elixir-autogen, elixir-format
 msgid "You must log in to access this page."
 msgstr ""
 
-#: lib/fusion_flow_web/user_auth.ex:252
+#: lib/fusion_flow_ui/user_auth.ex:252
 #, elixir-autogen, elixir-format
 msgid "You must re-authenticate to access this page."
 msgstr ""
 
-#: lib/fusion_flow_web/live/user_live/login.ex:16
+#: lib/fusion_flow_ui/live/user_live/login.ex:16
 #, elixir-autogen, elixir-format
 msgid "You need to re-authenticate to perform sensitive actions."
 msgstr ""
 
-#: lib/fusion_flow_web/live/user_live/register.ex:125
-#: lib/fusion_flow_web/live/user_live/setup.ex:98
+#: lib/fusion_flow_ui/live/user_live/register.ex:130
+#: lib/fusion_flow_ui/live/user_live/setup.ex:114
 #, elixir-autogen, elixir-format
 msgid "Account created successfully. You can now log in."
 msgstr ""
 
-#: lib/fusion_flow_web/live/user_live/index.ex:128
+#: lib/fusion_flow_ui/live/user_live/index.ex:173
+#: lib/fusion_flow_ui/live/workspace_live/index.ex:611
 #, elixir-autogen, elixir-format
 msgid "Admin"
 msgstr ""
 
-#: lib/fusion_flow_web/live/user_live/index.ex:111
+#: lib/fusion_flow_ui/live/user_live/index.ex:312
 #, elixir-autogen, elixir-format
 msgid "All users"
 msgstr ""
 
-#: lib/fusion_flow_web/live/user_live/register.ex:107
+#: lib/fusion_flow_ui/live/user_live/register.ex:114
 #, elixir-autogen, elixir-format
 msgid "Back to log in"
 msgstr ""
 
-#: lib/fusion_flow_web/live/user_live/register.ex:90
-#: lib/fusion_flow_web/live/user_live/setup.ex:73
+#: lib/fusion_flow_ui/live/user_live/register.ex:97
+#: lib/fusion_flow_ui/live/user_live/setup.ex:85
 #, elixir-autogen, elixir-format
 msgid "Confirm password"
 msgstr ""
 
-#: lib/fusion_flow_web/live/flow_live.ex:833
+#: lib/fusion_flow_ui/live/flow_live/editor.html.heex:30
 #, elixir-autogen, elixir-format
 msgid "Copy"
 msgstr ""
 
-#: lib/fusion_flow_web/components/modals/create_node_modal.ex:18
-#: lib/fusion_flow_web/live/flow_live.ex:832
+#: lib/fusion_flow_ui/components/modals/create_node_modal.ex:19
+#: lib/fusion_flow_ui/live/flow_live/editor.html.heex:29
 #, elixir-autogen, elixir-format
 msgid "Create Node"
 msgstr ""
 
-#: lib/fusion_flow_web/live/user_live/register.ex:39
-#: lib/fusion_flow_web/live/user_live/register.ex:100
-#: lib/fusion_flow_web/live/user_live/setup.ex:83
+#: lib/fusion_flow_ui/live/user_live/register.ex:39
+#: lib/fusion_flow_ui/live/user_live/register.ex:107
+#: lib/fusion_flow_ui/live/user_live/setup.ex:99
 #, elixir-autogen, elixir-format
 msgid "Create account"
 msgstr ""
 
-#: lib/fusion_flow_web/live/user_live/setup.ex:38
-#: lib/fusion_flow_web/user_auth.ex:230
+#: lib/fusion_flow_ui/live/user_live/setup.ex:38
+#: lib/fusion_flow_ui/user_auth.ex:230
 #, elixir-autogen, elixir-format
 msgid "Create the first administrator account to get started."
 msgstr ""
 
-#: lib/fusion_flow_web/live/user_live/register.ex:52
+#: lib/fusion_flow_ui/live/user_live/register.ex:52
 #, elixir-autogen, elixir-format
 msgid "Create your account"
 msgstr ""
 
-#: lib/fusion_flow_web/live/flow_live.ex:835
+#: lib/fusion_flow_ui/live/flow_live/editor.html.heex:32
 #, elixir-autogen, elixir-format
 msgid "Delete Selected"
 msgstr ""
 
-#: lib/fusion_flow_web/live/flow_live.ex:838
+#: lib/fusion_flow_ui/live/flow_live/editor.html.heex:35
 #, elixir-autogen, elixir-format
 msgid "Delete connection"
 msgstr ""
 
-#: lib/fusion_flow_web/live/user_live/index.ex:125
-#: lib/fusion_flow_web/live/user_live/register.ex:76
-#: lib/fusion_flow_web/live/user_live/setup.ex:59
+#: lib/fusion_flow_ui/live/user_live/index.ex:332
+#: lib/fusion_flow_ui/live/user_live/register.ex:83
+#: lib/fusion_flow_ui/live/user_live/setup.ex:71
 #, elixir-autogen, elixir-format
 msgid "Email"
 msgstr ""
 
-#: lib/fusion_flow_web/live/user_live/register.ex:77
-#: lib/fusion_flow_web/live/user_live/setup.ex:60
+#: lib/fusion_flow_ui/live/user_live/register.ex:84
+#: lib/fusion_flow_ui/live/user_live/setup.ex:72
 #, elixir-autogen, elixir-format
 msgid "Enter your email"
 msgstr ""
 
-#: lib/fusion_flow_web/live/user_live/index.ex:38
+#: lib/fusion_flow_ui/live/user_live/index.ex:96
+#: lib/fusion_flow_ui/live/workspace_live/index.ex:149
+#: lib/fusion_flow_ui/live/workspace_live/index.ex:172
 #, elixir-autogen, elixir-format
 msgid "Failed to generate invite."
 msgstr ""
 
-#: lib/fusion_flow_web/live/user_live/index.ex:70
-#, elixir-autogen, elixir-format
-msgid "Generate a link to invite a new user. If you already have a valid invite, the same link is shown."
-msgstr ""
-
-#: lib/fusion_flow_web/live/user_live/index.ex:76
+#: lib/fusion_flow_ui/live/user_live/index.ex:194
 #, elixir-autogen, elixir-format
 msgid "Generate invite link"
 msgstr ""
 
-#: lib/fusion_flow_web/live/user_live/register.ex:15
+#: lib/fusion_flow_ui/live/user_live/register.ex:15
 #, elixir-autogen, elixir-format
 msgid "Invalid invite link."
 msgstr ""
 
-#: lib/fusion_flow_web/live/user_live/index.ex:67
-#, elixir-autogen, elixir-format
-msgid "Invite link"
-msgstr ""
-
-#: lib/fusion_flow_web/live/user_live/index.ex:35
-#, elixir-autogen, elixir-format
-msgid "Invite link generated. It expires in %{days} days."
-msgstr ""
-
-#: lib/fusion_flow_web/live/user_live/index.ex:131
+#: lib/fusion_flow_ui/live/user_live/index.ex:350
+#: lib/fusion_flow_ui/live/workspace_live/index.ex:378
 #, elixir-autogen, elixir-format
 msgid "Joined"
 msgstr ""
 
-#: lib/fusion_flow_web/live/user_live/index.ex:59
-#, elixir-autogen, elixir-format
-msgid "Manage users and invite new people. Invites expire in %{days} days."
-msgstr ""
-
-#: lib/fusion_flow_web/live/user_live/index.ex:148
+#: lib/fusion_flow_ui/live/user_live/index.ex:378
 #, elixir-autogen, elixir-format
 msgid "No"
 msgstr ""
 
-#: lib/fusion_flow_web/user_auth.ex:269
+#: lib/fusion_flow_ui/user_auth.ex:271
 #, elixir-autogen, elixir-format
 msgid "Only system administrators can access this page."
 msgstr ""
 
-#: lib/fusion_flow_web/live/user_live/index.ex:100
+#: lib/fusion_flow_ui/live/user_live/index.ex:236
 #, elixir-autogen, elixir-format
 msgid "Open link"
 msgstr ""
 
-#: lib/fusion_flow_web/live/flow_live.ex:834
+#: lib/fusion_flow_ui/live/flow_live/editor.html.heex:31
 #, elixir-autogen, elixir-format
 msgid "Paste"
 msgstr ""
 
-#: lib/fusion_flow_web/live/flow_live.ex:837
+#: lib/fusion_flow_ui/live/flow_live/editor.html.heex:34
 #, elixir-autogen, elixir-format
 msgid "Redo"
 msgstr ""
 
-#: lib/fusion_flow_web/live/user_live/setup.ex:22
+#: lib/fusion_flow_ui/live/user_live/setup.ex:22
 #, elixir-autogen, elixir-format
 msgid "Setup"
 msgstr ""
 
-#: lib/fusion_flow_web/live/user_live/setup.ex:34
+#: lib/fusion_flow_ui/live/user_live/setup.ex:34
 #, elixir-autogen, elixir-format
 msgid "Setup FusionFlow"
 msgstr ""
 
-#: lib/fusion_flow_web/live/user_live/setup.ex:11
+#: lib/fusion_flow_ui/live/user_live/setup.ex:11
 #, elixir-autogen, elixir-format
 msgid "Setup already completed. Please log in."
 msgstr ""
 
-#: lib/fusion_flow_web/live/user_live/register.ex:21
+#: lib/fusion_flow_ui/live/user_live/register.ex:21
 #, elixir-autogen, elixir-format
 msgid "This invite has already been used."
 msgstr ""
 
-#: lib/fusion_flow_web/live/user_live/register.ex:27
+#: lib/fusion_flow_ui/live/user_live/register.ex:27
 #, elixir-autogen, elixir-format
 msgid "This invite has expired."
 msgstr ""
 
-#: lib/fusion_flow_web/live/flow_live.ex:836
+#: lib/fusion_flow_ui/live/flow_live/editor.html.heex:33
 #, elixir-autogen, elixir-format
 msgid "Undo"
 msgstr ""
 
-#: lib/fusion_flow_web/components/layouts.ex:146
-#: lib/fusion_flow_web/live/user_live/index.ex:16
-#: lib/fusion_flow_web/live/user_live/index.ex:57
+#: lib/fusion_flow_ui/components/layouts.ex:278
 #, elixir-autogen, elixir-format
 msgid "Users"
 msgstr ""
 
-#: lib/fusion_flow_web/live/user_live/index.ex:81
+#: lib/fusion_flow_ui/live/user_live/index.ex:214
 #, elixir-autogen, elixir-format
 msgid "Valid until"
 msgstr ""
 
-#: lib/fusion_flow_web/live/user_live/index.ex:146
+#: lib/fusion_flow_ui/live/user_live/index.ex:375
 #, elixir-autogen, elixir-format
 msgid "Yes"
 msgstr ""
 
-#: lib/fusion_flow_web/live/user_live/register.ex:55
+#: lib/fusion_flow_ui/live/user_live/register.ex:61
 #, elixir-autogen, elixir-format
 msgid "You were invited to FusionFlow. Complete the form below."
 msgstr ""
 
-#: lib/fusion_flow_web/live/user_live/index.ex:114
+#: lib/fusion_flow_ui/live/user_live/index.ex:315
 #, elixir-autogen, elixir-format
 msgid "users"
 msgstr ""
 
-#: lib/fusion_flow_web/live/user_live/index.ex:90
-#, elixir-autogen, elixir-format
-msgid "Invite URL"
-msgstr ""
-
-#: lib/fusion_flow_web/user_auth.ex:324
+#: lib/fusion_flow_ui/user_auth.ex:327
 #, elixir-autogen, elixir-format
 msgid "You are already logged in."
 msgstr ""
 
-#: lib/fusion_flow_web/live/dashboard_live.ex:37
+#: lib/fusion_flow_ui/live/dashboard_live/index.ex:38
 #, elixir-autogen, elixir-format
 msgid "Welcome back to FusionFlow! Contact an administrator to access flows."
+msgstr ""
+
+#: lib/fusion_flow_ui/live/workspace_live/index.ex:183
+#, elixir-autogen, elixir-format
+msgid "%{username} added to workspace as %{role}!"
+msgstr ""
+
+#: lib/fusion_flow_ui/live/flow_live/ai_creator.ex:132
+#, elixir-autogen, elixir-format
+msgid "AI Error: %{reason}"
+msgstr ""
+
+#: lib/fusion_flow_ui/live/flow_live/ai_creator.ex:155
+#, elixir-autogen, elixir-format
+msgid "AI Flow Creator"
+msgstr ""
+
+#: lib/fusion_flow_ui/live/flow_live/ai_creator.ex:119
+#, elixir-autogen, elixir-format
+msgid "AI Stream failed: %{reason}"
+msgstr ""
+
+#: lib/fusion_flow_ui/live/api_key_live/index.ex:41
+#, elixir-autogen, elixir-format
+msgid "API key created. Copy it now; it will not be shown again."
+msgstr ""
+
+#: lib/fusion_flow_ui/components/layouts.ex:257
+#: lib/fusion_flow_ui/live/api_key_live/index.ex:18
+#: lib/fusion_flow_ui/live/api_key_live/index.ex:74
+#, elixir-autogen, elixir-format
+msgid "API keys"
+msgstr ""
+
+#: lib/fusion_flow_ui/live/user_live/register.ex:138
+#, elixir-autogen, elixir-format
+msgid "Account was not created. Please try again or contact support."
+msgstr ""
+
+#: lib/fusion_flow_ui/live/user_live/index.ex:287
+#: lib/fusion_flow_ui/live/workspace_live/index.ex:482
+#, elixir-autogen, elixir-format
+msgid "Active"
+msgstr ""
+
+#: lib/fusion_flow_ui/live/dashboard_live/index.ex:69
+#, elixir-autogen, elixir-format
+msgid "Active visual orchestrations"
+msgstr ""
+
+#: lib/fusion_flow_ui/live/workspace_live/index.ex:634
+#, elixir-autogen, elixir-format
+msgid "Add / Generate Link"
+msgstr ""
+
+#: lib/fusion_flow_ui/live/flow_live/ai_creator.ex:290
+#, elixir-autogen, elixir-format
+msgid "Approve & Create Flow"
+msgstr ""
+
+#: lib/fusion_flow_ui/live/workspace_live/index.ex:430
+#, elixir-autogen, elixir-format
+msgid "Are you sure you want to remove this member?"
+msgstr ""
+
+#: lib/fusion_flow_ui/live/api_key_live/index.ex:246
+#, elixir-autogen, elixir-format
+msgid "Are you sure you want to revoke this API key?"
+msgstr ""
+
+#: lib/fusion_flow_ui/live/dashboard_live/index.ex:93
+#, elixir-autogen, elixir-format
+msgid "Available automation blocks"
+msgstr ""
+
+#: lib/fusion_flow_ui/live/dashboard_live/index.ex:115
+#, elixir-autogen, elixir-format
+msgid "BEAM Execution cluster ready"
+msgstr ""
+
+#: lib/fusion_flow_ui/live/workspace_live/index.ex:218
+#, elixir-autogen, elixir-format
+msgid "Cannot demote the last owner of the workspace."
+msgstr ""
+
+#: lib/fusion_flow_ui/live/workspace_live/index.ex:242
+#, elixir-autogen, elixir-format
+msgid "Cannot remove the last owner of the workspace."
+msgstr ""
+
+#: lib/fusion_flow_ui/live/api_key_live/index.ex:147
+#, elixir-autogen, elixir-format
+msgid "Choose which endpoints this key is authorized to access."
+msgstr ""
+
+#: lib/fusion_flow_ui/live/flow_live/ai_creator.ex:273
+#, elixir-autogen, elixir-format
+msgid "Click approve to create this flow and open the visual canvas."
+msgstr ""
+
+#: lib/fusion_flow_ui/live/execution_live/index.ex:160
+#, elixir-autogen, elixir-format
+msgid "Completed"
+msgstr ""
+
+#: lib/fusion_flow_ui/live/api_key_live/index.ex:89
+#, elixir-autogen, elixir-format
+msgid "Copy this token now"
+msgstr ""
+
+#: lib/fusion_flow_ui/live/api_key_live/index.ex:44
+#, elixir-autogen, elixir-format
+msgid "Could not create API key."
+msgstr ""
+
+#: lib/fusion_flow_ui/live/api_key_live/index.ex:60
+#, elixir-autogen, elixir-format
+msgid "Could not revoke API key."
+msgstr ""
+
+#: lib/fusion_flow_ui/live/workspace_live/index.ex:512
+#, elixir-autogen, elixir-format
+msgid "Create New Workspace"
+msgstr ""
+
+#: lib/fusion_flow_ui/live/workspace_live/index.ex:554
+#, elixir-autogen, elixir-format
+msgid "Create Workspace"
+msgstr ""
+
+#: lib/fusion_flow_ui/live/flow_live/ai_creator.ex:197
+#: lib/fusion_flow_ui/live/flow_live/ai_creator.ex:201
+#, elixir-autogen, elixir-format
+msgid "Create a flow with a webhook that receives data, and logs the output"
+msgstr ""
+
+#: lib/fusion_flow_ui/live/api_key_live/index.ex:107
+#, elixir-autogen, elixir-format
+msgid "Create key"
+msgstr ""
+
+#: lib/fusion_flow_ui/live/api_key_live/index.ex:287
+#, elixir-autogen, elixir-format
+msgid "Create, update and delete workflows."
+msgstr ""
+
+#: lib/fusion_flow_ui/live/api_key_live/index.ex:200
+#, elixir-autogen, elixir-format
+msgid "Created"
+msgstr ""
+
+#: lib/fusion_flow_ui/live/execution_live/index.ex:133
+#, elixir-autogen, elixir-format
+msgid "Deleted flow"
+msgstr ""
+
+#: lib/fusion_flow_ui/live/flow_live/ai_creator.ex:309
+#, elixir-autogen, elixir-format
+msgid "Describe changes or explain what the flow should do..."
+msgstr ""
+
+#: lib/fusion_flow_ui/live/flow_live/ai_creator.ex:158
+#, elixir-autogen, elixir-format
+msgid "Describe the workflow you want, and let AI build the nodes and connections."
+msgstr ""
+
+#: lib/fusion_flow_ui/components/flow/node_sidebar.ex:95
+#, elixir-autogen, elixir-format
+msgid "Drag and drop onto the canvas to add"
+msgstr ""
+
+#: lib/fusion_flow_ui/live/dashboard_live/index.ex:169
+#, elixir-autogen, elixir-format
+msgid "Edit"
+msgstr ""
+
+#: lib/fusion_flow_ui/live/user_live/index.ex:167
+#: lib/fusion_flow_ui/live/workspace_live/index.ex:609
+#, elixir-autogen, elixir-format
+msgid "Editor"
+msgstr ""
+
+#: lib/fusion_flow_ui/live/workspace_live/index.ex:586
+#, elixir-autogen, elixir-format
+msgid "Email or Username (Optional)"
+msgstr ""
+
+#: lib/fusion_flow_ui/live/dashboard_live/index.ex:100
+#, elixir-autogen, elixir-format
+msgid "Engine Status"
+msgstr ""
+
+#: lib/fusion_flow_ui/live/execution_live/index.ex:25
+#, elixir-autogen, elixir-format
+msgid "Execution"
+msgstr ""
+
+#: lib/fusion_flow_ui/live/execution_live/index.ex:170
+#, elixir-autogen, elixir-format
+msgid "Execution Error"
+msgstr ""
+
+#: lib/fusion_flow_ui/components/layouts.ex:224
+#: lib/fusion_flow_ui/live/execution_live/index.ex:8
+#: lib/fusion_flow_ui/live/execution_live/index.ex:32
+#: lib/fusion_flow_ui/live/execution_live/index.ex:45
+#, elixir-autogen, elixir-format
+msgid "Executions"
+msgstr ""
+
+#: lib/fusion_flow_ui/live/api_key_live/index.ex:184
+#, elixir-autogen, elixir-format
+msgid "Existing keys"
+msgstr ""
+
+#: lib/fusion_flow_ui/live/api_key_live/index.ex:126
+#, elixir-autogen, elixir-format
+msgid "Expiration"
+msgstr ""
+
+#: lib/fusion_flow_ui/live/api_key_live/index.ex:201
+#: lib/fusion_flow_ui/live/user_live/index.ex:259
+#: lib/fusion_flow_ui/live/workspace_live/index.ex:458
+#, elixir-autogen, elixir-format
+msgid "Expires"
+msgstr ""
+
+#: lib/fusion_flow_ui/live/workspace_live/index.ex:198
+#, elixir-autogen, elixir-format
+msgid "Failed to add member."
+msgstr ""
+
+#: lib/fusion_flow_ui/live/flow_live/ai_creator.ex:84
+#, elixir-autogen, elixir-format
+msgid "Failed to create flow from AI."
+msgstr ""
+
+#: lib/fusion_flow_ui/live/workspace_live/index.ex:125
+#, elixir-autogen, elixir-format
+msgid "Failed to create workspace:"
+msgstr ""
+
+#: lib/fusion_flow_ui/live/workspace_live/index.ex:224
+#, elixir-autogen, elixir-format
+msgid "Failed to update member role."
+msgstr ""
+
+#: lib/fusion_flow_ui/live/workspace_live/index.ex:100
+#, elixir-autogen, elixir-format
+msgid "Failed to update workspace."
+msgstr ""
+
+#: lib/fusion_flow_ui/live/flow_live/ai_creator.ex:206
+#: lib/fusion_flow_ui/live/flow_live/ai_creator.ex:210
+#, elixir-autogen, elixir-format
+msgid "Fetch data via HTTP request and run Python evaluation logic"
+msgstr ""
+
+#: lib/fusion_flow_ui/live/execution_live/index.ex:124
+#, elixir-autogen, elixir-format
+msgid "Flow"
+msgstr ""
+
+#: lib/fusion_flow_ui/live/flow_live/ai_creator.ex:270
+#, elixir-autogen, elixir-format
+msgid "Flow blueprint is ready!"
+msgstr ""
+
+#: lib/fusion_flow_ui/live/flow_live/ai_creator.ex:80
+#, elixir-autogen, elixir-format
+msgid "Flow created successfully!"
+msgstr ""
+
+#: lib/fusion_flow_ui/live/execution_live/index.ex:56
+#, elixir-autogen, elixir-format
+msgid "Flows"
+msgstr ""
+
+#: lib/fusion_flow_ui/live/api_key_live/index.ex:175
+#, elixir-autogen, elixir-format
+msgid "Generate API key"
+msgstr ""
+
+#: lib/fusion_flow_ui/live/flow_live/index.ex:80
+#, elixir-autogen, elixir-format
+msgid "Get started by creating your first visual automation workflow."
+msgstr ""
+
+#: lib/fusion_flow_ui/live/flow_live/ai_creator.ex:186
+#, elixir-autogen, elixir-format
+msgid "How can I help you automate today?"
+msgstr ""
+
+#: lib/fusion_flow_ui/live/execution_live/index.ex:179
+#, elixir-autogen, elixir-format
+msgid "Input Payload"
+msgstr ""
+
+#: lib/fusion_flow_ui/live/workspace_live/index.ex:315
+#, elixir-autogen, elixir-format
+msgid "Invite / Add Member"
+msgstr ""
+
+#: lib/fusion_flow_ui/live/workspace_live/index.ex:571
+#, elixir-autogen, elixir-format
+msgid "Invite / Add Member to %{name}"
+msgstr ""
+
+#: lib/fusion_flow_ui/live/user_live/index.ex:87
+#, elixir-autogen, elixir-format
+msgid "Invite link generated for %{workspace} (%{role}). It expires in %{days} days."
+msgstr ""
+
+#: lib/fusion_flow_ui/live/user_live/index.ex:130
+#, elixir-autogen, elixir-format
+msgid "Invite to Current Workspace"
+msgstr ""
+
+#: lib/fusion_flow_ui/live/api_key_live/index.ex:202
+#, elixir-autogen, elixir-format
+msgid "Last used"
+msgstr ""
+
+#: lib/fusion_flow_ui/live/user_live/index.ex:204
+#, elixir-autogen, elixir-format
+msgid "Latest Generated Link:"
+msgstr ""
+
+#: lib/fusion_flow_ui/live/workspace_live/index.ex:591
+#, elixir-autogen, elixir-format
+msgid "Leave empty to generate a shareable link"
+msgstr ""
+
+#: lib/fusion_flow_ui/live/user_live/index.ex:261
+#: lib/fusion_flow_ui/live/workspace_live/index.ex:460
+#, elixir-autogen, elixir-format
+msgid "Link"
+msgstr ""
+
+#: lib/fusion_flow_ui/live/user_live/setup.ex:52
+#, elixir-autogen, elixir-format
+msgid "LiveView is not connected yet. Check that JavaScript is enabled and that assets loaded correctly before creating the account."
+msgstr ""
+
+#: lib/fusion_flow_ui/live/api_key_live/index.ex:92
+#, elixir-autogen, elixir-format
+msgid "Make sure to copy your key now. You will not be able to see it again."
+msgstr ""
+
+#: lib/fusion_flow_ui/live/api_key_live/index.ex:80
+#, elixir-autogen, elixir-format
+msgid "Manage API keys used by external applications to trigger workflows and query nodes."
+msgstr ""
+
+#: lib/fusion_flow_ui/live/user_live/index.ex:119
+#, elixir-autogen, elixir-format
+msgid "Manage platform users and generate invitations for your current active workspace."
+msgstr ""
+
+#: lib/fusion_flow_ui/live/workspace_live/index.ex:296
+#, elixir-autogen, elixir-format
+msgid "Manage team members, roles, and settings for %{name}."
+msgstr ""
+
+#: lib/fusion_flow_ui/live/workspace_live/index.ex:376
+#, elixir-autogen, elixir-format
+msgid "Member"
+msgstr ""
+
+#: lib/fusion_flow_ui/live/workspace_live/index.ex:237
+#, elixir-autogen, elixir-format
+msgid "Member removed from workspace."
+msgstr ""
+
+#: lib/fusion_flow_ui/live/workspace_live/index.ex:213
+#, elixir-autogen, elixir-format
+msgid "Member role updated."
+msgstr ""
+
+#: lib/fusion_flow_ui/live/api_key_live/index.ex:115
+#: lib/fusion_flow_ui/live/api_key_live/index.ex:197
+#, elixir-autogen, elixir-format
+msgid "Name"
+msgstr ""
+
+#: lib/fusion_flow_ui/live/api_key_live/index.ex:227
+#: lib/fusion_flow_ui/live/api_key_live/index.ex:234
+#, elixir-autogen, elixir-format
+msgid "Never"
+msgstr ""
+
+#: lib/fusion_flow_ui/components/layouts.ex:152
+#: lib/fusion_flow_ui/live/workspace_live/index.ex:307
+#, elixir-autogen, elixir-format
+msgid "New Workspace"
+msgstr ""
+
+#: lib/fusion_flow_ui/live/user_live/index.ex:133
+#, elixir-autogen, elixir-format
+msgid "New members will join your current workspace (%{name}) with the specified role."
+msgstr ""
+
+#: lib/fusion_flow_ui/live/api_key_live/index.ex:190
+#, elixir-autogen, elixir-format
+msgid "No active API keys found."
+msgstr ""
+
+#: lib/fusion_flow_ui/live/execution_live/index.ex:78
+#, elixir-autogen, elixir-format
+msgid "No executions recorded yet."
+msgstr ""
+
+#: lib/fusion_flow_ui/live/flow_live/ai_creator.ex:88
+#, elixir-autogen, elixir-format
+msgid "No flow data to approve."
+msgstr ""
+
+#: lib/fusion_flow_ui/live/dashboard_live/index.ex:136
+#, elixir-autogen, elixir-format
+msgid "No flows created yet."
+msgstr ""
+
+#: lib/fusion_flow_ui/components/flow/node_sidebar.ex:78
+#, elixir-autogen, elixir-format
+msgid "No nodes found"
+msgstr ""
+
+#: lib/fusion_flow_ui/live/execution_live/index.ex:195
+#, elixir-autogen, elixir-format
+msgid "Node Logs"
+msgstr ""
+
+#: lib/fusion_flow_ui/live/dashboard_live/index.ex:113
+#, elixir-autogen, elixir-format
+msgid "Online"
+msgstr ""
+
+#: lib/fusion_flow_ui/live/user_live/index.ex:297
+#: lib/fusion_flow_ui/live/workspace_live/index.ex:492
+#, elixir-autogen, elixir-format
+msgid "Open"
+msgstr ""
+
+#: lib/fusion_flow_ui/live/flow_live/index.ex:118
+#, elixir-autogen, elixir-format
+msgid "Open Flow"
+msgstr ""
+
+#: lib/fusion_flow_ui/live/workspace_live/index.ex:449
+#, elixir-autogen, elixir-format
+msgid "Pending Invitations"
+msgstr ""
+
+#: lib/fusion_flow_ui/live/workspace_live/index.ex:367
+#, elixir-autogen, elixir-format
+msgid "People who have access to workflows and resources in this workspace."
+msgstr ""
+
+#: lib/fusion_flow_ui/live/user_live/index.ex:344
+#, elixir-autogen, elixir-format
+msgid "Platform Admin"
+msgstr ""
+
+#: lib/fusion_flow_ui/live/api_key_live/index.ex:198
+#, elixir-autogen, elixir-format
+msgid "Prefix"
+msgstr ""
+
+#: lib/fusion_flow_ui/live/workspace_live/index.ex:595
+#, elixir-autogen, elixir-format
+msgid "Provide an email/username to add immediately, or leave empty to generate an open invite link."
+msgstr ""
+
+#: lib/fusion_flow_ui/live/user_live/index.ex:275
+#: lib/fusion_flow_ui/live/workspace_live/index.ex:470
+#, elixir-autogen, elixir-format
+msgid "Public Link"
+msgstr ""
+
+#: lib/fusion_flow_ui/live/api_key_live/index.ex:290
+#, elixir-autogen, elixir-format
+msgid "Read registered node definitions."
+msgstr ""
+
+#: lib/fusion_flow_ui/live/api_key_live/index.ex:285
+#, elixir-autogen, elixir-format
+msgid "Read workflow details and list workflows."
+msgstr ""
+
+#: lib/fusion_flow_ui/live/api_key_live/index.ex:288
+#, elixir-autogen, elixir-format
+msgid "Read workflow executions and statuses."
+msgstr ""
+
+#: lib/fusion_flow_ui/components/flow/node_sidebar.ex:39
+#: lib/fusion_flow_ui/live/execution_live/index.ex:65
+#, elixir-autogen, elixir-format
+msgid "Recent"
+msgstr ""
+
+#: lib/fusion_flow_ui/live/dashboard_live/index.ex:123
+#, elixir-autogen, elixir-format
+msgid "Recent Flows"
+msgstr ""
+
+#: lib/fusion_flow_ui/live/user_live/index.ex:258
+#: lib/fusion_flow_ui/live/workspace_live/index.ex:457
+#, elixir-autogen, elixir-format
+msgid "Recipient"
+msgstr ""
+
+#: lib/fusion_flow_ui/live/user_live/index.ex:180
+#, elixir-autogen, elixir-format
+msgid "Recipient Email (Optional)"
+msgstr ""
+
+#: lib/fusion_flow_ui/live/workspace_live/index.ex:433
+#, elixir-autogen, elixir-format
+msgid "Remove"
+msgstr ""
+
+#: lib/fusion_flow_ui/live/workspace_live/index.ex:352
+#, elixir-autogen, elixir-format
+msgid "Rename"
+msgstr ""
+
+#: lib/fusion_flow_ui/live/execution_live/index.ex:186
+#, elixir-autogen, elixir-format
+msgid "Result / Output"
+msgstr ""
+
+#: lib/fusion_flow_ui/live/api_key_live/index.ex:248
+#, elixir-autogen, elixir-format
+msgid "Revoke"
+msgstr ""
+
+#: lib/fusion_flow_ui/live/api_key_live/index.ex:57
+#: lib/fusion_flow_ui/live/api_key_live/index.ex:239
+#, elixir-autogen, elixir-format
+msgid "Revoked"
+msgstr ""
+
+#: lib/fusion_flow_ui/live/user_live/index.ex:257
+#: lib/fusion_flow_ui/live/workspace_live/index.ex:377
+#: lib/fusion_flow_ui/live/workspace_live/index.ex:456
+#: lib/fusion_flow_ui/live/workspace_live/index.ex:603
+#, elixir-autogen, elixir-format
+msgid "Role"
+msgstr ""
+
+#: lib/fusion_flow_ui/live/user_live/index.ex:160
+#, elixir-autogen, elixir-format
+msgid "Role in Workspace"
+msgstr ""
+
+#: lib/fusion_flow_ui/components/modals/node_config_modal.ex:175
+#, elixir-autogen, elixir-format
+msgid "Save"
+msgstr ""
+
+#: lib/fusion_flow_ui/live/api_key_live/index.ex:134
+#: lib/fusion_flow_ui/live/api_key_live/index.ex:199
+#, elixir-autogen, elixir-format
+msgid "Scopes"
+msgstr ""
+
+#: lib/fusion_flow_ui/components/flow/node_sidebar.ex:28
+#, elixir-autogen, elixir-format
+msgid "Search nodes"
+msgstr ""
+
+#: lib/fusion_flow_ui/live/execution_live/index.ex:219
+#, elixir-autogen, elixir-format
+msgid "Select an execution from the list to view its payload, result, and logs."
+msgstr ""
+
+#: lib/fusion_flow_ui/live/workspace_live/index.ex:538
+#, elixir-autogen, elixir-format
+msgid "Slug (URL identifier)"
+msgstr ""
+
+#: lib/fusion_flow_ui/live/execution_live/index.ex:154
+#, elixir-autogen, elixir-format
+msgid "Started"
+msgstr ""
+
+#: lib/fusion_flow_ui/live/user_live/index.ex:260
+#: lib/fusion_flow_ui/live/workspace_live/index.ex:459
+#, elixir-autogen, elixir-format
+msgid "Status"
+msgstr ""
+
+#: lib/fusion_flow_ui/components/layouts.ex:104
+#: lib/fusion_flow_ui/components/layouts.ex:117
+#, elixir-autogen, elixir-format
+msgid "Switch Workspace"
+msgstr ""
+
+#: lib/fusion_flow_ui/live/api_key_live/index.ex:76
+#, elixir-autogen, elixir-format
+msgid "System admins only"
+msgstr ""
+
+#: lib/fusion_flow_ui/live/workspace_live/index.ex:364
+#, elixir-autogen, elixir-format
+msgid "Team Members"
+msgstr ""
+
+#: lib/fusion_flow_ui/live/flow_live/ai_creator.ex:246
+#, elixir-autogen, elixir-format
+msgid "Thinking and designing your flow..."
+msgstr ""
+
+#: lib/fusion_flow_ui/live/api_key_live/index.ex:143
+#, elixir-autogen, elixir-format
+msgid "Toggle all"
+msgstr ""
+
+#: lib/fusion_flow_ui/live/dashboard_live/index.ex:76
+#, elixir-autogen, elixir-format
+msgid "Total Nodes"
+msgstr ""
+
+#: lib/fusion_flow_ui/live/execution_live/index.ex:48
+#, elixir-autogen, elixir-format
+msgid "Track queued, running, succeeded, and failed workflow runs."
+msgstr ""
+
+#: lib/fusion_flow_ui/live/api_key_live/index.ex:289
+#, elixir-autogen, elixir-format
+msgid "Trigger workflow executions."
+msgstr ""
+
+#: lib/fusion_flow_ui/live/workspace_live/index.ex:195
+#, elixir-autogen, elixir-format
+msgid "Unauthorized to add members."
+msgstr ""
+
+#: lib/fusion_flow_ui/live/workspace_live/index.ex:221
+#, elixir-autogen, elixir-format
+msgid "Unauthorized to change member roles."
+msgstr ""
+
+#: lib/fusion_flow_ui/live/workspace_live/index.ex:245
+#, elixir-autogen, elixir-format
+msgid "Unauthorized to remove members."
+msgstr ""
+
+#: lib/fusion_flow_ui/live/user_live/index.ex:283
+#: lib/fusion_flow_ui/live/workspace_live/index.ex:478
+#, elixir-autogen, elixir-format
+msgid "Used"
+msgstr ""
+
+#: lib/fusion_flow_ui/live/workspace_live/index.ex:192
+#, elixir-autogen, elixir-format
+msgid "User is already a member of this workspace."
+msgstr ""
+
+#: lib/fusion_flow_ui/live/workspace_live/index.ex:167
+#, elixir-autogen, elixir-format
+msgid "User not registered yet. An invite link has been generated below!"
+msgstr ""
+
+#: lib/fusion_flow_ui/live/user_live/index.ex:116
+#, elixir-autogen, elixir-format
+msgid "Users & Invitations"
+msgstr ""
+
+#: lib/fusion_flow_ui/live/user_live/index.ex:39
+#, elixir-autogen, elixir-format
+msgid "Users & Invites"
+msgstr ""
+
+#: lib/fusion_flow_ui/live/dashboard_live/index.ex:129
+#, elixir-autogen, elixir-format
+msgid "View all"
+msgstr ""
+
+#: lib/fusion_flow_ui/live/user_live/index.ex:170
+#: lib/fusion_flow_ui/live/workspace_live/index.ex:610
+#, elixir-autogen, elixir-format
+msgid "Viewer"
+msgstr ""
+
+#: lib/fusion_flow_ui/live/user_live/index.ex:145
+#: lib/fusion_flow_ui/live/user_live/index.ex:256
+#, elixir-autogen, elixir-format
+msgid "Workspace"
+msgstr ""
+
+#: lib/fusion_flow_ui/live/workspace_live/index.ex:618
+#, elixir-autogen, elixir-format
+msgid "Workspace Invitation Link:"
+msgstr ""
+
+#: lib/fusion_flow_ui/live/user_live/index.ex:249
+#, elixir-autogen, elixir-format
+msgid "Workspace Invitations"
+msgstr ""
+
+#: lib/fusion_flow_ui/live/workspace_live/index.ex:348
+#: lib/fusion_flow_ui/live/workspace_live/index.ex:525
+#, elixir-autogen, elixir-format
+msgid "Workspace Name"
+msgstr ""
+
+#: lib/fusion_flow_ui/live/user_live/index.ex:338
+#, elixir-autogen, elixir-format
+msgid "Workspace Role"
+msgstr ""
+
+#: lib/fusion_flow_ui/components/layouts.ex:68
+#: lib/fusion_flow_ui/components/layouts.ex:159
+#: lib/fusion_flow_ui/live/workspace_live/index.ex:38
+#: lib/fusion_flow_ui/live/workspace_live/index.ex:285
+#, elixir-autogen, elixir-format
+msgid "Workspace Settings"
+msgstr ""
+
+#: lib/fusion_flow_ui/live/workspace_live/index.ex:117
+#, elixir-autogen, elixir-format
+msgid "Workspace created successfully!"
+msgstr ""
+
+#: lib/fusion_flow_ui/live/workspace_live/index.ex:144
+#, elixir-autogen, elixir-format
+msgid "Workspace invitation link generated successfully!"
+msgstr ""
+
+#: lib/fusion_flow_ui/live/workspace_live/index.ex:96
+#, elixir-autogen, elixir-format
+msgid "Workspace updated successfully!"
+msgstr ""
+
+#: lib/fusion_flow_ui/components/layouts.ex:194
+#, elixir-autogen, elixir-format
+msgid "Workspaces"
+msgstr ""
+
+#: lib/fusion_flow_ui/components/layouts.ex:358
+#, elixir-autogen, elixir-format
+msgid "Workspaces & Team"
+msgstr ""
+
+#: lib/fusion_flow_ui/live/flow_live/ai_creator.ex:189
+#, elixir-autogen, elixir-format
+msgid "You can say things like \"Fetch data from an API and send a webhook\" or \"Set a variable and evaluate some python code\"."
+msgstr ""
+
+#: lib/fusion_flow_ui/live/user_live/register.ex:56
+#, elixir-autogen, elixir-format
+msgid "You were invited to join %{workspace} as %{role}."
+msgstr ""
+
+#: lib/fusion_flow_ui/live/api_key_live/index.ex:89
+#, elixir-autogen, elixir-format
+msgid "Your new API key"
+msgstr ""
+
+#: lib/fusion_flow_ui/live/api_key_live/index.ex:116
+#, elixir-autogen, elixir-format
+msgid "e.g. Production Webhook"
 msgstr ""

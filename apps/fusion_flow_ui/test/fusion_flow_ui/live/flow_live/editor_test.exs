@@ -26,8 +26,10 @@ defmodule FusionFlowUI.FlowLive.EditorTest do
       assert path == ~p"/users/log-in"
     end
 
-    test "redirects non-admin to root" do
+    test "redirects when flow does not belong to user workspace" do
       user = user_fixture()
+      other_user = user_fixture()
+      Process.put(:fusion_flow_owner, other_user)
       flow = flow_fixture()
 
       conn =
@@ -35,8 +37,8 @@ defmodule FusionFlowUI.FlowLive.EditorTest do
         |> Phoenix.ConnTest.init_test_session(%{})
         |> log_in_user(user)
 
-      assert {:error, {:redirect, %{to: path}}} = live(conn, ~p"/flows/#{flow.id}")
-      assert path == ~p"/"
+      assert {:error, {:live_redirect, %{to: path}}} = live(conn, ~p"/flows/#{flow.id}")
+      assert path == ~p"/flows"
     end
 
     test "loads flow and displays its name", %{conn: conn} do

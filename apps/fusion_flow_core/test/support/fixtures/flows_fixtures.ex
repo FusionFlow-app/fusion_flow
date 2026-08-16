@@ -1,5 +1,6 @@
 defmodule FusionFlowCore.FlowsFixtures do
   alias FusionFlowCore.Flows
+  alias FusionFlowCore.Workspaces
 
   def flow_fixture(attrs \\ %{}) do
     attrs = Enum.into(attrs, %{})
@@ -9,6 +10,14 @@ defmodule FusionFlowCore.FlowsFixtures do
         Process.get(:fusion_flow_owner) || FusionFlowCore.AccountsFixtures.user_fixture()
       end)
 
+    workspace_id =
+      Map.get_lazy(attrs, :workspace_id, fn ->
+        case Workspaces.ensure_default_workspace(user) do
+          {:ok, %{workspace: ws}} -> ws.id
+          _ -> nil
+        end
+      end)
+
     {:ok, flow} =
       attrs
       |> Map.delete(:user)
@@ -16,7 +25,8 @@ defmodule FusionFlowCore.FlowsFixtures do
         name: "Test Flow",
         nodes: [],
         connections: [],
-        user_id: user.id
+        user_id: user.id,
+        workspace_id: workspace_id
       })
       |> normalize_graph()
       |> Flows.create_flow()
@@ -32,6 +42,7 @@ defmodule FusionFlowCore.FlowsFixtures do
       |> Map.delete(:flow)
       |> Enum.into(%{
         flow_id: flow.id,
+        workspace_id: flow.workspace_id,
         input: %{"source" => "test"}
       })
 

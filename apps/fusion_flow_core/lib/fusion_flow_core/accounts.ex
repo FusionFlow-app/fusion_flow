@@ -115,6 +115,20 @@ defmodule FusionFlowCore.Accounts do
     Repo.transaction(fn ->
       case register_user(attrs) do
         {:ok, user} ->
+          # Ensure user has their own personal default workspace
+          FusionFlowCore.Workspaces.ensure_default_workspace(user)
+
+          # If invited to a specific workspace, add membership with assigned role
+          if invite.workspace_id do
+            %FusionFlowCore.Workspaces.Member{}
+            |> FusionFlowCore.Workspaces.Member.changeset(%{
+              workspace_id: invite.workspace_id,
+              user_id: user.id,
+              role: invite.role || "editor"
+            })
+            |> Repo.insert()
+          end
+
           case mark_invite_used(invite) do
             {:ok, _updated_invite} ->
               user
@@ -394,40 +408,55 @@ defmodule FusionFlowCore.Accounts do
 
   @doc """
   Returns an existing valid invite for the given admin user, or creates a new one.
-  Only one unused, non-expired invite per admin is kept; reusing it avoids creating duplicates.
+  Accepts optional `attrs` map with `:workspace_id`, `:role`, `:email`.
   """
-  def create_invite_or_reuse(%User{id: user_id} = admin) do
+  def create_invite_or_reuse(%User{id: user_id} = admin, attrs \\ %{}) do
     unless User.system_admin?(admin) do
       {:error, :forbidden}
     else
       now = DateTime.utc_now()
       validity_days = Invite.invite_validity_days()
       expires_at = DateTime.add(now, validity_days, :day)
+      workspace_id = Map.get(attrs, :workspace_id, Map.get(attrs, "workspace_id"))
+      workspace_id = if workspace_id in ["", nil], do: nil, else: workspace_id
+      role = Map.get(attrs, :role, Map.get(attrs, "role", "editor"))
+      email = Map.get(attrs, :email, Map.get(attrs, "email"))
+      email = if email in ["", nil], do: nil, else: email
 
-      existing =
-        Repo.one(
-          from i in Invite,
-            where: i.invited_by_user_id == ^user_id,
-            where: is_nil(i.used_at),
-            where: i.expires_at > ^now,
-            order_by: [desc: i.inserted_at],
-            limit: 1
-        )
+      query =
+        from i in Invite,
+          where: i.invited_by_user_id == ^user_id,
+          where: is_nil(i.used_at),
+          where: i.expires_at > ^now,
+          order_by: [desc: i.inserted_at],
+          limit: 1
+
+      query =
+        if workspace_id do
+          from i in query, where: i.workspace_id == ^workspace_id and i.role == ^to_string(role)
+        else
+          from i in query, where: is_nil(i.workspace_id)
+        end
+
+      existing = Repo.one(query)
 
       if existing do
-        {:ok, Repo.preload(existing, :invited_by_user)}
+        {:ok, Repo.preload(existing, [:invited_by_user, :workspace])}
       else
         token = generate_invite_token()
 
         %Invite{}
         |> Invite.changeset(%{
           token: token,
+          role: to_string(role),
+          email: email,
+          workspace_id: workspace_id,
           expires_at: expires_at,
           invited_by_user_id: user_id
         })
         |> Repo.insert()
         |> case do
-          {:ok, invite} -> {:ok, Repo.preload(invite, :invited_by_user)}
+          {:ok, invite} -> {:ok, Repo.preload(invite, [:invited_by_user, :workspace])}
           err -> err
         end
       end
@@ -441,10 +470,70 @@ defmodule FusionFlowCore.Accounts do
   end
 
   @doc """
+  Creates an invite for a workspace. Requires `:invite_members` or `:manage_members` permission in the scope.
+  """
+  def create_workspace_invite(
+        %FusionFlowCore.Accounts.Scope{
+          workspace: %FusionFlowCore.Workspaces.Workspace{id: ws_id},
+          user: user
+        } = scope,
+        attrs
+      ) do
+    with :ok <- FusionFlowCore.Policy.authorize(scope, :invite_members) do
+      now = DateTime.utc_now()
+      validity_days = Invite.invite_validity_days()
+      expires_at = DateTime.add(now, validity_days, :day)
+      token = generate_invite_token()
+      role = Map.get(attrs, :role, Map.get(attrs, "role", "editor"))
+      email = Map.get(attrs, :email, Map.get(attrs, "email"))
+
+      %Invite{}
+      |> Invite.changeset(%{
+        token: token,
+        role: to_string(role),
+        email: email,
+        expires_at: expires_at,
+        invited_by_user_id: user.id,
+        workspace_id: ws_id
+      })
+      |> Repo.insert()
+      |> case do
+        {:ok, invite} -> {:ok, Repo.preload(invite, [:invited_by_user, :workspace])}
+        err -> err
+      end
+    end
+  end
+
+  @doc """
+  Lists active/pending invites for a workspace.
+  """
+  def list_workspace_invites(
+        %FusionFlowCore.Accounts.Scope{
+          workspace: %FusionFlowCore.Workspaces.Workspace{id: ws_id}
+        } = scope
+      ) do
+    with :ok <- FusionFlowCore.Policy.authorize(scope, :view_members) do
+      now = DateTime.utc_now()
+
+      invites =
+        Repo.all(
+          from i in Invite,
+            where: i.workspace_id == ^ws_id and is_nil(i.used_at) and i.expires_at > ^now,
+            order_by: [desc: i.inserted_at],
+            preload: [:invited_by_user, :workspace]
+        )
+
+      {:ok, invites}
+    end
+  end
+
+  def list_workspace_invites(_), do: {:ok, []}
+
+  @doc """
   Gets an invite by token. Returns nil if not found.
   """
   def get_invite_by_token(token) when is_binary(token) do
-    Repo.get_by(Invite, token: token) |> Repo.preload(:invited_by_user)
+    Repo.get_by(Invite, token: token) |> Repo.preload([:invited_by_user, :workspace])
   end
 
   @doc """
@@ -465,7 +554,7 @@ defmodule FusionFlowCore.Accounts do
       from i in Invite,
         where: i.invited_by_user_id == ^user_id,
         order_by: [desc: i.inserted_at],
-        preload: [:invited_by_user]
+        preload: [:invited_by_user, :workspace]
     )
   end
 

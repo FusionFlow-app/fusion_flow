@@ -18,6 +18,7 @@ defmodule FusionFlowCore.Executions.Execution do
     field :finished_at, :utc_datetime
 
     belongs_to :flow, Flow
+    belongs_to :workspace, FusionFlowCore.Workspaces.Workspace
 
     timestamps(type: :utc_datetime)
   end
@@ -30,6 +31,7 @@ defmodule FusionFlowCore.Executions.Execution do
     |> cast(attrs, [
       :public_id,
       :flow_id,
+      :workspace_id,
       :status,
       :input,
       :result,
@@ -42,6 +44,7 @@ defmodule FusionFlowCore.Executions.Execution do
     |> validate_format(:public_id, ~r/^[a-z0-9]+(?:-[a-z0-9]+)*$/)
     |> validate_inclusion(:status, @statuses)
     |> assoc_constraint(:flow)
+    |> assoc_constraint(:workspace)
     |> check_constraint(:status, name: :executions_status_check)
     |> unique_constraint(:public_id)
   end

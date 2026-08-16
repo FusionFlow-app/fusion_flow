@@ -11,6 +11,7 @@ defmodule FusionFlowCore.Flows.Flow do
     field :connections, {:array, :map}
 
     belongs_to :user, User
+    belongs_to :workspace, FusionFlowCore.Workspaces.Workspace
     has_many :executions, FusionFlowCore.Executions.Execution
 
     timestamps(type: :utc_datetime)
@@ -19,9 +20,10 @@ defmodule FusionFlowCore.Flows.Flow do
   @doc false
   def changeset(flow, attrs) do
     flow
-    |> cast(attrs, [:name, :nodes, :connections, :user_id])
+    |> cast(attrs, [:name, :nodes, :connections, :user_id, :workspace_id])
     |> validate_required([:name, :user_id])
     |> assoc_constraint(:user)
+    |> assoc_constraint(:workspace)
     |> validate_graph()
   end
 

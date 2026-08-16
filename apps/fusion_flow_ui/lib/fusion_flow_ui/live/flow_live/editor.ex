@@ -9,9 +9,16 @@ defmodule FusionFlowUI.FlowLive.Editor do
 
   @impl true
   def mount(%{"id" => id}, _session, socket) do
-    flow = Flows.get_flow!(socket.assigns.current_scope, id)
+    case Flows.get_flow(socket.assigns.current_scope, id) do
+      %FusionFlowCore.Flows.Flow{} = flow ->
+        {:ok, assign(socket, initial_assigns(flow)), layout: false}
 
-    {:ok, assign(socket, initial_assigns(flow)), layout: false}
+      _ ->
+        {:ok,
+         socket
+         |> put_flash(:error, "Flow not found or access denied.")
+         |> push_navigate(to: ~p"/flows")}
+    end
   end
 
   defp initial_assigns(flow) do
