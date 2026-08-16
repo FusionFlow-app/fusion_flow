@@ -1,4 +1,4 @@
-defmodule FusionFlowUI.FlowAiCreatorLiveTest do
+defmodule FusionFlowUI.FlowLive.AICreatorTest do
   use FusionFlowUI.ConnCase, async: true
 
   import Phoenix.LiveViewTest

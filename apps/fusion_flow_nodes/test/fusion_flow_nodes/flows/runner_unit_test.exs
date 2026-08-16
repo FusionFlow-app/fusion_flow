@@ -12,12 +12,20 @@ defmodule FusionFlowNodes.RunnerUnitTest do
   end
 
   defp connection(source, source_output, target) do
-    %{"source" => source, "sourceOutput" => source_output, "target" => target, "targetInput" => "exec"}
+    %{
+      "source" => source,
+      "sourceOutput" => source_output,
+      "target" => target,
+      "targetInput" => "exec"
+    }
   end
 
   describe "run/2 — start node handling" do
     test "returns error when no Start node exists in the flow" do
-      f = flow([node("1", "Variable", %{"var_name" => "x", "var_value" => "1", "var_type" => "String"})])
+      f =
+        flow([
+          node("1", "Variable", %{"var_name" => "x", "var_value" => "1", "var_type" => "String"})
+        ])
 
       assert {:error, "No Start node found", nil} = Runner.run(f)
     end
@@ -51,7 +59,11 @@ defmodule FusionFlowNodes.RunnerUnitTest do
         flow(
           [
             node("1", "Start"),
-            node("2", "Variable", %{"var_name" => "count", "var_value" => "7", "var_type" => "Integer"}),
+            node("2", "Variable", %{
+              "var_name" => "count",
+              "var_value" => "7",
+              "var_type" => "Integer"
+            }),
             node("3", "Output", %{"status" => "success"})
           ],
           [
@@ -101,7 +113,11 @@ defmodule FusionFlowNodes.RunnerUnitTest do
         flow(
           [
             node("1", "Start"),
-            node("2", "Variable", %{"var_name" => "x", "var_value" => "10", "var_type" => "Integer"})
+            node("2", "Variable", %{
+              "var_name" => "x",
+              "var_value" => "10",
+              "var_type" => "Integer"
+            })
           ],
           [connection("1", "exec", "2")]
         )
@@ -117,7 +133,11 @@ defmodule FusionFlowNodes.RunnerUnitTest do
         flow(
           [
             node("1", "Start"),
-            node("2", "Variable", %{"var_name" => "score", "var_value" => "100", "var_type" => "Integer"}),
+            node("2", "Variable", %{
+              "var_name" => "score",
+              "var_value" => "100",
+              "var_type" => "Integer"
+            }),
             node("3", "Condition", %{"variable" => "score", "operator" => ">", "value" => "50"}),
             node("4", "Output", %{"status" => "passed"})
           ],
@@ -137,7 +157,11 @@ defmodule FusionFlowNodes.RunnerUnitTest do
         flow(
           [
             node("1", "Start"),
-            node("2", "Variable", %{"var_name" => "score", "var_value" => "10", "var_type" => "Integer"}),
+            node("2", "Variable", %{
+              "var_name" => "score",
+              "var_value" => "10",
+              "var_type" => "Integer"
+            }),
             node("3", "Condition", %{"variable" => "score", "operator" => ">", "value" => "50"}),
             node("4", "Output", %{"status" => "failed"})
           ],
@@ -157,7 +181,11 @@ defmodule FusionFlowNodes.RunnerUnitTest do
         flow(
           [
             node("1", "Start"),
-            node("2", "Variable", %{"var_name" => "x", "var_value" => "1", "var_type" => "Integer"})
+            node("2", "Variable", %{
+              "var_name" => "x",
+              "var_value" => "1",
+              "var_type" => "Integer"
+            })
           ],
           [connection("1", "exec", "2")]
         )

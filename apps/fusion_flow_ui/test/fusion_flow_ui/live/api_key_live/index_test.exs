@@ -1,4 +1,4 @@
-defmodule FusionFlowUI.ApiKeyLiveTest do
+defmodule FusionFlowUI.ApiKeyLive.IndexTest do
   use FusionFlowUI.ConnCase, async: true
 
   import Phoenix.LiveViewTest

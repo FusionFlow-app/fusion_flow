@@ -48,7 +48,7 @@ defmodule FusionFlowUI.Router do
     live_session :require_authenticated_user,
       on_mount: [{FusionFlowUI.UserAuth, :require_authenticated}] do
       live "/users/settings", UserLive.Settings, :edit
-      live "/", DashboardLive
+      live "/", DashboardLive.Index
     end
 
     live_session :require_system_admin,
@@ -57,12 +57,12 @@ defmodule FusionFlowUI.Router do
         {FusionFlowUI.UserAuth, :require_system_admin}
       ] do
       live "/users", UserLive.Index, :index
-      live "/flows", FlowListLive
-      live "/flows/new/ai", FlowAiCreatorLive
-      live "/flows/:id", FlowLive
-      live "/executions", ExecutionLive, :index
-      live "/executions/:public_id", ExecutionLive, :show
-      live "/api-keys", ApiKeyLive, :index
+      live "/flows", FlowLive.Index
+      live "/flows/new/ai", FlowLive.AICreator
+      live "/flows/:id", FlowLive.Editor
+      live "/executions", ExecutionLive.Index, :index
+      live "/executions/:public_id", ExecutionLive.Index, :show
+      live "/api-keys", ApiKeyLive.Index
     end
 
     post "/users/update-password", UserSessionController, :update_password

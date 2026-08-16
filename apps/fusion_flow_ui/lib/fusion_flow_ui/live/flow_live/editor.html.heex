@@ -1,0 +1,101 @@
+<div
+  class="w-full h-[100vh] flex flex-col bg-white dark:bg-slate-950 overflow-hidden relative"
+  phx-window-keydown="handle_keydown"
+>
+  <FusionFlowUI.Components.Flow.FlowHeader.flow_header
+    has_changes={@has_changes}
+    flow={@current_flow}
+    renaming_flow={@renaming_flow}
+  />
+  <div class="flex-1 flex overflow-hidden">
+    <FusionFlowUI.Components.Flow.NodeSidebar.node_sidebar
+      nodes_by_category={@nodes_by_category}
+      search_query={@node_search_query}
+      collapsed_categories={@collapsed_node_categories}
+      recent_nodes={@recent_nodes}
+    />
+    <FusionFlowUI.Components.Modals.ExecutionNotice.execution_notice notice={@execution_notice} />
+    <script>
+      window.Translations = {
+        "Run": "<%= gettext("Run") %>",
+        "Waiting...": "<%= gettext("Waiting...") %>",
+        "Remove Node": "<%= gettext("Remove Node") %>",
+        "Configure Node": "<%= gettext("Configure Node") %>",
+        "View Error": "<%= gettext("View Error") %>",
+        "Edit Code": "<%= gettext("Edit Code") %>",
+        "Coming Soon": "<%= gettext("Coming Soon") %>",
+        "Select Integration": "<%= gettext("Select Integration") %>",
+        "Drag to canvas": "<%= gettext("Drag to canvas") %>",
+        "Create Node": "<%= gettext("Create Node") %>",
+        "Copy": "<%= gettext("Copy") %>",
+        "Paste": "<%= gettext("Paste") %>",
+        "Delete Selected": "<%= gettext("Delete Selected") %>",
+        "Undo": "<%= gettext("Undo") %>",
+        "Redo": "<%= gettext("Redo") %>",
+        "Delete connection": "<%= gettext("Delete connection") %>"
+      };
+    </script>
+
+    <div
+      class="flex-1 relative bg-gray-100 dark:bg-slate-900"
+      id="rete-container"
+      phx-update="ignore"
+    >
+      <div
+        id="rete"
+        class="absolute inset-0 w-full h-full"
+        phx-hook="Rete"
+      >
+      </div>
+    </div>
+  </div>
+
+  <FusionFlowUI.Components.Modals.CodeEditorModal.code_editor_modal
+    modal_open={@modal_open}
+    current_code_tab={@current_code_tab}
+    current_code_elixir={@current_code_elixir}
+    current_code_python={@current_code_python}
+    available_variables={@available_variables}
+  />
+  <FusionFlowUI.Components.Modals.NodeConfigModal.node_config_modal
+    config_modal_open={@config_modal_open}
+    editing_node_data={@editing_node_data}
+  />
+  <FusionFlowUI.Components.Modals.ErrorModal.error_modal
+    error_modal_open={@error_modal_open}
+    current_error_node_id={@current_error_node_id}
+    current_error_message={@current_error_message}
+  />
+  <FusionFlowUI.Components.Modals.DependenciesModal.dependencies_modal
+    dependencies_modal_open={@dependencies_modal_open}
+    dependencies_tab={@dependencies_tab}
+    pending_restart_deps={@pending_restart_deps}
+    search_query={@search_query}
+    search_results={@search_results}
+    installed_deps={@installed_deps}
+    installing_dep={@installing_dep}
+    terminal_logs={@terminal_logs}
+  />
+  <FusionFlowUI.Components.Modals.ExecutionResultModal.execution_result_modal
+    show_result_modal={@show_result_modal}
+    execution_result={@execution_result}
+    inspecting_result={@inspecting_result}
+  />
+  <FusionFlowUI.Components.Modals.CreateNodeModal.create_node_modal
+    create_node_modal_open={@create_node_modal_open}
+    available_nodes={@filtered_nodes}
+    selected_position={@selected_position}
+    search_query={@node_modal_search_query}
+  />
+  <.live_component
+    module={FusionFlowUI.Components.ChatComponent}
+    id="chat-component"
+    open={@chat_open}
+    messages={@chat_messages}
+    loading={@chat_loading}
+    ai_configured={@ai_configured}
+    on_toggle="toggle_chat"
+    on_send="send_message"
+    node_config_open={@config_modal_open}
+  />
+</div>
