@@ -1,5 +1,5 @@
 defmodule FusionFlowUI.Plugs.RateLimitTest do
-  use FusionFlowUI.ConnCase, async: true
+  use FusionFlowUI.ConnCase, async: false
 
   alias FusionFlowCore.ApiKeys
   alias FusionFlowUI.Plugs.RateLimit
@@ -7,16 +7,7 @@ defmodule FusionFlowUI.Plugs.RateLimitTest do
   import FusionFlowCore.AccountsFixtures
 
   setup do
-    if :ets.info(:api_rate_limit) != :undefined do
-      :ets.delete(:api_rate_limit)
-    end
-
-    on_exit(fn ->
-      if :ets.info(:api_rate_limit) != :undefined do
-        :ets.delete(:api_rate_limit)
-      end
-    end)
-
+    ensure_ets_table()
     :ok
   end
 
@@ -24,16 +15,16 @@ defmodule FusionFlowUI.Plugs.RateLimitTest do
     user = user_fixture()
     {:ok, %{api_key: api_key}} = ApiKeys.create_api_key(user, %{name: "rate limit", scopes: []})
     window = div(System.system_time(:second), 60)
+    bucket = {api_key.id, window}
 
-    :ets.new(:api_rate_limit, [
-      :set,
-      :public,
-      :named_table,
-      write_concurrency: true,
-      read_concurrency: true
-    ])
+    ensure_ets_table()
+    :ets.insert(:api_rate_limit, {bucket, 100})
 
-    :ets.insert(:api_rate_limit, {{api_key.id, window}, 100})
+    on_exit(fn ->
+      if :ets.info(:api_rate_limit) != :undefined do
+        :ets.delete(:api_rate_limit, bucket)
+      end
+    end)
 
     conn =
       conn
@@ -46,5 +37,21 @@ defmodule FusionFlowUI.Plugs.RateLimitTest do
     assert Jason.decode!(conn.resp_body) == %{
              "error" => %{"code" => "rate_limited", "message" => "Too Many Requests"}
            }
+  end
+
+  defp ensure_ets_table do
+    if :ets.info(:api_rate_limit) == :undefined do
+      try do
+        :ets.new(:api_rate_limit, [
+          :set,
+          :public,
+          :named_table,
+          write_concurrency: true,
+          read_concurrency: true
+        ])
+      rescue
+        ArgumentError -> :ok
+      end
+    end
   end
 end
