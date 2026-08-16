@@ -1,4 +1,4 @@
-defmodule FusionFlowUI.FlowLiveTest do
+defmodule FusionFlowUI.FlowLive.EditorTest do
   use FusionFlowUI.ConnCase, async: true
   use Oban.Testing, repo: FusionFlowCore.Repo
 

@@ -1,0 +1,4 @@
+[tools]
+erlang = "27.3.4.11"
+elixir = "1.18.3-otp-27"
+node = "22.14.0"

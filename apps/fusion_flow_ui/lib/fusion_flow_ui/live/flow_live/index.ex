@@ -1,4 +1,4 @@
-defmodule FusionFlowUI.FlowListLive do
+defmodule FusionFlowUI.FlowLive.Index do
   use FusionFlowUI, :live_view
 
   alias FusionFlowCore.Flows

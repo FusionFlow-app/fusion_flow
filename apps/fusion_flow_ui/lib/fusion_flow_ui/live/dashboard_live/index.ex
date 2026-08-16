@@ -1,4 +1,4 @@
-defmodule FusionFlowUI.DashboardLive do
+defmodule FusionFlowUI.DashboardLive.Index do
   use FusionFlowUI, :live_view
 
   alias FusionFlowCore.Flows
@@ -6,16 +6,22 @@ defmodule FusionFlowUI.DashboardLive do
   @impl true
   def mount(_params, _session, socket) do
     user = socket.assigns.current_scope.user
-    admin? = user && FusionFlowCore.Accounts.User.system_admin?(user)
-    flows = if admin?, do: Flows.list_flows(socket.assigns.current_scope), else: []
-    active_count = length(flows)
+    admin? = user && user.is_system_admin == true
+
+    flows =
+      if admin? do
+        Flows.list_flows(socket.assigns.current_scope)
+      else
+        []
+      end
 
     {:ok,
-     socket
-     |> assign(page_title: "Dashboard")
-     |> assign(flows: flows)
-     |> assign(active_count: active_count)
-     |> assign(admin?: admin?)}
+     assign(socket,
+       flows: flows,
+       active_count: length(flows),
+       admin?: admin?,
+       page_title: gettext("Dashboard")
+     )}
   end
 
   @impl true
